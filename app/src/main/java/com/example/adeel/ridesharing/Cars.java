@@ -12,6 +12,15 @@ public class Cars {
         this.mCarRegNo = mCarRegNo;
     }
 
+    @Override
+    public String toString() {
+        return "Cars{" +
+                "mCarColor='" + mCarColor + '\'' +
+                ", mCarName='" + mCarName + '\'' +
+                ", mCarRegNo='" + mCarRegNo + '\'' +
+                '}';
+    }
+
     public String getmCarColor() {
         return mCarColor;
     }
