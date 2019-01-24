@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/background" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/button_offerRide"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="30dp"
+            android:alpha="0.80"
+            android:textColor="@color/white"
+            android:background="@drawable/button_shapes"
+            android:elevation="10dp"
+            android:text="@string/offer_ride" />
+
+        <Button
+            android:id="@+id/button_findRide"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:alpha="0.80"
+            android:textColor="@color/white"
+            android:background="@drawable/button_shapes"
+            android:elevation="10dp"
+            android:text="@string/find_ride" />
+
+    </LinearLayout>
+
+</RelativeLayout>

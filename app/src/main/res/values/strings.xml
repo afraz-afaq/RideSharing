@@ -1,0 +1,105 @@
+<resources>
+    <string name="app_name">Ride Sharing</string>
+    <string name="signin">SIGN IN</string>
+    <string name="phone">Enter your phone number</string>
+    <string name="password">Enter your password</string>
+    <string name="forgot_password">Forget password</string>
+    <string name="send">Send</string>
+    <string name="offer_ride">Offer Ride</string>
+    <string name="find_ride">Find Ride</string>
+    <string name="home">Home</string>
+    <string name="profile">Profile</string>
+    <string name="my_bookings">My Bookings</string>
+    <string name="my_cars">My Cars</string>
+    <string name="empty_car">You have no any Car</string>
+    <string name="logout">Logout</string>
+    <string name="phone_no">Phone Number</string>
+    <string name="email1">Email</string>
+    <string name="reg_no">Reg Number</string>
+    <string name="publish">Publish</string>
+    <string name="further_detail">Further detail</string>
+    <string name="enterfurther_detail">Enter further detail</string>
+    <string name="dept">Department</string>
+    <string name="number_ofSeats">Number of seats</string>
+    <string name="update">Update</string>
+    <string name="select_car">Select Car</string>
+    <string name="to_bahria">To Bahria</string>
+    <string name="select_driver">Driver</string>
+    <string name="select_seats">Seats</string>
+    <string name="driver_male">Male</string>
+    <string name="submit">Next</string>
+    <string name="your_time">Select time</string>
+    <string name="driver_female">Female</string>
+    <string name="search">Search</string>
+    <string name="sno1">1</string>
+    <string name="sno2">2</string>
+    <string name="sno3">3</string>
+    <string name="sno4">4</string>
+    <string name="color">Color:</string>
+    <string name="seats">Seats:</string>
+    <string name="comfort">Comfort:</string>
+    <string name="from_bahria">From Bahria</string>
+    <string name="change_password">Change Password</string>
+    <string name="your_location">Choose your location</string>
+    <string name="your_destination">Choose your destination</string>
+    <string name="forgot_description1">Enter the email address\n associated with your account.</string>
+    <string name="forgot_description2">We will email you a link to reset\n your password.</string>
+    <string name="changePhone_description1">Enter your new phone number to update.</string>
+    <string name="changePhone_description2">We will send you a verification code to reset your phone number.</string>
+    <string name="show_all">Show All</string>
+    <string name="email">Enter your email</string>
+    <string name="past_bookings">Past Bookings</string>
+    <string name="today_bookings">Today Bookings</string>
+    <string name="canceled_bookings">Canceled Bookings</string>
+    <string name="complete_bookings">Complete Bookings</string>
+    <string name="api_key">AIzaSyAvjbA-nZFGriv5J-OP1GDH-EYFLe0u28c</string>
+
+    <string-array name="cars">
+        <item>Alto</item>
+        <item>Cultus</item>
+    </string-array>
+
+    <string-array name="seats">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+
+    <string-array name="time">
+        <item>Mins before leaving</item>
+        <item>30</item>
+        <item>25</item>
+        <item>20</item>
+        <item>15</item>
+        <item>10</item>
+    </string-array>
+
+    <!--cell folding-->
+    <string name="order_id_mock" translatable="false"># 1234–5678</string>
+    <string name="price_mock" translatable="false">$25</string>
+    <string name="requests_count_mock" translatable="false">5</string>
+    <string name="requests_count_badge" translatable="false">REQUESTS</string>
+    <string name="weight_mock" translatable="false">50 oz</string>
+    <string name="weight_badge" translatable="false">WEIGHT</string>
+    <string name="pledge_mock" translatable="false">$150</string>
+    <string name="pledge_badge" translatable="false">PLEDGE</string>
+    <string name="sender_badge" translatable="false">SENDER</string>
+    <string name="client_name_mock" translatable="false">Edward Norton</string>
+    <string name="rating_mock" translatable="false">(26)</string>
+    <string name="from_badge" translatable="false">FROM</string>
+    <string name="to_badge" translatable="false">TO</string>
+    <string name="delivery_date_badge" translatable="false">DELIVERY DATE</string>
+    <string name="delivery_time_mock" translatable="false">6:30 pm</string>
+    <string name="delivery_date_mock" translatable="false">May 16, 2016</string>
+    <string name="deadline_badge" translatable="false">REQUEST DEADLINE</string>
+    <string name="deadline_time_mock" translatable="false">24 minutes</string>
+    <string name="request_btn_text" translatable="false">REQUEST</string>
+    <string name="btn_annotation_mock" translatable="false">5 people have sent a request</string>
+    <string name="content_from1_mock">W 90th St</string>
+    <string name="content_from2_mock">New York, NY 10025</string>
+    <string name="content_to1_mock">46th Ave</string>
+    <string name="content_to2_mock">Woodside, NY 11101</string>
+    <string name="title_activity_main2">Main2Activity</string>
+
+</resources>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_home"
+        android:checkable="true"
+        android:icon="@drawable/ic_action_home"
+        android:title="@string/home" />
+
+    <item
+        android:id="@+id/nav_profile"
+        android:checkable="true"
+        android:icon="@drawable/ic_action_profile"
+        android:title="@string/profile" />
+
+    <item
+        android:id="@+id/nav_findRide"
+        android:checkable="true"
+        android:icon="@drawable/ic_action_findride"
+        android:title="@string/find_ride" />
+
+    <item
+        android:id="@+id/nav_offferRide"
+        android:checkable="true"
+        android:icon="@drawable/ic_action_home"
+        android:title="@string/offer_ride" />
+
+    <item
+        android:id="@+id/nav_myBookings"
+        android:checkable="true"
+        android:icon="@drawable/ic_action_mybookings"
+        android:title="@string/my_bookings" />
+
+    <item
+        android:id="@+id/nav_myCars"
+        android:checkable="true"
+        android:icon="@drawable/ic_action_findride"
+        android:title="@string/my_cars" />
+
+    <item
+        android:id="@+id/nav_logout"
+        android:icon="@drawable/ic_action_logout"
+        android:title="@string/logout" />
+
+</menu>

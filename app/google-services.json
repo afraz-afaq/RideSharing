@@ -1,0 +1,107 @@
+{
+  "project_info": {
+    "project_number": "7849950488",
+    "firebase_url": "https://ridesharingapp-1a348.firebaseio.com",
+    "project_id": "ridesharingapp-1a348",
+    "storage_bucket": "ridesharingapp-1a348.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:7849950488:android:160131622df50f3c",
+        "android_client_info": {
+          "package_name": "com.example.adeel.ridesharing"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "7849950488-9oiir6vok8om88uftjj082ggbaiosi57.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.adeel.ridesharing",
+            "certificate_hash": "d1666b5467496fcd4dc2fbf311780fc017d709ae"
+          }
+        },
+        {
+          "client_id": "7849950488-j8mhcl6tsi5p78u2hkaut3kl6j20v0o4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.adeel.ridesharing",
+            "certificate_hash": "f2fd1d7f0dcd797f7086637e60f76d7a34b1f60c"
+          }
+        },
+        {
+          "client_id": "7849950488-choljknstvuo7nqaig0mmvomu37apncg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUtfKcDp2EKkTOzcPfwrksLhdlvFqkduw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "7849950488-choljknstvuo7nqaig0mmvomu37apncg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:7849950488:android:3b62c709985efdb0",
+        "android_client_info": {
+          "package_name": "com.example.afraz.ridesharingapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "7849950488-ok1hp11c5vgpag10l9tb0ei3fdu8adj0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.afraz.ridesharingapp",
+            "certificate_hash": "f2fd1d7f0dcd797f7086637e60f76d7a34b1f60c"
+          }
+        },
+        {
+          "client_id": "7849950488-choljknstvuo7nqaig0mmvomu37apncg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUtfKcDp2EKkTOzcPfwrksLhdlvFqkduw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "7849950488-choljknstvuo7nqaig0mmvomu37apncg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="Drivers">
+        <item>@string/driver_male</item>
+        <item>@string/driver_female</item>
+    </string-array>
+
+    <string-array name="Seats">
+        <item>@string/sno1</item>
+        <item>@string/sno2</item>
+        <item>@string/sno3</item>
+        <item>@string/sno4</item>
+    </string-array>
+
+    <string-array name="bookings_options">
+        <item>@string/today_bookings</item>
+        <item>@string/past_bookings</item>
+        <item>@string/canceled_bookings</item>
+        <item>@string/complete_bookings</item>
+    </string-array>
+
+</resources>
