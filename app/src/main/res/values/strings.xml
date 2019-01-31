@@ -11,7 +11,8 @@
     <string name="profile">Profile</string>
     <string name="my_bookings">My Bookings</string>
     <string name="my_vehicles">My Vehicles</string>
-    <string name="empty_car">You have no any Car</string>
+    <string name="empty_car">You dont have any Car</string>
+    <string name="empty_bike">You dont have any Bikes</string>
     <string name="logout">Logout</string>
     <string name="phone_no">Phone Number</string>
     <string name="email1">Email</string>
@@ -101,5 +102,8 @@
     <string name="content_to1_mock">46th Ave</string>
     <string name="content_to2_mock">Woodside, NY 11101</string>
     <string name="title_activity_main2">Main2Activity</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity  implements CarBottomSheet.G
                         break;
                     case R.id.nav_myCars:
                         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                                new MyCarsFragment()).commit();
+                                new MyVehicles()).commit();
                         mNavigationView.setCheckedItem(R.id.nav_myCars);
                         mtoolbar.setTitle(R.string.my_vehicles);
                         break;

@@ -1,17 +1,14 @@
 package com.example.adeel.ridesharing;
 
+
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,12 +18,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
-import com.baoyz.swipemenulistview.SwipeMenu;
-import com.baoyz.swipemenulistview.SwipeMenuCreator;
-import com.baoyz.swipemenulistview.SwipeMenuItem;
-import com.baoyz.swipemenulistview.SwipeMenuListView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -37,47 +29,53 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyCarsFragment extends Fragment {
-    private ListView mCarList;
+
+/**
+ * A simple {@link Fragment} subclass.
+ */
+public class MyBikesFragment extends Fragment {
+
+    private ListView mBikeList;
     private FirebaseAuth mAuth;
-    DatabaseReference databaseCars;
-    ArrayList<Cars> carsArrayList;
+    DatabaseReference databaseBikes;
+    ArrayList<Cars> bikesArrayList;
     PostHelpingMethod postHelpingMethod;
     ProgressDialog progressDialog;
     View rootView;
     RelativeLayout emptyView;
     CarBottomSheet carBottomSheet;
 
-    @Nullable
+    public MyBikesFragment() {
+        // Required empty public constructor
+    }
+
+
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.fragment_mycars, container, false);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View rootView = inflater.inflate(R.layout.fragment_my_bikes, container, false);
         mAuth = FirebaseAuth.getInstance();
         postHelpingMethod = new PostHelpingMethod(getActivity());
 
-        emptyView = rootView.findViewById(R.id.empty_viewCar);
-        databaseCars = FirebaseDatabase.getInstance().getReference("Users").child(mAuth.getUid()).child("Cars");
-        progressDialog  = postHelpingMethod.createProgressDialog("Fetching Cars","Please Wait....");
-        mCarList = rootView.findViewById(R.id.listView_cars);
-        carsArrayList = new ArrayList<>();
+        emptyView = rootView.findViewById(R.id.empty_viewBike);
+        databaseBikes = FirebaseDatabase.getInstance().getReference("Users").child(mAuth.getUid()).child("Bikes");
+        progressDialog  = postHelpingMethod.createProgressDialog("Fetching Bikes","Please Wait....");
+        mBikeList = rootView.findViewById(R.id.listView_bikes);
+        bikesArrayList = new ArrayList<>();
 
-
-// set creator
-
-
-        mCarList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+        mBikeList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 Bundle bundle = new Bundle();
                 bundle.putString("uId",mAuth.getUid());
-                bundle.putString("carReg",carsArrayList.get(position).getmCarRegNo());
+                bundle.putString("carReg",bikesArrayList.get(position).getmCarRegNo());
                 carBottomSheet = new CarBottomSheet();
                 carBottomSheet.setArguments(bundle);
                 carBottomSheet.show(getFragmentManager(),"");
                 return false;
             }
         });
-
 
         return rootView;
     }
@@ -120,28 +118,29 @@ public class MyCarsFragment extends Fragment {
         });
     }
 
+
     public void populateCarsList(){
         progressDialog.show();
-        databaseCars.addValueEventListener(new ValueEventListener() {
+        databaseBikes.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                carsArrayList.clear();
+                bikesArrayList.clear();
                 if (dataSnapshot.hasChildren()) {
                     for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                         //getting artist
                         Cars cars = new Cars(postSnapshot.child("color").getValue().toString(), postSnapshot.child("name").getValue().toString(), postSnapshot.getKey());
-                        carsArrayList.add(cars);
+                        bikesArrayList.add(cars);
                         //Cars cars = postSnapshot.getValue(Cars.class);
                         //adding artist to the list
                         //Cars.add(cars);
                     }
                     PreferencesClass preferencesClass = new PreferencesClass(getActivity());
-                    preferencesClass.saveBikesList(carsArrayList);
-                    CarsAdapter carsAdapter = new CarsAdapter(getActivity(), carsArrayList);
+                    preferencesClass.saveBikesList(bikesArrayList);
+                    CarsAdapter bikesAdapter = new CarsAdapter(getActivity(), bikesArrayList);
                     //attaching adapter to the listview
-                    mCarList.setAdapter(carsAdapter);
-                    carsAdapter.notifyDataSetChanged();
+                    mBikeList.setAdapter(bikesAdapter);
+                    bikesAdapter.notifyDataSetChanged();
 
                     emptyView.setVisibility(View.GONE);
                     progressDialog.dismiss();

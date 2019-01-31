@@ -9,8 +9,13 @@ import android.util.Base64;
 import android.util.Log;
 
 import com.google.firebase.database.DataSnapshot;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.ByteArrayOutputStream;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Afraz on 7/23/2018.
@@ -160,5 +165,43 @@ public void setUserImage(String image){
     {
         byte[] decodedBytes = Base64.decode(input, 0);
         return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+    }
+
+    public void saveCarsList(ArrayList<Cars> cars){
+        SharedPreferences sharedPreferences = activity.getSharedPreferences(AppConstants.PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        Gson gson = new Gson();
+        String carsString = gson.toJson(cars);
+        editor.putString(AppConstants.CARS_LIST,carsString);
+
+        editor.apply();
+    }
+
+    public void saveBikesList(ArrayList<Cars> bikes){
+        SharedPreferences sharedPreferences = activity.getSharedPreferences(AppConstants.PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        Gson gson = new Gson();
+        String bikesString = gson.toJson(bikes);
+        editor.putString(AppConstants.BIKES_LIST,bikesString);
+
+        editor.apply();
+    }
+
+    public ArrayList<Cars> getCarsList(){
+        SharedPreferences sharedPreferences = activity.getSharedPreferences(AppConstants.PREF_NAME, Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+        String carsString = sharedPreferences.getString(AppConstants.CARS_LIST,null);
+        Type type = new TypeToken<List<Cars>>(){}.getType();
+        ArrayList<Cars> carsList = gson.fromJson(carsString, type);
+        return carsList;
+    }
+
+    public ArrayList<Cars> getBikesList(){
+        SharedPreferences sharedPreferences = activity.getSharedPreferences(AppConstants.PREF_NAME, Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+        String bikesString = sharedPreferences.getString(AppConstants.BIKES_LIST,null);
+        Type type = new TypeToken<List<Cars>>(){}.getType();
+        ArrayList<Cars> bikesList = gson.fromJson(bikesString, type);
+        return bikesList;
     }
 }
