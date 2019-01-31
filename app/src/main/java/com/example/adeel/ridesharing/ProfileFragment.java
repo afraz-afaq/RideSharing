@@ -46,7 +46,6 @@ public class ProfileFragment extends Fragment {
     private LinearLayout mLayout2;
     private CardView mCardView;
     private ImageView mClose;
-    private ImageButton mEditPhone;
     private PreferencesClass preferencesClass;
     private Button btnSend,btnupdate;
     private EditText editTextMail,editTextchangephone;
@@ -76,16 +75,9 @@ public class ProfileFragment extends Fragment {
         mRegNo.setText(preferencesClass.getUserRegno());
         mDept.setText(preferencesClass.getUserDept());
         mUsername.setText(preferencesClass.getUSER_NAME());
-        mEditPhone=(ImageButton) rootView.findViewById(R.id.imageButton_editPhoneno);
         mProfileImage.setImageBitmap(preferencesClass.decodeBase64(preferencesClass.getUserImage()));
         postHelpingMethod = new PostHelpingMethod(getActivity());
         progressDialog = postHelpingMethod.createProgressDialog("Please Wait..","Verifying credentials and sending email.");
-        mEditPhone.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                editPhone();
-            }
-        });
         mCustomDialog = new Dialog(getActivity());
         mPasswordDialog = new Dialog(getActivity());
         mCustomDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -142,13 +134,6 @@ public class ProfileFragment extends Fragment {
         }
     };
 
-    private void editPhone(){
-        Intent intent = new Intent(getActivity(),PhoneVerification.class); // Added
-        intent.putExtra("from","profile"); // Added
-        startActivity(intent);
-        getActivity().finish();
-    }
-
     private void reAuthUser(final View v){
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         AuthCredential credential = EmailAuthProvider.getCredential(preferencesClass.getUSER_EMAIL(), editTextMail.getText().toString());
@@ -190,8 +175,10 @@ public class ProfileFragment extends Fragment {
     private void runtimeAnim() {
 
         fromTop = AnimationUtils.loadAnimation(getActivity(), R.anim.fall_down);
+        fromTop.setDuration(700);
         mLayout1.setAnimation(fromTop);
         fromBottom = AnimationUtils.loadAnimation(getActivity(), R.anim.from_bottom);
+        fromBottom.setDuration(700);
         mLayout2.setAnimation(fromBottom);
 
     }

@@ -35,7 +35,7 @@
         android:id="@+id/nav_myCars"
         android:checkable="true"
         android:icon="@drawable/ic_action_findride"
-        android:title="@string/my_cars" />
+        android:title="@string/my_vehicles" />
 
     <item
         android:id="@+id/nav_logout"

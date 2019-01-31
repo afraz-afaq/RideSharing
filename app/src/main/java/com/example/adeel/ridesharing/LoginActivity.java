@@ -62,25 +62,10 @@ public class LoginActivity extends AppCompatActivity {
             preferencesClass.setUserPassword(mPassword.getText().toString());
             preferencesClass.saveUser(dataSnapshot);
 
-            String phonestatus = preferencesClass.getUSER_PHONESTATUS();
-            String contact = preferencesClass.getUserContact();
-            if(!phonestatus.equals("true")){
-                Intent phoneVerify = new Intent(LoginActivity.this,PhoneVerification.class);
-                phoneVerify.putExtra("phoneNumber",contact);
-                phoneVerify.putExtra("from","login");// Added
-                phoneVerify.putExtra("email",mEmail.getText().toString());
-                phoneVerify.putExtra("password",mPassword.getText().toString());
-                progressDialog.cancel(); //Added
-                finish();
-                startActivity(phoneVerify);
-
-            }
-            else{
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 finish();
                 startActivity(intent);
                 progressDialog.cancel(); //Added
-            }
             //progressDialog.cancel();
 //                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
 //                startActivity(intent);
@@ -124,24 +109,10 @@ public class LoginActivity extends AppCompatActivity {
                     }else {
 
                         progressDialog.show(); //Added
-                        String phonestatus = preferencesClass.getUSER_PHONESTATUS();
-                        String contact = preferencesClass.getUserContact();
-                        if (!phonestatus.equals("true")) {
-                            Intent phoneVerify = new Intent(LoginActivity.this, PhoneVerification.class);
-                            phoneVerify.putExtra("phoneNumber", contact);
-                            phoneVerify.putExtra("from", "login");// Added
-                            phoneVerify.putExtra("email", mEmail.getText().toString());
-                            phoneVerify.putExtra("password", mPassword.getText().toString());
-                            progressDialog.cancel(); //Added
-                            finish();
-                            startActivity(phoneVerify);
-
-                        } else {
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                             finish();
                             startActivity(intent);
                             progressDialog.cancel(); //Added
-                        }
                     }
 
                 }

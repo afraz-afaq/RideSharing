@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity  implements CarBottomSheet.G
                         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                                 new MyCarsFragment()).commit();
                         mNavigationView.setCheckedItem(R.id.nav_myCars);
-                        mtoolbar.setTitle(R.string.my_cars);
+                        mtoolbar.setTitle(R.string.my_vehicles);
                         break;
                 }
                 mDrawerlayout.closeDrawer(GravityCompat.START);
@@ -208,7 +208,7 @@ public class MainActivity extends AppCompatActivity  implements CarBottomSheet.G
             imageView.setImageBitmap(preferencesClass.decodeBase64(sImage));
         }
         else{
-            String path = mAuth.getUid()+".jpg";
+            String path = mAuth.getUid();
             mStorageRef.child(path).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                 @Override
                 public void onSuccess(Uri uri) {

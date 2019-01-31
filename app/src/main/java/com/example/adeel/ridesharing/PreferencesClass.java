@@ -34,7 +34,7 @@ public class PreferencesClass {
         editor.putString(AppConstants.USER_REGNO,dataSnapshot.child("regno").getValue().toString());
         editor.putString(AppConstants.USER_DEPT,dataSnapshot.child("dept").getValue().toString());
         editor.putString(AppConstants.USER_GENDER,dataSnapshot.child("gender").getValue().toString());
-        editor.putString(AppConstants.USER_PHONESTATUS,dataSnapshot.child("phonestatus").getValue().toString());
+//        editor.putString(AppConstants.USER_PHONESTATUS,dataSnapshot.child("phonestatus").getValue().toString());
         //editor.putString(AppConstants.USER_IMAGE,image);
         editor.apply();
 
@@ -61,13 +61,13 @@ public void setUserImage(String image){
 
     }
 
-    public void setUserPhoneStatus(String status){
-        SharedPreferences sharedPreferences = activity.getSharedPreferences(AppConstants.PREF_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(AppConstants.USER_PHONESTATUS,status);
-        editor.apply();
-
-    }
+//    public void setUserPhoneStatus(String status){
+//        SharedPreferences sharedPreferences = activity.getSharedPreferences(AppConstants.PREF_NAME, Context.MODE_PRIVATE);
+//        SharedPreferences.Editor editor = sharedPreferences.edit();
+//        editor.putString(AppConstants.USER_PHONESTATUS,status);
+//        editor.apply();
+//
+//    }
 
     public void setUserContact(String contact){
         SharedPreferences sharedPreferences = activity.getSharedPreferences(AppConstants.PREF_NAME, Context.MODE_PRIVATE);
@@ -85,12 +85,12 @@ public void setUserImage(String image){
         return name;
     }
 
-    public String getUSER_PHONESTATUS() {
-        SharedPreferences sharedPreferences = activity.getSharedPreferences(AppConstants.PREF_NAME, Context.MODE_PRIVATE);
-        String status =  sharedPreferences.getString(AppConstants.USER_PHONESTATUS, null);
-        Log.d(TAG,"PHONESTATUS: "+status);
-        return status;
-    }
+//    public String getUSER_PHONESTATUS() {
+//        SharedPreferences sharedPreferences = activity.getSharedPreferences(AppConstants.PREF_NAME, Context.MODE_PRIVATE);
+//        String status =  sharedPreferences.getString(AppConstants.USER_PHONESTATUS, null);
+//        Log.d(TAG,"PHONESTATUS: "+status);
+//        return status;
+//    }
 
     public String getUSER_EMAIL() {
         SharedPreferences sharedPreferences = activity.getSharedPreferences(AppConstants.PREF_NAME, Context.MODE_PRIVATE);

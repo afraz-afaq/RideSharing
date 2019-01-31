@@ -130,7 +130,7 @@ public class PhoneVerification extends AppCompatActivity {
 
     private void changePhoneStatus(String status){
         FirebaseDatabase.getInstance().getReference().child("Users").child(uID).child("phonestatus").setValue(status);
-        preferencesClass.setUserPhoneStatus(status);
+        //preferencesClass.setUserPhoneStatus(status);
     }
 
     private void changePhoneNumber(){
