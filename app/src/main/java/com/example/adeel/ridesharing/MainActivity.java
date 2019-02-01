@@ -283,8 +283,12 @@ public class MainActivity extends AppCompatActivity  implements CarBottomSheet.G
 
 
     @Override
-    public void onDeleteStatusPassed(boolean deleteStatus) {
+    public void onDeleteStatusPassed(String deleteStatus) {
+        MyVehicles myVehicles = new MyVehicles();
+        Bundle bundle = new Bundle();
+        bundle.putString("deleteStatus",deleteStatus);
+        myVehicles.setArguments(bundle);
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                new MyCarsFragment()).commit();
+                myVehicles).commit();
     }
 }

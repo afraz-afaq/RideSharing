@@ -32,17 +32,20 @@ public class CarBottomSheet extends BottomSheetDialogFragment {
     private Button mDelete;
     private Button mCancel;
 
-    private boolean deleteStatus = false;
-    private String uId, carReg;
+    private String deleteStatus;
+    private String uId, vReg, from;
 
     View.OnClickListener deleteListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             Bundle bundle = getArguments();
             uId = bundle.getString("uId");
-            carReg = bundle.getString("carReg");
+            from = bundle.getString("from");
+            if(from.equals("car"))
+                vReg = bundle.getString("carReg");
+            else
+                vReg = bundle.getString("bikeReg");
 
-            Toast.makeText(getActivity(), uId+"     "+carReg, Toast.LENGTH_SHORT).show();
             deleteCar();
         }
     };
@@ -60,7 +63,7 @@ public class CarBottomSheet extends BottomSheetDialogFragment {
     }
 
     public interface GetDeleteStatus{
-        public void onDeleteStatusPassed(boolean deleteStatus);
+        public void onDeleteStatusPassed(String deleteStatus);
     }
 
     GetDeleteStatus getDeleteStatus;
@@ -72,7 +75,7 @@ public class CarBottomSheet extends BottomSheetDialogFragment {
 
 
 
-    private void getDeleteStatus(boolean deleteStatus
+    private void getDeleteStatus(String deleteStatus
     ){ getDeleteStatus.onDeleteStatusPassed(deleteStatus);}
 
 
@@ -92,18 +95,25 @@ public class CarBottomSheet extends BottomSheetDialogFragment {
 
 
     private void deleteCar(){
-        DatabaseReference carRef = FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("Cars").child(carReg);
+        DatabaseReference carRef;
+        if(from.equals("car")) {
+            carRef = FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("Cars").child(vReg);
+            deleteStatus = "car";
+        }
+        else {
+            carRef = FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("Bikes").child(vReg);
+            deleteStatus = "bike";
+        }
         carRef.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(task.isSuccessful()){
                     Toast.makeText(getActivity(), "Removed!!", Toast.LENGTH_SHORT).show();
-                    deleteStatus = true;
                     getDeleteStatus.onDeleteStatusPassed(deleteStatus);
                     CarBottomSheet.super.getDialog().cancel();
                 }
                 else{
-                    deleteStatus = false;
+                    deleteStatus = "false";
                     getDeleteStatus.onDeleteStatusPassed(deleteStatus);
                     Toast.makeText(getActivity(), task.getException().getMessage(), Toast.LENGTH_SHORT).show();
             }

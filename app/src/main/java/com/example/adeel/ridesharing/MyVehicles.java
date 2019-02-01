@@ -37,6 +37,17 @@ public class MyVehicles extends Fragment {
 
         mViewPager.setAdapter(mAdapter);
         mTabLayout.setupWithViewPager(mViewPager);
+
+        if(getArguments() != null) {
+            if(getArguments().getString("deleteStatus").equals("bike")) {
+                TabLayout.Tab tab = mTabLayout.getTabAt(1);
+                tab.select();
+            }
+            else{
+                TabLayout.Tab tab = mTabLayout.getTabAt(0);
+                tab.select();
+            }
+        }
         return rootView;
     }
 

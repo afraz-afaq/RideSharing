@@ -69,7 +69,8 @@ public class MyBikesFragment extends Fragment {
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 Bundle bundle = new Bundle();
                 bundle.putString("uId",mAuth.getUid());
-                bundle.putString("carReg",bikesArrayList.get(position).getmCarRegNo());
+                bundle.putString("bikeReg",bikesArrayList.get(position).getmCarRegNo());
+                bundle.putString("from","bike");
                 carBottomSheet = new CarBottomSheet();
                 carBottomSheet.setArguments(bundle);
                 carBottomSheet.show(getFragmentManager(),"");
