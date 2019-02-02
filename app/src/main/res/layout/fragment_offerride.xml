@@ -7,6 +7,42 @@
     android:orientation="vertical">
 
     <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:id="@+id/layout_offerVehicle"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Via"
+            android:textStyle="bold"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:layout_marginBottom="8dp"/>
+
+        <Button
+            android:id="@+id/button_viaCar"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="30dp"
+            android:textColor="@color/white"
+            android:background="@drawable/button_shapes"
+            android:elevation="10dp"
+            android:text="Car" />
+
+        <Button
+            android:id="@+id/button_viaBike"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:background="@drawable/button_shapes"
+            android:elevation="10dp"
+            android:text="Bike" />
+
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/layout_offer1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

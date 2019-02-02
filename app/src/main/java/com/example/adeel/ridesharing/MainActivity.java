@@ -135,7 +135,11 @@ public class MainActivity extends AppCompatActivity  implements CarBottomSheet.G
 
                         } else {
 
-                            checkCars();
+                            //checkCars();
+                            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                                    new OfferRideFragment()).commit();
+                            mNavigationView.setCheckedItem(R.id.nav_offferRide);
+                            mtoolbar.setTitle(R.string.offer_ride);
                         }
                         break;
                     case R.id.nav_myBookings:
@@ -255,30 +259,6 @@ public class MainActivity extends AppCompatActivity  implements CarBottomSheet.G
             mtoolbar.setTitle(R.string.profile);
         }
 
-    }
-    private void checkCars(){
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("Cars");
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.hasChildren()){
-                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                            new OfferRideFragment()).commit();
-                    mNavigationView.setCheckedItem(R.id.nav_offferRide);
-                    mtoolbar.setTitle(R.string.offer_ride);
-                }
-                else{
-                    PostHelpingMethod postHelpingMethod = new PostHelpingMethod(MainActivity.this);
-                    postHelpingMethod.snackbarMessage("No cars available to post a ride",findViewById(R.id.fragment_container));
-                }
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
     }
 
 

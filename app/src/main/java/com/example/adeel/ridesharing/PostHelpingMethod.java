@@ -58,6 +58,10 @@ public class PostHelpingMethod {
      return ((distance * 2.25) + (time * 1.55) + 40);
     }
 
+    public double getFare(double distance, double time,double perKM,double perMin,double base){
+        return ((distance * perKM) + (time * perMin) + base);
+    }
+
     public ProgressDialog createProgressDialog(String title,String message){
         ProgressDialog mDialog = new ProgressDialog(activity);
         mDialog.setTitle(title);

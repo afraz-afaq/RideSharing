@@ -63,29 +63,31 @@ import static com.example.adeel.ridesharing.MainActivity.mtoolbar;
 import static java.lang.Math.round;
 
 public class OfferRideFragment extends Fragment {
+
     private final String TAG = "PostRide2";
     private Animation fromTop,fromBottom;
     private Address mOriginAddress, mDestinationAddress;
-    private String mCar, mDateTime,mDepartTIme;
-    private Spinner mSeatsSpinnner, mCarSpinnner, mTimeSpinner;;
-    private LinearLayout mLayout1,mLayout2;
+    private String mVehicle, mDateTime,mDepartTIme, mTime, mSeats;
     private DatabaseReference mDatabaseReference;
-    private Button mSubmit,mButton_Publish;
+    private FirebaseAuth mAuth;
     private ArrayAdapter mSeatsAdapter, mCarAdapter, mTimeAdapter;
     private ArrayList mCarsList;
-    private double mDisitance, mDuration, mFare;
+    private double mDisitance, mDuration, mFare, mPerKM, mPerMin, mBase;
+    private boolean isCar;
+    private PreferencesClass preferencesClass;
+    private PostHelpingMethod postHelpingMethod;
+    //private LatLngBounds mLatLngBounds = new LatLngBounds(new LatLng(-40, -168), new LatLng(71, 136));
+    private LatLngBounds mLatLngBounds = new LatLngBounds(new LatLng(24, 67), new LatLng(25, 68));
+
+    private Button mSubmit,mButton_Publish,mButtonCar,mButtonBike;
+    private Spinner mSeatsSpinnner, mCarSpinnner, mTimeSpinner;
+    private LinearLayout mLayout1,mLayout2,mLayoutVia;
     private AutoCompleteTextView mDepart,mPickUpText;
     private Switch mRouteSwitch;
-    private PostHelpingMethod postHelpingMethod;
-    private FirebaseAuth mAuth;
     private Dialog mdialog;
-    private boolean flag = false;
     private PlaceAutocompleteAdapter mPlaceAutocompleteAdapter;
-    private String mTime, mSeats;
     private EditText mFurtherDetails;
     private View rootView;
-    private PreferencesClass preferencesClass;
-    private LatLngBounds mLatLngBounds = new LatLngBounds(new LatLng(-40, -168), new LatLng(71, 136));
 
 
 
@@ -100,7 +102,12 @@ public class OfferRideFragment extends Fragment {
         preferencesClass = new PreferencesClass(getActivity());
         mLayout1=rootView.findViewById(R.id.layout_offer1);
         mLayout2=rootView.findViewById(R.id.layout_offer2);
+        mLayoutVia=rootView.findViewById(R.id.layout_offerVehicle);
+        mLayout1.setVisibility(View.GONE);
+        mLayout2.setVisibility(View.GONE);
 
+        mButtonCar = rootView.findViewById(R.id.button_viaCar);
+        mButtonBike = rootView.findViewById(R.id.button_viaBike);
         mButton_Publish = rootView.findViewById(R.id.button_publish);
         mFurtherDetails = rootView.findViewById(R.id.message);
         mDepart = rootView.findViewById(R.id.depart);
@@ -120,6 +127,21 @@ public class OfferRideFragment extends Fragment {
 
         mTimeSpinner.setAdapter(mTimeAdapter);
         mSeatsSpinnner.setAdapter(mSeatsAdapter);
+
+        mButtonCar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkCars();
+            }
+        });
+
+        mButtonBike.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSeatsSpinnner.setEnabled(false);
+                checkBikes();
+            }
+        });
 
         mTimeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -146,7 +168,7 @@ public class OfferRideFragment extends Fragment {
         });
 
         mCarsList = new ArrayList();
-        populateCarsList();
+        //populateVehicleList();
         mCarAdapter = new ArrayAdapter(getActivity(),android.R.layout.simple_list_item_1,mCarsList);
         mCarSpinnner.setAdapter(mCarAdapter);
 
@@ -185,6 +207,8 @@ public class OfferRideFragment extends Fragment {
                     mTimeSpinner.setFocusable(true);
                 }
                else{
+                    mOriginAddress =  postHelpingMethod.geoLocateSearch(mPickUpText.getText().toString(),TAG);
+                    mDestinationAddress =  postHelpingMethod.geoLocateSearch(mDepart.getText().toString(),TAG);
                     mLayout1.setVisibility(View.GONE);
                     mLayout2.setVisibility(View.VISIBLE);
 
@@ -198,14 +222,12 @@ public class OfferRideFragment extends Fragment {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if (b) {
-                    flag = b;
                     mPickUpText.setEnabled(false);
                     mPickUpText.setAdapter(null);
                     mPickUpText.setText("Bahria University Karachi Campus, National Stadium Rd, Karachi, Karachi");
                     mDepart.getText().clear();
                     mDepart.setEnabled(true);
                 } else {
-                    flag = b;
                     setDestination();
                 }
             }
@@ -218,7 +240,7 @@ public class OfferRideFragment extends Fragment {
         mCarSpinnner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                mCar = adapterView.getItemAtPosition(i).toString();
+                mVehicle = adapterView.getItemAtPosition(i).toString();
 
             }
 
@@ -305,7 +327,7 @@ public class OfferRideFragment extends Fragment {
 
     private void getTimeFromServer(){
         String URLTime = "http://api.geonames.org/timezoneJSON?formatted=true&lat=24.86&lng=67.00&username=zauya&style=full";
-        Toast.makeText(getActivity(),"In method",Toast.LENGTH_LONG).show();
+       // Toast.makeText(getActivity(),"In method",Toast.LENGTH_LONG).show();
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
                 (Request.Method.GET, URLTime, null, new Response.Listener<JSONObject>() {
 
@@ -314,14 +336,12 @@ public class OfferRideFragment extends Fragment {
                         try {
                             mDateTime = response.getString("time");
 
-                            Date date = stringToDate(mDateTime);
-                            Toast.makeText(getActivity(),date.toString(),Toast.LENGTH_SHORT).show();
-                            Toast.makeText(getActivity(),formatDate(date)+"",Toast.LENGTH_SHORT).show();
-                            Toast.makeText(getActivity(),formatDate(new Date(date.getTime() + (Integer.parseInt(mTime) * 60000)))+"",Toast.LENGTH_SHORT).show();
+                               Date date = stringToDate(mDateTime);
+//                            Toast.makeText(getActivity(),date.toString(),Toast.LENGTH_SHORT).show();
+//                            Toast.makeText(getActivity(),formatDate(date)+"",Toast.LENGTH_SHORT).show();
+//                            Toast.makeText(getActivity(),formatDate(new Date(date.getTime() + (Integer.parseInt(mTime) * 60000)))+"",Toast.LENGTH_SHORT).show();
                             mDateTime = formatDate(date);
                             mDepartTIme = formatDate(new Date(date.getTime() + (Integer.parseInt(mTime) * 60000)));
-                            mOriginAddress =  postHelpingMethod.geoLocateSearch(mPickUpText.getText().toString(),TAG);
-                            mDestinationAddress =  postHelpingMethod.geoLocateSearch(mDepart.getText().toString(),TAG);
                             getParsedData(new LatLng(mOriginAddress.getLatitude(),mOriginAddress.getLongitude()),new LatLng(mDestinationAddress.getLatitude(),mDestinationAddress.getLongitude()));
                         } catch (JSONException e) {
                             Log.e(TAG, "Problem parsing the JSON results", e);
@@ -360,8 +380,8 @@ public class OfferRideFragment extends Fragment {
 
                     mDisitance = Double.parseDouble(df.format(distance/1000));
                     mDuration = round(duration/60);
-                    mFare = postHelpingMethod.getFare(mDisitance, mDuration);
-                    Toast.makeText(getActivity(),mDisitance+"  "+mDuration+"  "+mFare,Toast.LENGTH_LONG).show();
+                    mFare = postHelpingMethod.getFare(mDisitance, mDuration,mPerKM,mPerMin,mBase);
+                    //Toast.makeText(getActivity(),mDisitance+"  "+mDuration+"  "+mFare,Toast.LENGTH_LONG).show();
                     publishPost();
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -381,7 +401,8 @@ public class OfferRideFragment extends Fragment {
         final DatabaseReference postRef = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(key);
 
         HashMap<String,String> hashMap =  new HashMap<>();
-        hashMap.put("car",mCar.split("\\s+")[0]);
+        hashMap.put("isCar",Boolean.toString(isCar));
+        hashMap.put("vehicle",mVehicle.split("\\s+")[0]);
         hashMap.put("date",mDateTime);
         hashMap.put("departTime",mDepartTIme);
         hashMap.put("distance",String.valueOf(mDisitance));
@@ -449,10 +470,12 @@ public class OfferRideFragment extends Fragment {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm");
         return dateFormat.format(date);
     }
-    private void populateCarsList(){
-        final DatabaseReference carRef = mDatabaseReference.child("Cars");
-
-
+    private void populateVehicleList(){
+        final DatabaseReference carRef;
+        if(isCar)
+            carRef = mDatabaseReference.child("Cars");
+        else
+            carRef = mDatabaseReference.child("Bikes");
         carRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -474,6 +497,31 @@ public class OfferRideFragment extends Fragment {
             }
         });
     }
+
+    private void getRates(){
+        DatabaseReference databaseReference;
+        if(isCar)
+            databaseReference = FirebaseDatabase.getInstance().getReference().child("Price").child("Car");
+        else
+            databaseReference = FirebaseDatabase.getInstance().getReference().child("Price").child("Bike");
+
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                mBase = Double.parseDouble(dataSnapshot.child("base").getValue().toString());
+                mPerKM = Double.parseDouble(dataSnapshot.child("perkm").getValue().toString());
+                mPerMin = Double.parseDouble(dataSnapshot.child("permin").getValue().toString());
+                Log.d(TAG,mBase+" "+mPerKM+" "+mPerMin);
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
     private void setDestination() {
         mDepart.setEnabled(false);
         mPickUpText.setAdapter(mPlaceAutocompleteAdapter);
@@ -483,14 +531,63 @@ public class OfferRideFragment extends Fragment {
     }
 
 
+    private void checkCars(){
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("Cars");
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.hasChildren()){
+                    isCar = true;
+                    populateVehicleList();
+                    getRates();
+                    mLayoutVia.setVisibility(View.GONE);
+                    mLayout1.setVisibility(View.VISIBLE);
+                }
+                else{
+                    postHelpingMethod.snackbarMessage("No cars available to post a ride",rootView);
+                }
 
+            }
 
-    private void setupAnim() {
-        fromBottom = AnimationUtils.loadAnimation(getActivity(), R.anim.from_bottom);
-        mLayout1.setAnimation(fromBottom);
-        fromTop = AnimationUtils.loadAnimation(getActivity(), R.anim.fall_down);
-        mLayout2.setAnimation(fromTop);
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
+            }
+        });
     }
+
+    private void checkBikes(){
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("Bikes");
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.hasChildren()){
+                    isCar = false;
+                    populateVehicleList();
+                    getRates();
+                    mLayoutVia.setVisibility(View.GONE);
+                    mLayout1.setVisibility(View.VISIBLE);
+                }
+                else{
+                    postHelpingMethod.snackbarMessage("No bikes available to post a ride",rootView);
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+
+//    private void setupAnim() {
+//        fromBottom = AnimationUtils.loadAnimation(getActivity(), R.anim.from_bottom);
+//        mLayout1.setAnimation(fromBottom);
+//        fromTop = AnimationUtils.loadAnimation(getActivity(), R.anim.fall_down);
+//        mLayout2.setAnimation(fromTop);
+//
+//    }
 
 }
