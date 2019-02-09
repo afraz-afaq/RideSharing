@@ -2,6 +2,7 @@ package com.example.adeel.ridesharing;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -92,7 +93,7 @@ public class FindRideCellAdapter extends ArrayAdapter<FindRideItem> {
         viewHolder.carName.setText(item.getCarName());
         viewHolder.carColor.setText(item.getCarColor());
         viewHolder.carReg.setText(item.getCarReg());
-
+        Log.v("Tesing","-> "+item.getImage());
         GlideApp.with(getContext()).load(item.getImage()).into(viewHolder.imageView);
 
 

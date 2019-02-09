@@ -1,5 +1,6 @@
 package com.example.adeel.ridesharing;
 
+import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -12,6 +13,7 @@ import android.support.annotation.Nullable;
 import android.support.constraint.solver.widgets.Snapshot;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,8 +36,11 @@ import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -46,13 +51,16 @@ import com.google.firebase.storage.StorageReference;
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.ramotion.foldingcell.FoldingCell;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class FindRideFragment extends Fragment {
 
     public static String TAG = "FIND RIDE";
 
     private Spinner mDriver, mSeats;
+    private ProgressDialog progressDialog;
     private int iDriver = 0, iSeats = 0;
     private Switch mRouteSwitch;
     private Button mFindRide;
@@ -62,20 +70,23 @@ public class FindRideFragment extends Fragment {
     private boolean flag = false;
     View rootView;
     private StorageReference mStorageRef;
+    private FirebaseAuth mAuth;
     private FindRideCellAdapter adapter;
     ArrayList<FindRideItem> findRideItems;
     PostHelpingMethod postHelpingMethod;
-    private LatLngBounds mLatLngBounds = new LatLngBounds(new LatLng(24.926294, 67.022095), new LatLng(71, 136));
+    private LatLngBounds mLatLngBounds = new LatLngBounds(new LatLng(24, 67), new LatLng(25, 68));
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
          rootView = inflater.inflate(R.layout.fragment_findride, container, false);
         mStorageRef = FirebaseStorage.getInstance().getReference();
+        mAuth = FirebaseAuth.getInstance();
         findRideItems = new ArrayList<>();
         postHelpingMethod = new PostHelpingMethod(getActivity());
         mDriver = rootView.findViewById(R.id.spinner_driver);
         mSeats = rootView.findViewById(R.id.spinner_seat);
+        progressDialog = postHelpingMethod.createProgressDialog("Searching...,", "Finding nearby rides for you");
 
         spinnerDriver();
         spinnerSeat();
@@ -155,14 +166,7 @@ public class FindRideFragment extends Fragment {
     private void populateListView() {
 
         ListView theListView = rootView.findViewById(R.id.ListView_findRide);
-        final ArrayList<FindRideItem> items = FindRideItem.getTestingList();
         populateFindList();
-        items.get(0).setRequestBtnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(getActivity(), "CUSTOM HANDLER FOR FIRST BUTTON", Toast.LENGTH_SHORT).show();
-            }
-        });
          adapter = new FindRideCellAdapter(getActivity(), findRideItems);
         adapter.setDefaultRequestBtnClickListener(new View.OnClickListener() {
             @Override
@@ -251,6 +255,7 @@ public class FindRideFragment extends Fragment {
     }
 
     private void populateFindList(){
+        progressDialog.show();
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active");
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -273,21 +278,46 @@ public class FindRideFragment extends Fragment {
                         }
 
                         if(postHelpingMethod.withInRange(latLng,latLngUser) && Integer.parseInt(getString(iSeats))<= Integer.parseInt(snapShotToString(snapshotposts,"seats"))){
-                            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("Cars").child(snapShotToString(snapshotposts,"car"));
+                            DatabaseReference databaseReference;
+                            if(snapShotToString(snapshotposts,"isCar").equals("true"))
+                                databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("Cars").child(snapShotToString(snapshotposts,"vehicle"));
+                            else
+                                databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("Bikes").child(snapShotToString(snapshotposts,"vehicle"));
+                            Log.v(TAG,"-> "+snapshotposts);
                             databaseReference.addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
 
-
-                                    String path = uId+".jpg";
+                                    Log.v(TAG,"2-> "+dataSnapshot);
+                                    String path = uId;
                                     mStorageRef.child(path).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                                         @Override
                                         public void onSuccess(Uri uri) {
                                             String imageURL = uri.toString();
-
-                                            FindRideItem findRideItem = new FindRideItem(uId,postId,snapShotToString(snapshotposts,"fare"),snapShotToString(snapshotposts.child("Origin"),"name"),snapShotToString(snapshotposts.child("Destination"),"name"),snapShotToString(snapshotposts,"seats"),snapShotToString(snapshotposts,"distance"),snapShotToString(snapshotposts,"departTime"),
-                                                    snapShotToString(dataSnapshot,"name"),snapShotToString(dataSnapshot,"color"),snapShotToString(snapshotposts,"car"),snapShotToString(snapshotposts,"name"),imageURL);
+                                            String fare = snapShotToString(snapshotposts,"fare");
+                                            DecimalFormat df = new DecimalFormat();
+                                            df.setMaximumFractionDigits(1);
+                                            FindRideItem findRideItem = new FindRideItem(uId,postId,df.format(Double.parseDouble(fare)),snapShotToString(snapshotposts.child("Origin"),"name"),snapShotToString(snapshotposts.child("Destination"),"name"),snapShotToString(snapshotposts,"seats"),snapShotToString(snapshotposts,"distance"),snapShotToString(snapshotposts,"departTime"),
+                                                    snapShotToString(dataSnapshot,"name"),snapShotToString(dataSnapshot,"color"),snapShotToString(snapshotposts,"vehicle"),snapShotToString(snapshotposts,"name"),imageURL);
                                             findRideItems.add(findRideItem);
+                                            final int index = findRideItems.size()-1;
+                                            findRideItems.get(index).setRequestBtnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View v) {
+                                                    Toast.makeText(getActivity(), findRideItems.get(index).getPostId(), Toast.LENGTH_SHORT).
+                                                            show();
+                                                    DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Requests").child(findRideItems.get(index).getPostId());
+                                                    databaseReference1.child(mAuth.getUid()).child("status").setValue("pending");
+
+                                                    DatabaseReference databaseReference2 = FirebaseDatabase.getInstance().getReference().child("Find").child("Pending").child(mAuth.getUid());
+                                                    HashMap<String,String> hashMap = new HashMap<String, String>();
+                                                    hashMap.put("postId",findRideItems.get(index).getPostId());
+                                                    hashMap.put("driver",findRideItems.get(index).getDriverUid());
+                                                    databaseReference2.setValue(hashMap);
+
+                                                }
+                                            });
+
                                             adapter.notifyDataSetChanged();
 
                                         }
@@ -297,8 +327,6 @@ public class FindRideFragment extends Fragment {
                                             Toast.makeText(getActivity(),exception.toString(),Toast.LENGTH_LONG).show();
                                         }
                                     });
-
-
                                 }
 
                                 @Override
@@ -311,6 +339,8 @@ public class FindRideFragment extends Fragment {
                         }
                     }
                 }
+
+                progressDialog.cancel();
             }
 
             @Override
