@@ -36,6 +36,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
+
+import java.util.HashMap;
 
 public class LoginActivity extends AppCompatActivity {
     private  static String TAG = "LOGIN";
@@ -103,6 +107,29 @@ public class LoginActivity extends AppCompatActivity {
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                 if (user != null) {
+                    FirebaseInstanceId.getInstance().getInstanceId()
+                            .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                                    if (!task.isSuccessful()) {
+                                        Log.w(TAG, "getInstanceId failed", task.getException());
+                                        return;
+                                    }
+
+                                    // Get new Instance ID token
+                                    String token = task.getResult().getToken();
+
+
+                                    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid());
+
+                                    databaseReference.child("token").setValue(token);
+                                    // Log ""and toasten
+                                    //String msg = getString(R.string.msg_token_fmt, token);
+                                    //Log.d(TAG, msg);
+                                    //Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+
+                                }
+                            });
                     if (preferencesClass.getUSER_NAME() == null) {
                         progressDialog.show(); //Added
                         savePreferences();
