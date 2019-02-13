@@ -49,10 +49,10 @@
     <string name="changePhone_description2">We will send you a verification code to reset your phone number.</string>
     <string name="show_all">Show All</string>
     <string name="email">Enter your email</string>
-    <string name="past_bookings">Past Bookings</string>
-    <string name="today_bookings">Today Bookings</string>
-    <string name="canceled_bookings">Canceled Bookings</string>
-    <string name="complete_bookings">Complete Bookings</string>
+    <string name="past_bookings">Active</string>
+    <string name="today_bookings">Pending</string>
+    <string name="canceled_bookings">Canceled</string>
+    <string name="complete_bookings">Completed</string>
     <string name="api_key">AIzaSyAvjbA-nZFGriv5J-OP1GDH-EYFLe0u28c</string>
 
     <string-array name="cars">

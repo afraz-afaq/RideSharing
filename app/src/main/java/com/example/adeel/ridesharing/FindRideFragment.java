@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Location;
 import android.net.Uri;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -51,8 +52,12 @@ import com.google.firebase.storage.StorageReference;
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.ramotion.foldingcell.FoldingCell;
 
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 public class FindRideFragment extends Fragment {
@@ -234,13 +239,13 @@ public class FindRideFragment extends Fragment {
                 String selection = (String) adapterView.getItemAtPosition(i);
                 if (!TextUtils.isEmpty(selection)) {
                     if (selection.equals(getString(R.string.sno1))) {
-                        iSeats = R.string.sno1;
+                        iSeats = 1;
                     } else if (selection.equals(getString(R.string.sno2))) {
-                        iSeats = R.string.sno2;
+                        iSeats = 2;
                     } else if (selection.equals(getString(R.string.sno3))) {
-                        iSeats = R.string.sno3;
+                        iSeats = 3;
                     } else {
-                        iSeats = R.string.sno4;
+                        iSeats = 4;
                     }
                 }
             }
@@ -260,6 +265,7 @@ public class FindRideFragment extends Fragment {
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                findRideItems.clear();
                 for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
                     final String uId = snapshot.getKey();
                     for (final DataSnapshot snapshotposts:snapshot.getChildren()) {
@@ -277,7 +283,24 @@ public class FindRideFragment extends Fragment {
                             latLngUser = new LatLng(userOrigin.getLatitude(),userOrigin.getLongitude());
                         }
 
-                        if(postHelpingMethod.withInRange(latLng,latLngUser) && Integer.parseInt(getString(iSeats))<= Integer.parseInt(snapShotToString(snapshotposts,"seats"))){
+                        String dateTime = snapshotposts.child("departTime").getValue().toString();
+
+                        Date datePost = new Date();
+                        Date curDate = new Date();
+
+                        String strDateFormat = "yyyy-MM-dd HH:mm";
+                        DateFormat dateFormat = new SimpleDateFormat(strDateFormat);
+                        String curDateString = dateFormat.format(curDate);
+
+                        try {
+                            datePost = new OfferRideFragment().stringToDate(new OfferRideFragment().formatDate(new OfferRideFragment().stringToDate(dateTime)));
+                            curDate = new OfferRideFragment().stringToDate(curDateString);
+                            Log.v(TAG,"Current: "+curDate+" PostDate: "+datePost+ (datePost.compareTo(curDate) < 0? "No Ride" : "Ride hai"));
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+
+                        if(postHelpingMethod.withInRange(latLng,latLngUser) && iSeats<= Integer.parseInt(snapShotToString(snapshotposts,"seats")) && !(datePost.compareTo(curDate) < 0)){
                             DatabaseReference databaseReference;
                             if(snapShotToString(snapshotposts,"isCar").equals("true"))
                                 databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("Cars").child(snapShotToString(snapshotposts,"vehicle"));
@@ -315,10 +338,14 @@ public class FindRideFragment extends Fragment {
                                                     hashMap.put("driver",findRideItems.get(index).getDriverUid());
                                                     databaseReference2.setValue(hashMap);
 
+
                                                 }
                                             });
 
+                                            Log.v(TAG,"Hello");
                                             adapter.notifyDataSetChanged();
+
+
 
                                         }
                                     }).addOnFailureListener(new OnFailureListener() {

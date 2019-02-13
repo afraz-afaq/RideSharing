@@ -362,7 +362,7 @@ public class OfferRideFragment extends Fragment {
     private void getParsedData(LatLng origin, LatLng destination) {
         String originLatLng = origin.latitude+","+origin.longitude;
         String destinationLatLng = destination.latitude+","+destination.longitude;
-        String URL = "https://maps.googleapis.com/maps/api/directions/json?origin="+originLatLng+"&destination="+destinationLatLng+"&key=AIzaSyAQjza9vSMtTjbNtdbDrbev6cp9_mbt8Fk"; //"https://api.myjson.com/bins/k1nd0";
+        String URL = "https://api.myjson.com/bins/k1nd0";//"https://maps.googleapis.com/maps/api/directions/json?origin="+originLatLng+"&destination="+destinationLatLng+"&key=AIzaSyAQjza9vSMtTjbNtdbDrbev6cp9_mbt8Fk";
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, URL, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
@@ -400,7 +400,7 @@ public class OfferRideFragment extends Fragment {
         String key = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).push().getKey();
         final DatabaseReference postRef = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(key);
 
-        HashMap<String,String> hashMap =  new HashMap<>();
+        HashMap<String,Object> hashMap =  new HashMap<>();
         hashMap.put("isCar",Boolean.toString(isCar));
         hashMap.put("vehicle",mVehicle.split("\\s+")[0]);
         hashMap.put("date",mDateTime);
@@ -426,32 +426,43 @@ public class OfferRideFragment extends Fragment {
         destination.put("lng",String.valueOf(mDestinationAddress.getLongitude()));
         destination.put("name",mDepart.getText().toString());
 
+        hashMap.put("Origin",origin);
+        hashMap.put("Destination",destination);
+
         postRef.setValue(hashMap).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(task.isSuccessful()){
 
-                    DatabaseReference originRef = postRef.child("Origin");
-                    DatabaseReference destinationRef = postRef.child("Destination");
+                    Toast.makeText(getActivity(), "Ride Posted Successfully!", Toast.LENGTH_SHORT).show();
+                    mdialog.cancel();
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                            new MyBookingFragment()).commit();
+                    mNavigationView.setCheckedItem(R.id.nav_myBookings);
+                    mtoolbar.setTitle(R.string.my_bookings);
 
-                    originRef.setValue(origin);
-                    destinationRef.setValue(destination).addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if(task.isSuccessful()){
 
-                                Toast.makeText(getActivity(), "Ride Posted Successfully!", Toast.LENGTH_SHORT).show();
-                                mdialog.cancel();
-                                getFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                                        new MyBookingFragment()).commit();
-                                mNavigationView.setCheckedItem(R.id.nav_myBookings);
-                                mtoolbar.setTitle(R.string.my_bookings);
-                            }
-                            else{
-                                Toast.makeText(getActivity(), task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
+//                    DatabaseReference originRef = postRef.child("Origin");
+//                    DatabaseReference destinationRef = postRef.child("Destination");
+//
+//                    originRef.setValue(origin);
+//                    destinationRef.setValue(destination).addOnCompleteListener(new OnCompleteListener<Void>() {
+//                        @Override
+//                        public void onComplete(@NonNull Task<Void> task) {
+//                            if(task.isSuccessful()){
+//
+//                                Toast.makeText(getActivity(), "Ride Posted Successfully!", Toast.LENGTH_SHORT).show();
+//                                mdialog.cancel();
+//                                getFragmentManager().beginTransaction().replace(R.id.fragment_container,
+//                                        new MyBookingFragment()).commit();
+//                                mNavigationView.setCheckedItem(R.id.nav_myBookings);
+//                                mtoolbar.setTitle(R.string.my_bookings);
+//                            }
+//                            else{
+//                                Toast.makeText(getActivity(), task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+//                            }
+//                        }
+//                    });
 
                 }
                 else{
@@ -461,13 +472,13 @@ public class OfferRideFragment extends Fragment {
         });
 
     }
-    private Date stringToDate(String mDateTime) throws ParseException {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm");
+    public Date stringToDate(String mDateTime) throws ParseException {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         return dateFormat.parse(mDateTime);
     }
 
-    private String formatDate(Date date){
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm");
+    public String formatDate(Date date){
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         return dateFormat.format(date);
     }
     private void populateVehicleList(){

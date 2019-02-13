@@ -25,6 +25,7 @@
 
     </android.support.v7.widget.CardView>
 
+
     <ListView
         android:id="@+id/listView_offered"
         android:layout_width="match_parent"

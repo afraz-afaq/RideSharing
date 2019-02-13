@@ -13,7 +13,14 @@
     </string-array>
 
     <string-array name="bookings_options">
+        <item>@string/past_bookings</item>
         <item>@string/today_bookings</item>
+        <item>@string/canceled_bookings</item>
+        <item>@string/complete_bookings</item>
+    </string-array>
+
+
+    <string-array name="bookings_options_driver">
         <item>@string/past_bookings</item>
         <item>@string/canceled_bookings</item>
         <item>@string/complete_bookings</item>
