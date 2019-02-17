@@ -1,17 +1,18 @@
 package com.example.adeel.ridesharing;
 
+import android.view.View;
 import android.widget.Button;
 
 public class Request {
-    String mName,mSeats,mLoc;
-    Button mConfirm,mCancel;
+    String mName, mSeats, mLoc;
+    View.OnClickListener cancelOnClickListener, acceptOnClickListener;
 
-    public Request(String mName, String mSeats, String mLoc, Button mConfirm, Button mCancel) {
+    public Request(String mName, String mSeats, String mLoc, View.OnClickListener cancelOnClickListener, View.OnClickListener acceptOnClickListener) {
         this.mName = mName;
         this.mSeats = mSeats;
         this.mLoc = mLoc;
-        this.mConfirm = mConfirm;
-        this.mCancel = mCancel;
+        this.cancelOnClickListener = cancelOnClickListener;
+        this.acceptOnClickListener = acceptOnClickListener;
     }
 
     public String getmName() {
@@ -38,19 +39,19 @@ public class Request {
         this.mLoc = mLoc;
     }
 
-    public Button getmConfirm() {
-        return mConfirm;
+    public View.OnClickListener getCancelOnClickListener() {
+        return cancelOnClickListener;
     }
 
-    public void setmConfirm(Button mConfirm) {
-        this.mConfirm = mConfirm;
+    public void setCancelOnClickListener(View.OnClickListener cancelOnClickListener) {
+        this.cancelOnClickListener = cancelOnClickListener;
     }
 
-    public Button getmCancel() {
-        return mCancel;
+    public View.OnClickListener getAcceptOnClickListener() {
+        return acceptOnClickListener;
     }
 
-    public void setmCancel(Button mCancel) {
-        this.mCancel = mCancel;
+    public void setAcceptOnClickListener(View.OnClickListener acceptOnClickListener) {
+        this.acceptOnClickListener = acceptOnClickListener;
     }
 }

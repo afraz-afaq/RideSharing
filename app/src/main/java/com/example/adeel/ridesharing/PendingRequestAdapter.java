@@ -36,8 +36,12 @@ public class PendingRequestAdapter extends ArrayAdapter<Request> {
         name.setText(req.getmName());
         loc.setText(req.getmLoc());
         seats.setText(req.getmSeats());
+        confirm.setOnClickListener(req.getAcceptOnClickListener());
+        cancel.setOnClickListener(req.getCancelOnClickListener());
 
         return listViewItem;
     }
+
+
 
 }

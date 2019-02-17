@@ -184,7 +184,7 @@ public class FindRideFragment extends Fragment {
                                                             Toast.makeText(getActivity(), findRideItems.get(index).getPostId(), Toast.LENGTH_SHORT).
                                                                     show();
                                                             DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Requests").child(findRideItems.get(index).getPostId()).child("Pending").child(mAuth.getUid());
-                                                            databaseReference1.child("seats").setValue(findRideItems.get(index).getSeats());
+                                                            databaseReference1.child("seats").setValue(iSeats);
                                                             if(flag)
                                                                 databaseReference1.child("location").setValue(findRideItems.get(index).getToAddress());
                                                             else

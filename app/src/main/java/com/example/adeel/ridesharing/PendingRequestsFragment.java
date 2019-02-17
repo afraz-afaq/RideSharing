@@ -4,10 +4,12 @@ package com.example.adeel.ridesharing;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -27,20 +29,51 @@ public class PendingRequestsFragment extends Fragment {
     private ArrayList<Request> requestArrayList;
     private ListView requestList;
     private PendingRequestAdapter pendingRequestAdapter;
-    private DatabaseReference databaseReferencePendingList;
     private DatabaseReference databaseReferenceActive;
     private FirebaseAuth mAuth;
     private ValueEventListener getPendingList = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            requestArrayList.clear();
             if(dataSnapshot.hasChildren()){
-                for (DataSnapshot snapshot:dataSnapshot.getChildren()) {
+                for (final DataSnapshot snapshot:dataSnapshot.getChildren()) {
                     String postId = snapshot.getKey();
-                    databaseReferencePendingList = FirebaseDatabase.getInstance().getReference().child("Requests").child(postId).child("Pending");
+                    DatabaseReference databaseReferencePendingList = FirebaseDatabase.getInstance().getReference().child("Requests").child(postId).child("Pending");
                     databaseReferencePendingList.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            if(dataSnapshot.hasChildren()){
+                                for (final DataSnapshot snapshot1:dataSnapshot.getChildren()) {
+                                    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot1.getKey());
+                                    databaseReference.addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
+                                            Log.v("Info",dataSnapshot+"");
+                                            View.OnClickListener cancelEvent = new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View view) {
+                                                    Toast.makeText(getActivity(), "Canceled "+dataSnapshot, Toast.LENGTH_SHORT).show();
+                                                }
+                                            };
 
+                                            View.OnClickListener acceptEvent = new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View view) {
+                                                    Toast.makeText(getActivity(), "Accepted "+dataSnapshot, Toast.LENGTH_SHORT).show();
+                                                }
+                                            };
+                                            requestArrayList.add(new Request(dataSnapshot.child("name").getValue().toString(),snapshot1.child("seats").getValue().toString(),snapshot1.child("location").getValue().toString(), cancelEvent,acceptEvent));
+                                            pendingRequestAdapter.notifyDataSetChanged();
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                        }
+                                    });
+                                }
+
+                            }
                         }
 
                         @Override
@@ -87,4 +120,9 @@ public class PendingRequestsFragment extends Fragment {
         databaseReferenceActive.addValueEventListener(getPendingList);
     }
 
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        databaseReferenceActive.removeEventListener(getPendingList);
+    }
 }

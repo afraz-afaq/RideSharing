@@ -68,7 +68,7 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:drawableTint="@color/colorAccent"
-            android:text="Confirm"
+            android:text="Accept"
             android:drawableLeft="@drawable/ic_action_confirm"
             android:layout_height="wrap_content" />
 

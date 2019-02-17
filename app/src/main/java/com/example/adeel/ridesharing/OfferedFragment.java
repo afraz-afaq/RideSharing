@@ -45,7 +45,7 @@ public class OfferedFragment extends Fragment {
     private Button start, cancel;
     private ListView offeredListView;
     private CardView activePost;
-
+    Boolean checkCancel = false;
     private String postID;
     private FirebaseAuth mAuth;
     private ArrayList<HistoryPost> historyPosts;
@@ -157,7 +157,7 @@ public class OfferedFragment extends Fragment {
             switch (which){
                 case DialogInterface.BUTTON_POSITIVE:
                     //Yes button clicked
-
+                    checkCancel = true;
                     new AsyncTask<Void,Void,String>(){
                         @Override
                         protected String doInBackground(Void... voids) {
@@ -316,7 +316,8 @@ public class OfferedFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        databaseReference.removeEventListener(cancelPost);
+        if(checkCancel)
+            databaseReference.removeEventListener(cancelPost);
         databaseReferenceActive.removeEventListener(showActivePost);
     }
 }
