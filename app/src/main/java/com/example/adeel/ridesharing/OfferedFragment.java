@@ -50,7 +50,47 @@ public class OfferedFragment extends Fragment {
     private FirebaseAuth mAuth;
     private ArrayList<HistoryPost> historyPosts;
     private  HistoryAdapter historyPostArrayAdapter;
+    DatabaseReference databaseReferenceActive = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid());
     private DatabaseReference databaseReference;
+
+
+    ValueEventListener showActivePost = new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            if(dataSnapshot.hasChildren()){
+
+                activePost.setVisibility(View.VISIBLE);
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                    postID = snapshot.getKey();
+                    from.setText(snapshot.child("Origin").child("name").getValue().toString());
+                    to.setText(snapshot.child("Destination").child("name").getValue().toString());
+                    seats.setText(snapshot.child("seats").getValue().toString());
+                    distance.setText(snapshot.child("distance").getValue().toString()+"KM");
+                    time.setText(snapshot.child("departTime").getValue().toString().split("\\s+")[1]);
+                    price.setText(snapshot.child("fare").getValue().toString()+"Rs");
+                    if(snapshot.child("onway").getValue().toString().equals("false")){
+                        start.setText("START");
+                    }
+                    else{
+                        start.setText("COMPLETED");
+                    }
+                }
+            }
+            else
+            {
+                Toast.makeText(getActivity(), "No Active Post", Toast.LENGTH_LONG).show();
+
+                activePost.setVisibility(View.GONE);
+            }
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+        }
+    };
+
 
     ValueEventListener cancelPost = new ValueEventListener() {
 
@@ -241,43 +281,8 @@ public class OfferedFragment extends Fragment {
 
     private void showActive(){
         offeredListView.setVisibility(View.GONE);
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid());
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.hasChildren()){
 
-                    activePost.setVisibility(View.VISIBLE);
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-
-                        postID = snapshot.getKey();
-                        from.setText(snapshot.child("Origin").child("name").getValue().toString());
-                        to.setText(snapshot.child("Destination").child("name").getValue().toString());
-                        seats.setText(snapshot.child("seats").getValue().toString());
-                        distance.setText(snapshot.child("distance").getValue().toString()+"KM");
-                        time.setText(snapshot.child("departTime").getValue().toString().split("\\s+")[1]);
-                        price.setText(snapshot.child("fare").getValue().toString()+"Rs");
-                        if(snapshot.child("onway").getValue().toString().equals("false")){
-                            start.setText("START");
-                        }
-                        else{
-                            start.setText("COMPLETED");
-                        }
-                    }
-                }
-                else
-                {
-                    Toast.makeText(getActivity(), "No Active Post", Toast.LENGTH_LONG).show();
-
-                    activePost.setVisibility(View.GONE);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        databaseReferenceActive.addValueEventListener(showActivePost);
 
     }
 
@@ -312,5 +317,6 @@ public class OfferedFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         databaseReference.removeEventListener(cancelPost);
+        databaseReferenceActive.removeEventListener(showActivePost);
     }
 }
