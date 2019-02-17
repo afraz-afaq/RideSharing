@@ -1,6 +1,7 @@
 package com.example.adeel.ridesharing;
 
 import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,6 +19,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -26,7 +28,14 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
+
 import java.util.ArrayList;
+
+import fcm.androidtoandroid.FirebasePush;
+import fcm.androidtoandroid.connection.PushNotificationTask;
+import fcm.androidtoandroid.model.Notification;
 
 public class OfferedFragment extends Fragment {
 
@@ -37,9 +46,70 @@ public class OfferedFragment extends Fragment {
     private ListView offeredListView;
     private CardView activePost;
 
+    private String postID;
     private FirebaseAuth mAuth;
     private ArrayList<HistoryPost> historyPosts;
     private  HistoryAdapter historyPostArrayAdapter;
+    private DatabaseReference databaseReference;
+
+    ValueEventListener cancelPost = new ValueEventListener() {
+
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            FirebaseDatabase.getInstance().getReference().child("Posts").child("Canceled").child(mAuth.getUid()).setValue(dataSnapshot.getValue());
+
+            final FirebasePush firebasePush = new FirebasePush("AIzaSyDARseKL-2opSy4uMzLigTdjv-Mo6AyTsQ") ;
+            firebasePush.setAsyncResponse(new PushNotificationTask.AsyncResponse() {
+                @Override
+                public void onFinishPush(@NotNull String ouput) {
+                    Log.e("OUTPUT", ouput);
+                }
+            });
+            firebasePush.setNotification(new Notification("Ride Canceled","Sorry but your ride has been canceled by the driver"));
+            final JSONArray jsonArray = new JSONArray();
+
+            DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID);
+            databaseReference1.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if(dataSnapshot.hasChildren()){
+                        for (DataSnapshot snapshot:dataSnapshot.getChildren()) {
+
+                            Log.v("token user",snapshot.getKey());
+                            DatabaseReference userRefToken = FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot.getKey()).child("token");
+                            userRefToken.addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    String token = dataSnapshot.getValue().toString();
+                                    Log.v("token",token);
+                                    firebasePush.sendToToken(token);
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+
+                        }
+
+
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+        }
+    };
 
     DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
         @Override
@@ -47,6 +117,24 @@ public class OfferedFragment extends Fragment {
             switch (which){
                 case DialogInterface.BUTTON_POSITIVE:
                     //Yes button clicked
+
+                    new AsyncTask<Void,Void,String>(){
+                        @Override
+                        protected String doInBackground(Void... voids) {
+                            databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid());
+                            databaseReference.addValueEventListener(cancelPost);
+                            return null;
+                        }
+
+                        @Override
+                        protected void onPostExecute(String s) {
+                            super.onPostExecute(s);
+                            databaseReference.removeEventListener(cancelPost);
+                            FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").removeValue();
+                            Toast.makeText(getActivity(), postID, Toast.LENGTH_SHORT).show();
+                        }
+                    }.execute();
+
                     break;
 
                 case DialogInterface.BUTTON_NEGATIVE:
@@ -91,6 +179,21 @@ public class OfferedFragment extends Fragment {
             }
         });
 
+        start.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(start.getText().toString().equals("START")){
+                    Toast.makeText(getActivity(), "Notify All", Toast.LENGTH_SHORT).show();
+                    FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postID).child("onway").setValue("true");
+                    start.setText("COMPLETED");
+                }
+                else{
+                    Toast.makeText(getActivity(), "Ride Completed", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+
         spinnerOffredOptions();
         return rootView;
     }
@@ -108,8 +211,6 @@ public class OfferedFragment extends Fragment {
                 if (!TextUtils.isEmpty(selection)){
                     if (selection.equals(getString(R.string.past_bookings))){
                         iOffredOptions=R.string.past_bookings;
-                        offeredListView.setVisibility(View.GONE);
-                        activePost.setVisibility(View.VISIBLE);
                         showActive();
                     }
                     else if (selection.equals(getString(R.string.canceled_bookings))){
@@ -145,18 +246,30 @@ public class OfferedFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.hasChildren()){
+
+                    activePost.setVisibility(View.VISIBLE);
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                        postID = snapshot.getKey();
                         from.setText(snapshot.child("Origin").child("name").getValue().toString());
                         to.setText(snapshot.child("Destination").child("name").getValue().toString());
                         seats.setText(snapshot.child("seats").getValue().toString());
                         distance.setText(snapshot.child("distance").getValue().toString()+"KM");
                         time.setText(snapshot.child("departTime").getValue().toString().split("\\s+")[1]);
                         price.setText(snapshot.child("fare").getValue().toString()+"Rs");
+                        if(snapshot.child("onway").getValue().toString().equals("false")){
+                            start.setText("START");
+                        }
+                        else{
+                            start.setText("COMPLETED");
+                        }
                     }
                 }
                 else
                 {
+                    Toast.makeText(getActivity(), "No Active Post", Toast.LENGTH_LONG).show();
 
+                    activePost.setVisibility(View.GONE);
                 }
             }
 
@@ -195,4 +308,9 @@ public class OfferedFragment extends Fragment {
 
     }
 
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        databaseReference.removeEventListener(cancelPost);
+    }
 }

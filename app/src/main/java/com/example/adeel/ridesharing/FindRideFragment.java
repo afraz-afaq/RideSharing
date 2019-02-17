@@ -5,9 +5,11 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
 import android.nfc.Tag;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -23,6 +25,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -52,6 +55,7 @@ import com.google.firebase.storage.StorageReference;
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.ramotion.foldingcell.FoldingCell;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -59,6 +63,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class FindRideFragment extends Fragment {
 
@@ -80,6 +87,158 @@ public class FindRideFragment extends Fragment {
     ArrayList<FindRideItem> findRideItems;
     PostHelpingMethod postHelpingMethod;
     private LatLngBounds mLatLngBounds = new LatLngBounds(new LatLng(24, 67), new LatLng(25, 68));
+    LatLng latLng;
+    LatLng latLngUser;
+
+
+    ValueEventListener findRideListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
+            findRideItems.clear();
+            if(dataSnapshot.hasChildren()) {
+
+                progressDialog.show();
+                //Address address;
+                final String depart = mDepart.getText().toString();
+                final String pickup = mPickUpText.getText().toString();
+
+
+                new AsyncTask<String,Void,Address>(){
+
+                    @Override
+                    protected Address doInBackground(String... strings) {
+                        Address Add;
+                        if (flag) {
+
+                            Add = postHelpingMethod.geoLocateSearch(depart, TAG);
+
+                        } else {
+
+                            Add = postHelpingMethod.geoLocateSearch(pickup, TAG);
+                        }
+
+                        return Add;
+                    }
+
+                    @Override
+                    protected void onPostExecute(Address address1) {
+
+                        latLngUser = new LatLng(address1.getLatitude(), address1.getLongitude());
+
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            final String uId = snapshot.getKey();
+                            for (final DataSnapshot snapshotposts : snapshot.getChildren()) {
+                                final String postId = snapshotposts.getKey();
+
+                                if (flag) {
+                                    latLng = new LatLng(getDouble(snapshotposts.child("Destination").child("lat")), getDouble(snapshotposts.child("Destination").child("lng")));
+
+                                } else {
+                                    latLng = new LatLng(getDouble(snapshotposts.child("Origin").child("lat")), getDouble(snapshotposts.child("Origin").child("lng")));
+                                }
+
+                                String dateTime = snapshotposts.child("departTime").getValue().toString();
+
+                                Date datePost = new Date();
+                                Date curDate = new Date();
+
+                                String strDateFormat = "yyyy-MM-dd HH:mm";
+                                DateFormat dateFormat = new SimpleDateFormat(strDateFormat);
+                                String curDateString = dateFormat.format(curDate);
+
+                                try {
+                                    datePost = new OfferRideFragment().stringToDate(new OfferRideFragment().formatDate(new OfferRideFragment().stringToDate(dateTime)));
+                                    curDate = new OfferRideFragment().stringToDate(curDateString);
+                                    Log.v(TAG, "Current: " + curDate + " PostDate: " + datePost + (datePost.compareTo(curDate) < 0 ? "No Ride" : "Ride hai"));
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
+                                }
+
+                                if (postHelpingMethod.withInRange(latLng, latLngUser) && iSeats <= Integer.parseInt(snapShotToString(snapshotposts, "seats")) && !(datePost.compareTo(curDate) < 0)) {
+                                    DatabaseReference databaseReference;
+                                    if (snapShotToString(snapshotposts, "isCar").equals("true"))
+                                        databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("Cars").child(snapShotToString(snapshotposts, "vehicle"));
+                                    else
+                                        databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("Bikes").child(snapShotToString(snapshotposts, "vehicle"));
+                                    Log.v(TAG, "-> " + snapshotposts);
+                                    databaseReference.addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
+
+                                            Log.v(TAG, "2-> " + dataSnapshot);
+                                            String path = uId;
+                                            mStorageRef.child(path).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                                @Override
+                                                public void onSuccess(Uri uri) {
+                                                    String imageURL = uri.toString();
+                                                    String fare = snapShotToString(snapshotposts, "fare");
+                                                    DecimalFormat df = new DecimalFormat();
+                                                    df.setMaximumFractionDigits(1);
+                                                    FindRideItem findRideItem = new FindRideItem(uId, postId, df.format(Double.parseDouble(fare)), snapShotToString(snapshotposts.child("Origin"), "name"), snapShotToString(snapshotposts.child("Destination"), "name"), snapShotToString(snapshotposts, "seats"), snapShotToString(snapshotposts, "distance"), snapShotToString(snapshotposts, "departTime"),
+                                                            snapShotToString(dataSnapshot, "name"), snapShotToString(dataSnapshot, "color"), snapShotToString(snapshotposts, "vehicle"), snapShotToString(snapshotposts, "name"), imageURL);
+                                                    findRideItems.add(findRideItem);
+                                                    final int index = findRideItems.size() - 1;
+                                                    findRideItems.get(index).setRequestBtnClickListener(new View.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(View v) {
+                                                            Toast.makeText(getActivity(), findRideItems.get(index).getPostId(), Toast.LENGTH_SHORT).
+                                                                    show();
+                                                            DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Requests").child(findRideItems.get(index).getPostId());
+                                                            databaseReference1.child(mAuth.getUid()).child("status").setValue("pending");
+
+                                                            DatabaseReference databaseReference2 = FirebaseDatabase.getInstance().getReference().child("Find").child("Pending").child(mAuth.getUid());
+                                                            HashMap<String, String> hashMap = new HashMap<String, String>();
+                                                            hashMap.put("postId", findRideItems.get(index).getPostId());
+                                                            hashMap.put("driver", findRideItems.get(index).getDriverUid());
+                                                            databaseReference2.setValue(hashMap);
+
+
+                                                        }
+                                                    });
+
+                                                    adapter.notifyDataSetChanged();
+
+                                                }
+                                            }).addOnFailureListener(new OnFailureListener() {
+                                                @Override
+                                                public void onFailure(@NonNull Exception exception) {
+                                                    Toast.makeText(getActivity(), exception.toString(), Toast.LENGTH_LONG).show();
+                                                }
+                                            });
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                        }
+
+                                    });
+
+                                }
+
+                            }
+                        }
+                        progressDialog.cancel();
+                        adapter.notifyDataSetChanged();
+                        databaseReference.removeEventListener(findRideListener);
+                    }
+                }.execute();
+
+            }
+            else{
+                adapter.notifyDataSetChanged();
+                Toast.makeText(getActivity(), "No Rides Available Empty", Toast.LENGTH_LONG).show();
+                databaseReference.removeEventListener(findRideListener);
+            }
+
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+        }
+
+    };
 
     @Nullable
     @Override
@@ -258,123 +417,17 @@ public class FindRideFragment extends Fragment {
         });
 
     }
-
+    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active");
+    Timer timer = new Timer();
     private void populateFindList(){
-        progressDialog.show();
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active");
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                findRideItems.clear();
-                for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
-                    final String uId = snapshot.getKey();
-                    for (final DataSnapshot snapshotposts:snapshot.getChildren()) {
-                        final String postId = snapshotposts.getKey();
-                        LatLng latLng;
-                        LatLng latLngUser;
-                        if(flag) {
-                            latLng = new LatLng(getDouble(snapshotposts.child("Destination").child("lat")), getDouble(snapshotposts.child("Destination").child("lng")));
-                            Address userDestination = postHelpingMethod.geoLocateSearch(mDepart.getText().toString(),TAG);
-                            latLngUser = new LatLng(userDestination.getLatitude(),userDestination.getLongitude());
-                        }
-                        else {
-                            latLng = new LatLng(getDouble(snapshotposts.child("Origin").child("lat")), getDouble(snapshotposts.child("Origin").child("lng")));
-                            Address userOrigin = postHelpingMethod.geoLocateSearch(mPickUpText.getText().toString(),TAG);
-                            latLngUser = new LatLng(userOrigin.getLatitude(),userOrigin.getLongitude());
-                        }
 
-                        String dateTime = snapshotposts.child("departTime").getValue().toString();
+        TimerTask timerTask = new TimerTask() {
+            public void run() {
 
-                        Date datePost = new Date();
-                        Date curDate = new Date();
-
-                        String strDateFormat = "yyyy-MM-dd HH:mm";
-                        DateFormat dateFormat = new SimpleDateFormat(strDateFormat);
-                        String curDateString = dateFormat.format(curDate);
-
-                        try {
-                            datePost = new OfferRideFragment().stringToDate(new OfferRideFragment().formatDate(new OfferRideFragment().stringToDate(dateTime)));
-                            curDate = new OfferRideFragment().stringToDate(curDateString);
-                            Log.v(TAG,"Current: "+curDate+" PostDate: "+datePost+ (datePost.compareTo(curDate) < 0? "No Ride" : "Ride hai"));
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
-
-                        if(postHelpingMethod.withInRange(latLng,latLngUser) && iSeats<= Integer.parseInt(snapShotToString(snapshotposts,"seats")) && !(datePost.compareTo(curDate) < 0)){
-                            DatabaseReference databaseReference;
-                            if(snapShotToString(snapshotposts,"isCar").equals("true"))
-                                databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("Cars").child(snapShotToString(snapshotposts,"vehicle"));
-                            else
-                                databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("Bikes").child(snapShotToString(snapshotposts,"vehicle"));
-                            Log.v(TAG,"-> "+snapshotposts);
-                            databaseReference.addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
-
-                                    Log.v(TAG,"2-> "+dataSnapshot);
-                                    String path = uId;
-                                    mStorageRef.child(path).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                        @Override
-                                        public void onSuccess(Uri uri) {
-                                            String imageURL = uri.toString();
-                                            String fare = snapShotToString(snapshotposts,"fare");
-                                            DecimalFormat df = new DecimalFormat();
-                                            df.setMaximumFractionDigits(1);
-                                            FindRideItem findRideItem = new FindRideItem(uId,postId,df.format(Double.parseDouble(fare)),snapShotToString(snapshotposts.child("Origin"),"name"),snapShotToString(snapshotposts.child("Destination"),"name"),snapShotToString(snapshotposts,"seats"),snapShotToString(snapshotposts,"distance"),snapShotToString(snapshotposts,"departTime"),
-                                                    snapShotToString(dataSnapshot,"name"),snapShotToString(dataSnapshot,"color"),snapShotToString(snapshotposts,"vehicle"),snapShotToString(snapshotposts,"name"),imageURL);
-                                            findRideItems.add(findRideItem);
-                                            final int index = findRideItems.size()-1;
-                                            findRideItems.get(index).setRequestBtnClickListener(new View.OnClickListener() {
-                                                @Override
-                                                public void onClick(View v) {
-                                                    Toast.makeText(getActivity(), findRideItems.get(index).getPostId(), Toast.LENGTH_SHORT).
-                                                            show();
-                                                    DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Requests").child(findRideItems.get(index).getPostId());
-                                                    databaseReference1.child(mAuth.getUid()).child("status").setValue("pending");
-
-                                                    DatabaseReference databaseReference2 = FirebaseDatabase.getInstance().getReference().child("Find").child("Pending").child(mAuth.getUid());
-                                                    HashMap<String,String> hashMap = new HashMap<String, String>();
-                                                    hashMap.put("postId",findRideItems.get(index).getPostId());
-                                                    hashMap.put("driver",findRideItems.get(index).getDriverUid());
-                                                    databaseReference2.setValue(hashMap);
-
-
-                                                }
-                                            });
-
-                                            Log.v(TAG,"Hello");
-                                            adapter.notifyDataSetChanged();
-
-
-
-                                        }
-                                    }).addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception exception) {
-                                            Toast.makeText(getActivity(),exception.toString(),Toast.LENGTH_LONG).show();
-                                        }
-                                    });
-                                }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                }
-
-                            });
-
-                        }
-                    }
-                }
-
-                progressDialog.cancel();
+                databaseReference.addValueEventListener(findRideListener);
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        };
+        timer.schedule(timerTask, 0, 60000);
     }
 
     private double getDouble(DataSnapshot snapshot){
@@ -385,5 +438,11 @@ public class FindRideFragment extends Fragment {
         return snapshot.child(value).getValue().toString();
     }
 
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        timer.cancel();
+        databaseReference.removeEventListener(findRideListener);
+        Log.v("Bye","Bye Bye");
+    }
 }
-

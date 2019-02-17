@@ -43,7 +43,8 @@ public class PostHelpingMethod {
             addressList = geocoder.getFromLocationName(searchtxt, 1); //to get 1 matching location address
         } catch (IOException e) {
 
-            Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG).show();
+            //Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG).show();
+            Log.d(TAG, e.getMessage());
         }
         if (addressList.size() > 0)//if address is found
         {

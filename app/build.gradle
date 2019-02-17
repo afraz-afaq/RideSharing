@@ -48,6 +48,7 @@ dependencies {
     compile 'com.kofigyan.stateprogressbar:stateprogressbar:1.0.0'
     compile 'com.chaos.view:pinview:1.3.2'
     compile 'com.baoyz.swipemenulistview:library:1.3.0'
+    compile 'com.github.DavidBarbaran:FCM-AndroidToOtherDevice:1.0'
     compile 'com.android.support:support-v4:28.+'
     testCompile 'junit:junit:4.12'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'

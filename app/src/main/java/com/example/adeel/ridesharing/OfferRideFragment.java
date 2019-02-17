@@ -1,10 +1,12 @@
 package com.example.adeel.ridesharing;
 
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.location.Address;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -189,6 +191,7 @@ public class OfferRideFragment extends Fragment {
         mSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                     if(TextUtils.isEmpty(mPickUpText.getText().toString()))
                     {
                         Toast.makeText(getActivity(), "Please Enter your location", Toast.LENGTH_SHORT).show();
@@ -207,10 +210,29 @@ public class OfferRideFragment extends Fragment {
                     mTimeSpinner.setFocusable(true);
                 }
                else{
-                    mOriginAddress =  postHelpingMethod.geoLocateSearch(mPickUpText.getText().toString(),TAG);
-                    mDestinationAddress =  postHelpingMethod.geoLocateSearch(mDepart.getText().toString(),TAG);
-                    mLayout1.setVisibility(View.GONE);
-                    mLayout2.setVisibility(View.VISIBLE);
+                        final ProgressDialog progressDialog = postHelpingMethod.createProgressDialog("Fetching","Please wait fetching locations");
+                        final String depart = mDepart.getText().toString();
+                        final String pickup = mPickUpText.getText().toString();
+                        progressDialog.show();
+                        new AsyncTask<String,Void,String>(){
+
+                            @Override
+                            protected String doInBackground(String... strings) {
+
+                                mOriginAddress =  postHelpingMethod.geoLocateSearch(pickup,TAG);
+                                mDestinationAddress =  postHelpingMethod.geoLocateSearch(depart,TAG);
+                                return "";
+                            }
+
+                            @Override
+                            protected void onPostExecute(String s) {
+                                mLayout1.setVisibility(View.GONE);
+                                mLayout2.setVisibility(View.VISIBLE);
+                                progressDialog.dismiss();
+                            }
+                        }.execute();
+
+
 
                 }
 
@@ -410,6 +432,7 @@ public class OfferRideFragment extends Fragment {
         hashMap.put("name",preferencesClass.getUSER_NAME());
         hashMap.put("regno",preferencesClass.getUserRegno());
         hashMap.put("seats",mSeats);
+        hashMap.put("onway","false");
         hashMap.put("fare",String.valueOf(mFare));
         if(TextUtils.isEmpty(mFurtherDetails.getText().toString()))
             hashMap.put("extraDetails","no");

@@ -115,10 +115,7 @@ public class LoginActivity extends AppCompatActivity {
                                         Log.w(TAG, "getInstanceId failed", task.getException());
                                         return;
                                     }
-
-                                    // Get new Instance ID token
                                     String token = task.getResult().getToken();
-
 
                                     DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid());
 
