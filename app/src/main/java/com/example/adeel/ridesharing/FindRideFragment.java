@@ -183,8 +183,12 @@ public class FindRideFragment extends Fragment {
                                                         public void onClick(View v) {
                                                             Toast.makeText(getActivity(), findRideItems.get(index).getPostId(), Toast.LENGTH_SHORT).
                                                                     show();
-                                                            DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Requests").child(findRideItems.get(index).getPostId());
-                                                            databaseReference1.child(mAuth.getUid()).child("status").setValue("pending");
+                                                            DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Requests").child(findRideItems.get(index).getPostId()).child("Pending").child(mAuth.getUid());
+                                                            databaseReference1.child("seats").setValue(findRideItems.get(index).getSeats());
+                                                            if(flag)
+                                                                databaseReference1.child("location").setValue(findRideItems.get(index).getToAddress());
+                                                            else
+                                                                databaseReference1.child("location").setValue(findRideItems.get(index).getFromAddress());
 
                                                             DatabaseReference databaseReference2 = FirebaseDatabase.getInstance().getReference().child("Find").child("Pending").child(mAuth.getUid());
                                                             HashMap<String, String> hashMap = new HashMap<String, String>();
