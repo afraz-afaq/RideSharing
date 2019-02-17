@@ -205,7 +205,6 @@ public class OfferedFragment extends Fragment {
         mOffredOptions=rootView.findViewById(R.id.spinner_offeredoptions);
         mAuth = FirebaseAuth.getInstance();
         historyPosts = new ArrayList<HistoryPost>();
-        historyPosts.add(new HistoryPost("bjhgjh","bjhgjh","bjhgjh","bjhgjh","bjhgjh","bjhgjh"));
         historyPostArrayAdapter = new HistoryAdapter(getActivity(),historyPosts);
         offeredListView.setAdapter(historyPostArrayAdapter);
 
