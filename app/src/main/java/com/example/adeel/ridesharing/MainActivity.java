@@ -104,6 +104,12 @@ public class MainActivity extends AppCompatActivity  implements CarBottomSheet.G
                         mNavigationView.setCheckedItem(R.id.nav_profile);
                         mtoolbar.setTitle(R.string.profile);
                         break;
+                    case R.id.nav_request:
+                        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                                new RequestFragment()).commit();
+                        mNavigationView.setCheckedItem(R.id.nav_request);
+                        mtoolbar.setTitle("Requests");
+                        break;
                     case R.id.nav_logout:
                         preferencesClass.clearUser();
                         FirebaseAuth mAuth  = FirebaseAuth.getInstance();
