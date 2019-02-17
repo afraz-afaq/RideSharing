@@ -50,7 +50,7 @@ public class OfferedFragment extends Fragment {
     private FirebaseAuth mAuth;
     private ArrayList<HistoryPost> historyPosts;
     private  HistoryAdapter historyPostArrayAdapter;
-    DatabaseReference databaseReferenceActive = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid());
+    DatabaseReference databaseReferenceActive;
     private DatabaseReference databaseReference;
 
 
@@ -209,6 +209,7 @@ public class OfferedFragment extends Fragment {
         historyPostArrayAdapter = new HistoryAdapter(getActivity(),historyPosts);
         offeredListView.setAdapter(historyPostArrayAdapter);
 
+        databaseReferenceActive = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid());
 
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
