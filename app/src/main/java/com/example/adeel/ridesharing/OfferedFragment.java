@@ -21,6 +21,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -30,6 +31,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
+import org.xml.sax.Parser;
 
 import java.util.ArrayList;
 
@@ -95,33 +97,36 @@ public class OfferedFragment extends Fragment {
     ValueEventListener cancelPost = new ValueEventListener() {
 
         @Override
-        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-            FirebaseDatabase.getInstance().getReference().child("Posts").child("Canceled").child(mAuth.getUid()).setValue(dataSnapshot.getValue());
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                FirebaseDatabase.getInstance().getReference().child("Posts").child("Canceled").child(mAuth.getUid()).setValue(dataSnapshot.getValue());
 
-            final FirebasePush firebasePush = new FirebasePush("AIzaSyDARseKL-2opSy4uMzLigTdjv-Mo6AyTsQ") ;
-            firebasePush.setAsyncResponse(new PushNotificationTask.AsyncResponse() {
-                @Override
-                public void onFinishPush(@NotNull String ouput) {
-                    Log.e("OUTPUT", ouput);
-                }
-            });
-            firebasePush.setNotification(new Notification("Ride Canceled","Sorry but your ride has been canceled by the driver"));
-            DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID);
-            databaseReference1.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    if(dataSnapshot.hasChildren()){
-                        for (DataSnapshot snapshot:dataSnapshot.getChildren()) {
+                final FirebasePush firebasePush = new FirebasePush("AIzaSyDARseKL-2opSy4uMzLigTdjv-Mo6AyTsQ") ;
+                firebasePush.setAsyncResponse(new PushNotificationTask.AsyncResponse() {
+                    @Override
+                    public void onFinishPush(@NotNull String ouput) {
+                        Log.e("OUTPUT", ouput);
+                    }
+                });
+                Log.v("PENDING","post " +postID);
+                firebasePush.setNotification(new Notification("Ride Canceled","Sorry but your ride has been canceled by the driver"));
+                DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID).child("Pending");
+                databaseReference1.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if(dataSnapshot.hasChildren()){
+                            for (DataSnapshot snapshot:dataSnapshot.getChildren()) {
 
-                            Log.v("token user",snapshot.getKey());
-                            DatabaseReference userRefToken = FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot.getKey()).child("token");
-                            userRefToken.addValueEventListener(new ValueEventListener() {
+                                Log.v("token user",snapshot.getKey());
+                                DatabaseReference userRefToken = FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot.getKey()).child("token");
+                                Toast.makeText(getActivity(), snapshot.getKey(), Toast.LENGTH_SHORT).show();
+                                userRefToken.addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
                                     String token = dataSnapshot.getValue().toString();
                                     Log.v("token",token);
                                     firebasePush.sendToToken(token);
-                                }
+                               }
 
                                 @Override
                                 public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -314,6 +319,7 @@ public class OfferedFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
+        databaseReferenceActive.removeEventListener(showActivePost);
 
     }
 }

@@ -38,7 +38,6 @@ public class PendingRequestsFragment extends Fragment {
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
             requestArrayList.clear();
             if(dataSnapshot.hasChildren()){
-                check = true;
                 for (final DataSnapshot snapshot:dataSnapshot.getChildren()) {
                     String postId = snapshot.getKey();
                     databaseReferencePendingList = FirebaseDatabase.getInstance().getReference().child("Requests").child(postId).child("Pending");
@@ -46,6 +45,8 @@ public class PendingRequestsFragment extends Fragment {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             if(dataSnapshot.hasChildren()){
+
+                                check = true;
                                 for (final DataSnapshot snapshot1:dataSnapshot.getChildren()) {
                                     databaseReferenceUser = FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot1.getKey());
                                     refUserListener = new ValueEventListener() {
@@ -65,8 +66,13 @@ public class PendingRequestsFragment extends Fragment {
                                                     Toast.makeText(getActivity(), "Accepted "+dataSnapshot, Toast.LENGTH_SHORT).show();
                                                 }
                                             };
-                                            requestArrayList.add(new Request(dataSnapshot.child("name").getValue().toString(),snapshot1.child("seats").getValue().toString(),snapshot1.child("location").getValue().toString(), cancelEvent,acceptEvent));
-                                            pendingRequestAdapter.notifyDataSetChanged();
+                                            try {
+                                                requestArrayList.add(new Request(dataSnapshot.child("name").getValue().toString(),snapshot1.child("seats").getValue().toString(),snapshot1.child("location").getValue().toString(), cancelEvent,acceptEvent));
+                                                pendingRequestAdapter.notifyDataSetChanged();
+                                            }catch (Exception e){
+
+                                            }
+
                                         }
 
                                         @Override
@@ -129,6 +135,8 @@ public class PendingRequestsFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-
+        databaseReferenceActive.removeEventListener(getPendingList);
+        databaseReferencePendingList.removeEventListener(penndinglistListener);
+        databaseReferenceUser.removeEventListener(refUserListener);
     }
 }
