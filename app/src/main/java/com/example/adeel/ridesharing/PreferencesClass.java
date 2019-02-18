@@ -66,6 +66,14 @@ public void setUserImage(String image){
 
     }
 
+    public void setUserToken(String token){
+        SharedPreferences sharedPreferences = activity.getSharedPreferences(AppConstants.PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(AppConstants.USER_TOKEN,token);
+        editor.apply();
+
+    }
+
 //    public void setUserPhoneStatus(String status){
 //        SharedPreferences sharedPreferences = activity.getSharedPreferences(AppConstants.PREF_NAME, Context.MODE_PRIVATE);
 //        SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -88,6 +96,13 @@ public void setUserImage(String image){
         String name =  sharedPreferences.getString(AppConstants.USER_NAME, null);
         Log.d(TAG,"NAME: "+name);
         return name;
+    }
+
+    public String getUSER_TOKEN() {
+        SharedPreferences sharedPreferences = activity.getSharedPreferences(AppConstants.PREF_NAME, Context.MODE_PRIVATE);
+        String token =  sharedPreferences.getString(AppConstants.USER_TOKEN, null);
+        Log.d(TAG,"TOKEN: "+token);
+        return token;
     }
 
 //    public String getUSER_PHONESTATUS() {

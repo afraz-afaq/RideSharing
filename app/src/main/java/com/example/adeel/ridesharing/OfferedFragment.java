@@ -21,6 +21,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -41,25 +42,25 @@ import fcm.androidtoandroid.model.Notification;
 
 public class OfferedFragment extends Fragment {
 
+    private String TAG = "OFFERED_FRAG";
     private Spinner mOffredOptions;
-    private int iOffredOptions=0;
+    private int iOffredOptions = 0;
     private TextView from, to, distance, time, seats, price;
     private Button start, cancel;
     private ListView offeredListView;
     private CardView activePost;
-    Boolean checkCancel = false;
     private String postID;
     private FirebaseAuth mAuth;
+    private PostHelpingMethod postHelpingMethod;
     private ArrayList<HistoryPost> historyPosts;
-    private  HistoryAdapter historyPostArrayAdapter;
-    DatabaseReference databaseReferenceActive;
-    private DatabaseReference databaseReference;
-
+    private HistoryAdapter historyPostArrayAdapter;
+    DatabaseReference databaseReferenceActive, databaseReference, databaseReferenceNotification, databaseReferenceToken;
+    ValueEventListener notificationToToken;
 
     ValueEventListener showActivePost = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-            if(dataSnapshot.hasChildren()){
+            if (dataSnapshot.hasChildren()) {
 
                 activePost.setVisibility(View.VISIBLE);
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
@@ -68,19 +69,16 @@ public class OfferedFragment extends Fragment {
                     from.setText(snapshot.child("Origin").child("name").getValue().toString());
                     to.setText(snapshot.child("Destination").child("name").getValue().toString());
                     seats.setText(snapshot.child("seats").getValue().toString());
-                    distance.setText(snapshot.child("distance").getValue().toString()+"KM");
+                    distance.setText(snapshot.child("distance").getValue().toString() + "KM");
                     time.setText(snapshot.child("departTime").getValue().toString().split("\\s+")[1]);
-                    price.setText(snapshot.child("fare").getValue().toString()+"Rs");
-                    if(snapshot.child("onway").getValue().toString().equals("false")){
+                    price.setText(snapshot.child("fare").getValue().toString() + "Rs");
+                    if (snapshot.child("onway").getValue().toString().equals("false")) {
                         start.setText("START");
-                    }
-                    else{
+                    } else {
                         start.setText("COMPLETED");
                     }
                 }
-            }
-            else
-            {
+            } else {
                 Toast.makeText(getActivity(), "No Active Post", Toast.LENGTH_LONG).show();
 
                 activePost.setVisibility(View.GONE);
@@ -97,55 +95,48 @@ public class OfferedFragment extends Fragment {
     ValueEventListener cancelPost = new ValueEventListener() {
 
         @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                FirebaseDatabase.getInstance().getReference().child("Posts").child("Canceled").child(mAuth.getUid()).setValue(dataSnapshot.getValue());
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            if (dataSnapshot.hasChildren()) {
+                Log.v(TAG,"Post Data: "+dataSnapshot.toString());
+                FirebaseDatabase.getInstance().getReference().child("Posts").child("Canceled").child(mAuth.getUid()).child(dataSnapshot.getKey()).setValue(dataSnapshot.getValue());
+                databaseReference.removeValue();
+                databaseReference.removeEventListener(cancelPost);
+            }
+        }
 
-                final FirebasePush firebasePush = new FirebasePush("AIzaSyDARseKL-2opSy4uMzLigTdjv-Mo6AyTsQ") ;
-                firebasePush.setAsyncResponse(new PushNotificationTask.AsyncResponse() {
-                    @Override
-                    public void onFinishPush(@NotNull String ouput) {
-                        Log.e("OUTPUT", ouput);
-                    }
-                });
-                Log.v("PENDING","post " +postID);
-                firebasePush.setNotification(new Notification("Ride Canceled","Sorry but your ride has been canceled by the driver"));
-                DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID).child("Pending");
-                databaseReference1.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        if(dataSnapshot.hasChildren()){
-                            for (DataSnapshot snapshot:dataSnapshot.getChildren()) {
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                Log.v("token user",snapshot.getKey());
-                                DatabaseReference userRefToken = FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot.getKey()).child("token");
-                                Toast.makeText(getActivity(), snapshot.getKey(), Toast.LENGTH_SHORT).show();
-                                userRefToken.addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+        }
+    };
 
-                                    String token = dataSnapshot.getValue().toString();
-                                    Log.v("token",token);
-                                    firebasePush.sendToToken(token);
-                               }
+    ValueEventListener sendNotifications = new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot categoriesDataSnapshot) {
+            if(categoriesDataSnapshot.hasChildren()){
+                for (DataSnapshot categories: categoriesDataSnapshot.getChildren()) {
+                    for(final DataSnapshot userID : categories.getChildren()){
+                        Log.v(TAG,userID.toString());
+                        databaseReferenceToken = FirebaseDatabase.getInstance().getReference().child("Users").child(userID.getKey()).child("token");
+                        notificationToToken = new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                postHelpingMethod.sendNotification("Ride Canceled","Please find another one.",dataSnapshot.getValue().toString());
+                            }
 
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                }
-                            });
-
-                        }
-
-
+                            }
+                        };
+                        databaseReferenceToken.addValueEventListener(notificationToToken);
+                        databaseReferenceNotification.removeEventListener(sendNotifications);
+                        FirebaseDatabase.getInstance().getReference().child("Find").child(userID.getKey()).child("Pending").removeValue();
+                        FirebaseDatabase.getInstance().getReference().child("Find").child(userID.getKey()).child("Active").removeValue();
                     }
                 }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
-
+            }
         }
 
         @Override
@@ -157,27 +148,13 @@ public class OfferedFragment extends Fragment {
     DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
         @Override
         public void onClick(DialogInterface dialog, int which) {
-            switch (which){
+            switch (which) {
                 case DialogInterface.BUTTON_POSITIVE:
                     //Yes button clicked
-                    checkCancel = true;
-                    new AsyncTask<Void,Void,String>(){
-                        @Override
-                        protected String doInBackground(Void... voids) {
-                            databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid());
-                            databaseReference.addValueEventListener(cancelPost);
-                            return null;
-                        }
-
-                        @Override
-                        protected void onPostExecute(String s) {
-                            super.onPostExecute(s);
-                            databaseReference.removeEventListener(cancelPost);
-                            FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").removeValue();
-                            Toast.makeText(getActivity(), postID, Toast.LENGTH_SHORT).show();
-                        }
-                    }.execute();
-
+                    databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postID);
+                    databaseReference.addValueEventListener(cancelPost);
+                    databaseReferenceNotification = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID);
+                    databaseReferenceNotification.addValueEventListener(sendNotifications);
                     break;
 
                 case DialogInterface.BUTTON_NEGATIVE:
@@ -205,10 +182,11 @@ public class OfferedFragment extends Fragment {
         cancel = rootView.findViewById(R.id.cancelRide);
         offeredListView = rootView.findViewById(R.id.listView_offered);
         activePost = rootView.findViewById(R.id.activePost);
-        mOffredOptions=rootView.findViewById(R.id.spinner_offeredoptions);
+        mOffredOptions = rootView.findViewById(R.id.spinner_offeredoptions);
+        postHelpingMethod = new PostHelpingMethod(getActivity());
         mAuth = FirebaseAuth.getInstance();
         historyPosts = new ArrayList<HistoryPost>();
-        historyPostArrayAdapter = new HistoryAdapter(getActivity(),historyPosts);
+        historyPostArrayAdapter = new HistoryAdapter(getActivity(), historyPosts);
         offeredListView.setAdapter(historyPostArrayAdapter);
 
         databaseReferenceActive = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid());
@@ -225,12 +203,11 @@ public class OfferedFragment extends Fragment {
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(start.getText().toString().equals("START")){
+                if (start.getText().toString().equals("START")) {
                     Toast.makeText(getActivity(), "Notify All", Toast.LENGTH_SHORT).show();
                     FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postID).child("onway").setValue("true");
                     start.setText("COMPLETED");
-                }
-                else{
+                } else {
                     Toast.makeText(getActivity(), "Ride Completed", Toast.LENGTH_SHORT).show();
                 }
 
@@ -241,9 +218,9 @@ public class OfferedFragment extends Fragment {
         return rootView;
     }
 
-    private void spinnerOffredOptions(){
+    private void spinnerOffredOptions() {
 
-        ArrayAdapter arrayAdapter = ArrayAdapter.createFromResource(getActivity(),R.array.bookings_options_driver,android.R.layout.simple_spinner_item);
+        ArrayAdapter arrayAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.bookings_options_driver, android.R.layout.simple_spinner_item);
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_list_item_1);
         mOffredOptions.setAdapter(arrayAdapter);
 
@@ -251,20 +228,18 @@ public class OfferedFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 String selection = (String) adapterView.getItemAtPosition(i);
-                if (!TextUtils.isEmpty(selection)){
-                    if (selection.equals(getString(R.string.past_bookings))){
-                        iOffredOptions=R.string.past_bookings;
+                if (!TextUtils.isEmpty(selection)) {
+                    if (selection.equals(getString(R.string.past_bookings))) {
+                        iOffredOptions = R.string.past_bookings;
                         showActive();
-                    }
-                    else if (selection.equals(getString(R.string.canceled_bookings))){
-                        iOffredOptions=R.string.canceled_bookings;
+                    } else if (selection.equals(getString(R.string.canceled_bookings))) {
+                        iOffredOptions = R.string.canceled_bookings;
                         activePost.setVisibility(View.GONE);
                         offeredListView.setVisibility(View.VISIBLE);
                         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Canceled").child(mAuth.getUid());
                         populateList(databaseReference);
-                    }
-                    else {
-                        iOffredOptions=R.string.complete_bookings;
+                    } else {
+                        iOffredOptions = R.string.complete_bookings;
                         activePost.setVisibility(View.GONE);
                         offeredListView.setVisibility(View.VISIBLE);
                         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Completed").child(mAuth.getUid());
@@ -275,34 +250,32 @@ public class OfferedFragment extends Fragment {
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-                iOffredOptions=R.string.show_all;
+                iOffredOptions = R.string.show_all;
 
             }
         });
 
     }
 
-    private void showActive(){
+    private void showActive() {
         offeredListView.setVisibility(View.GONE);
 
         databaseReferenceActive.addValueEventListener(showActivePost);
 
     }
 
-    private void populateList(DatabaseReference databaseReference){
+    private void populateList(DatabaseReference databaseReference) {
         historyPosts.clear();
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.hasChildren()){
+                if (dataSnapshot.hasChildren()) {
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        HistoryPost historyPost = new HistoryPost(snapshot.child("Origin").child("name").getValue().toString(),snapshot.child("Destination").child("name").getValue().toString(),snapshot.child("fare").getValue().toString()+"Rs",snapshot.child("isCar").getValue().toString().equals("true")?"Car":"Bike",snapshot.child("vehicle").getValue().toString(),snapshot.child("departTime").getValue().toString());
+                        HistoryPost historyPost = new HistoryPost(snapshot.child("Origin").child("name").getValue().toString(), snapshot.child("Destination").child("name").getValue().toString(), snapshot.child("fare").getValue().toString() + "Rs", snapshot.child("isCar").getValue().toString().equals("true") ? "Car" : "Bike", snapshot.child("vehicle").getValue().toString(), snapshot.child("departTime").getValue().toString());
                         historyPosts.add(historyPost);
                     }
-                }
-                else
-                {
-                    
+                } else {
+
                 }
 
                 historyPostArrayAdapter.notifyDataSetChanged();
@@ -316,10 +289,10 @@ public class OfferedFragment extends Fragment {
 
     }
 
+
     @Override
     public void onDetach() {
         super.onDetach();
         databaseReferenceActive.removeEventListener(showActivePost);
-
     }
 }

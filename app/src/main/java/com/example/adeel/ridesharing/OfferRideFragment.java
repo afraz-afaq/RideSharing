@@ -1,8 +1,10 @@
 package com.example.adeel.ridesharing;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.location.Address;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -226,8 +228,25 @@ public class OfferRideFragment extends Fragment {
 
                             @Override
                             protected void onPostExecute(String s) {
-                                mLayout1.setVisibility(View.GONE);
-                                mLayout2.setVisibility(View.VISIBLE);
+
+                                if(mOriginAddress == null || mOriginAddress == null){
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                    builder.setMessage("Location fetching error please try again.")
+                                            .setTitle("Alert");
+                                    builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            dialog.dismiss();
+                                        }
+                                    });
+
+                                    AlertDialog dialog = builder.create();
+                                    dialog.show();
+                                }
+                                else {
+                                    mLayout1.setVisibility(View.GONE);
+                                    mLayout2.setVisibility(View.VISIBLE);
+
+                                }
                                 progressDialog.dismiss();
                             }
                         }.execute();

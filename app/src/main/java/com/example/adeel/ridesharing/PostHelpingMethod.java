@@ -70,7 +70,7 @@ public class PostHelpingMethod {
         return ((distance * perKM) + (time * perMin) + base);
     }
 
-    public void sendNotif(String title, String body, String token) {
+    public void sendNotification(String title, String body, String token) {
         final FirebasePush firebasePush = new FirebasePush("AIzaSyDARseKL-2opSy4uMzLigTdjv-Mo6AyTsQ") ;
         firebasePush.setAsyncResponse(new PushNotificationTask.AsyncResponse() {
             @Override

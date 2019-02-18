@@ -116,7 +116,7 @@ public class LoginActivity extends AppCompatActivity {
                                         return;
                                     }
                                     String token = task.getResult().getToken();
-
+                                    preferencesClass.setUserToken(token);
                                     DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid());
 
                                     databaseReference.child("token").setValue(token);
