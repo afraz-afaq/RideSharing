@@ -106,8 +106,6 @@ public class OfferedFragment extends Fragment {
                 }
             });
             firebasePush.setNotification(new Notification("Ride Canceled","Sorry but your ride has been canceled by the driver"));
-            final JSONArray jsonArray = new JSONArray();
-
             DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID);
             databaseReference1.addValueEventListener(new ValueEventListener() {
                 @Override

@@ -1,87 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardVew_name"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp"
-    android:orientation="vertical">
+    android:layout_margin="16dp"
+    app:cardBackgroundColor="@android:color/white"
+    app:cardElevation="5dp"
+    app:cardPreventCornerOverlap="false">
 
-    <RelativeLayout
+    <LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-    <TextView
-        android:id="@+id/pending_name"
-        android:layout_marginLeft="5dp"
-        android:textAppearance="?android:textAppearanceMedium"
-        android:textColor="@android:color/black"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Adeel Afzal"/>
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <TextView
 
-        android:layout_toLeftOf="@+id/textView_seats"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Seats: "/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/textView_seats"
-            android:layout_alignParentRight="true"
+            <TextView
+                android:id="@+id/pending_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:text="Adeel Afzal"
+                android:textAppearance="?android:textAppearanceMedium"
+                android:textColor="@android:color/black" />
+
+            <TextView
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toLeftOf="@+id/textView_seats"
+                android:text="Seats: " />
+
+            <TextView
+                android:id="@+id/textView_seats"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:text="2" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="2"/>
+            android:layout_marginTop="5dp">
 
-    </RelativeLayout>
+            <ImageView
+                android:id="@+id/image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_action_location"
+                android:tint="@color/colorAccent" />
 
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/Loc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_toRightOf="@+id/image"
+                android:text="Nipa Chorangi, Bus Stop"
+                android:textSize="16sp" />
 
-        <ImageView
-            android:id="@+id/image"
-            android:layout_width="wrap_content"
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_action_location"
-            android:tint="@color/colorAccent"/>
+            android:layout_marginTop="5dp"
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/Loc"
-            android:layout_toRightOf="@+id/image"
-            android:layout_width="wrap_content"
-            android:layout_marginLeft="16dp"
-            android:textSize="16sp"
-            android:layout_height="wrap_content"
-            android:text="Nipa Chorangi, Bus Stop"/>
+            <Button
+                android:id="@+id/button_confirm"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/ic_action_confirm"
+                android:drawableTint="@color/colorAccent"
+                android:text="Accept" />
 
-    </RelativeLayout>
+            <Button
+                android:id="@+id/button_cancel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/ic_action_cancel"
+                android:drawableTint="@android:color/holo_red_dark"
+                android:text="Cancel" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:orientation="horizontal"
-        android:layout_marginTop="5dp"
-        android:layout_height="wrap_content">
+        </LinearLayout>
 
-        <Button
-            android:id="@+id/button_confirm"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:drawableTint="@color/colorAccent"
-            android:text="Accept"
-            android:drawableLeft="@drawable/ic_action_confirm"
-            android:layout_height="wrap_content" />
-
-        <Button
-            android:id="@+id/button_cancel"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:drawableTint="@android:color/holo_red_dark"
-            android:drawableLeft="@drawable/ic_action_cancel"
-            android:text="Cancel"
-            android:layout_marginLeft="5dp"
-            android:layout_height="wrap_content" />
 
     </LinearLayout>
-
-</LinearLayout>
+</android.support.v7.widget.CardView>

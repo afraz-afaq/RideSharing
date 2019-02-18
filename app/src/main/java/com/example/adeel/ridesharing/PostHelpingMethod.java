@@ -18,10 +18,17 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.database.FirebaseDatabase;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import fcm.androidtoandroid.FirebasePush;
+import fcm.androidtoandroid.connection.PushNotificationTask;
+import fcm.androidtoandroid.model.Notification;
 
 /**
  * Created by Afraz on 12/30/2018.
@@ -55,15 +62,28 @@ public class PostHelpingMethod {
     }
 
 
-    public double getFare(double distance, double time){
-     return ((distance * 2.25) + (time * 1.55) + 40);
+    public double getFare(double distance, double time) {
+        return ((distance * 2.25) + (time * 1.55) + 40);
     }
 
-    public double getFare(double distance, double time,double perKM,double perMin,double base){
+    public double getFare(double distance, double time, double perKM, double perMin, double base) {
         return ((distance * perKM) + (time * perMin) + base);
     }
 
-    public ProgressDialog createProgressDialog(String title,String message){
+    public void sendNotif(String title, String body, String token) {
+        final FirebasePush firebasePush = new FirebasePush("AIzaSyDARseKL-2opSy4uMzLigTdjv-Mo6AyTsQ") ;
+        firebasePush.setAsyncResponse(new PushNotificationTask.AsyncResponse() {
+            @Override
+            public void onFinishPush(@NotNull String ouput) {
+                Log.e("OUTPUT", ouput);
+            }
+        });
+        firebasePush.setNotification(new Notification(title,body));
+        firebasePush.sendToToken(token);
+    }
+
+
+    public ProgressDialog createProgressDialog(String title, String message) {
         ProgressDialog mDialog = new ProgressDialog(activity);
         mDialog.setTitle(title);
         mDialog.setMessage(message);
@@ -82,24 +102,24 @@ public class PostHelpingMethod {
         return dialog;
     }
 
-    public void snackbarMessage(String msg, View v){
-        Snackbar sb = Snackbar.make(v,msg,Snackbar.LENGTH_SHORT);
-        View sbView =sb.getView();
-        sbView.setBackgroundColor(ContextCompat.getColor(activity,R.color.error));
+    public void snackbarMessage(String msg, View v) {
+        Snackbar sb = Snackbar.make(v, msg, Snackbar.LENGTH_SHORT);
+        View sbView = sb.getView();
+        sbView.setBackgroundColor(ContextCompat.getColor(activity, R.color.error));
         sb.show();
     }
 
-    public boolean withInRange(LatLng loc1, LatLng loc2){
+    public boolean withInRange(LatLng loc1, LatLng loc2) {
         boolean check = false;
-        float []result = new float[5];
-        Location.distanceBetween(loc1.latitude,loc1.longitude,loc2.latitude,loc2.longitude,result);
-        if(result[0]<=1000)
+        float[] result = new float[5];
+        Location.distanceBetween(loc1.latitude, loc1.longitude, loc2.latitude, loc2.longitude, result);
+        if (result[0] <= 1000)
             check = true;
         return check;
     }
 
 
-    public boolean checkConnection(){
+    public boolean checkConnection() {
         boolean check = false;
         ConnectivityManager connMgr = (ConnectivityManager)
                 activity.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -115,7 +135,8 @@ public class PostHelpingMethod {
 
         return check;
     }
-    public Dialog createNoConnectionDialog(){
+
+    public Dialog createNoConnectionDialog() {
         Dialog dialog = new Dialog(activity);
         dialog.setContentView(R.layout.nointernet_dialog);
         return dialog;
