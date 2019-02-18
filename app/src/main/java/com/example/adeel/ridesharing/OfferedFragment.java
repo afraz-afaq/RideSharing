@@ -314,8 +314,6 @@ public class OfferedFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        if(checkCancel)
-            databaseReference.removeEventListener(cancelPost);
-        databaseReferenceActive.removeEventListener(showActivePost);
+
     }
 }

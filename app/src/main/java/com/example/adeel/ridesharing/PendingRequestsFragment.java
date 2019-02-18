@@ -129,12 +129,6 @@ public class PendingRequestsFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        databaseReferenceActive.removeEventListener(getPendingList);
-        if(check){
-            databaseReferencePendingList.removeEventListener(penndinglistListener);
-            databaseReferenceUser.removeEventListener(refUserListener);
-        }
-
 
     }
 }
