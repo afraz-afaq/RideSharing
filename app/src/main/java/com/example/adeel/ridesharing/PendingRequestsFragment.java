@@ -1,6 +1,7 @@
 package com.example.adeel.ridesharing;
 
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -26,74 +27,27 @@ import java.util.ArrayList;
  */
 public class PendingRequestsFragment extends Fragment {
 
+    private final String TAG = "PENDING LIST";
     private ArrayList<Request> requestArrayList;
     private ListView requestList;
     private PendingRequestAdapter pendingRequestAdapter;
-    private DatabaseReference databaseReferenceActive,databaseReferencePendingList,databaseReferenceUser;
+    private DatabaseReference databaseReferenceActive,databaseReferencePendingList;
     private FirebaseAuth mAuth;
-    private boolean check = false;
-    private  ValueEventListener penndinglistListener, refUserListener;
-    private ValueEventListener getPendingList = new ValueEventListener() {
+    private String postId = "";
+    private  ValueEventListener activePostValueEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-            requestArrayList.clear();
-            if(dataSnapshot.hasChildren()){
-                for (final DataSnapshot snapshot:dataSnapshot.getChildren()) {
-                    String postId = snapshot.getKey();
+            if(dataSnapshot.hasChildren()) {
+                for (final DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    postId = snapshot.getKey();
+                    Log.v(TAG,"POSTID: "+postId);
                     databaseReferencePendingList = FirebaseDatabase.getInstance().getReference().child("Requests").child(postId).child("Pending");
-                    penndinglistListener = new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if(dataSnapshot.hasChildren()){
-
-                                check = true;
-                                for (final DataSnapshot snapshot1:dataSnapshot.getChildren()) {
-                                    databaseReferenceUser = FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot1.getKey());
-                                    refUserListener = new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
-                                            Log.v("Info",dataSnapshot+"");
-                                            View.OnClickListener cancelEvent = new View.OnClickListener() {
-                                                @Override
-                                                public void onClick(View view) {
-                                                    Toast.makeText(getActivity(), "Canceled "+dataSnapshot, Toast.LENGTH_SHORT).show();
-                                                }
-                                            };
-
-                                            View.OnClickListener acceptEvent = new View.OnClickListener() {
-                                                @Override
-                                                public void onClick(View view) {
-                                                    Toast.makeText(getActivity(), "Accepted "+dataSnapshot, Toast.LENGTH_SHORT).show();
-                                                }
-                                            };
-                                            try {
-                                                requestArrayList.add(new Request(dataSnapshot.child("name").getValue().toString(),snapshot1.child("seats").getValue().toString(),snapshot1.child("location").getValue().toString(), cancelEvent,acceptEvent));
-                                                pendingRequestAdapter.notifyDataSetChanged();
-                                            }catch (Exception e){
-
-                                            }
-
-                                        }
-
-                                        @Override
-                                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                        }
-                                    };
-                                    databaseReferenceUser.addValueEventListener(refUserListener);
-                                }
-
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                        }
-                    };
-
                     databaseReferencePendingList.addValueEventListener(penndinglistListener);
+                    databaseReferenceActive.removeEventListener(activePostValueEventListener);
                 }
+            }
+            else{
+                Log.v(TAG,"No Active Post");
             }
         }
 
@@ -103,6 +57,42 @@ public class PendingRequestsFragment extends Fragment {
         }
     };
 
+    private  ValueEventListener penndinglistListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
+            requestArrayList.clear();
+            if(dataSnapshot.hasChildren()) {
+                for (final DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Log.v(TAG,dataSnapshot+"");
+                    View.OnClickListener cancelEvent = new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Toast.makeText(getActivity(), "Canceled "+snapshot, Toast.LENGTH_SHORT).show();
+                        }
+                    };
+
+                    View.OnClickListener acceptEvent = new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Toast.makeText(getActivity(), "Accepted "+snapshot, Toast.LENGTH_SHORT).show();
+                        }
+                    };
+                    try {
+                        requestArrayList.add(new Request(snapshot.child("name").getValue().toString(), snapshot.child("seats").getValue().toString(), snapshot.child("location").getValue().toString(), snapshot.child("token").getValue().toString(), cancelEvent, acceptEvent));
+                    }catch (Exception e){
+
+                    }
+                }
+                pendingRequestAdapter.notifyDataSetChanged();
+            }else{
+                Toast.makeText(getActivity(), "No Pending Requests", Toast.LENGTH_SHORT).show();
+            }
+        }
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+        }
+    };
 
     public PendingRequestsFragment() {
         // Required empty public constructor
@@ -116,27 +106,22 @@ public class PendingRequestsFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_pending_requests, container, false);
 
         mAuth=FirebaseAuth.getInstance();
-        databaseReferenceActive  = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid());
         requestArrayList = new ArrayList<>();
         requestList = v.findViewById(R.id.pendingrequest_list);
         pendingRequestAdapter = new PendingRequestAdapter(getActivity(),requestArrayList);
         requestList.setAdapter(pendingRequestAdapter);
 
-        populatePendingList();
+
+        databaseReferenceActive  = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid());
+        databaseReferenceActive.addValueEventListener(activePostValueEventListener);
 
         return v;
     }
 
-    private void populatePendingList(){
-
-        databaseReferenceActive.addValueEventListener(getPendingList);
-    }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        databaseReferenceActive.removeEventListener(getPendingList);
-        databaseReferencePendingList.removeEventListener(penndinglistListener);
-        databaseReferenceUser.removeEventListener(refUserListener);
+
     }
 }

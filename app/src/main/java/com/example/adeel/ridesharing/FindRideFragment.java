@@ -158,7 +158,7 @@ public class FindRideFragment extends Fragment {
                                 }
 
                                 if (postHelpingMethod.withInRange(latLng, latLngUser) && iSeats <= Integer.parseInt(snapShotToString(snapshotposts, "seats")) && !(datePost.compareTo(curDate) < 0)) {
-                                    DatabaseReference databaseReference;
+                                    final DatabaseReference databaseReference;
                                     if (snapShotToString(snapshotposts, "isCar").equals("true"))
                                         databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("Cars").child(snapShotToString(snapshotposts, "vehicle"));
                                     else
@@ -207,6 +207,8 @@ public class FindRideFragment extends Fragment {
                                                                             notifyDriver.addValueEventListener(notify);
                                                                             DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Requests").child(findRideItems.get(index).getPostId()).child("Pending").child(mAuth.getUid());
                                                                             databaseReference1.child("seats").setValue(iSeats);
+                                                                            databaseReference1.child("name").setValue(preferencesClass.getUSER_NAME());
+                                                                            databaseReference1.child("token").setValue(preferencesClass.getUSER_TOKEN());
                                                                             if(flag)
                                                                                 databaseReference1.child("location").setValue(findRideItems.get(index).getToAddress());
                                                                             else
