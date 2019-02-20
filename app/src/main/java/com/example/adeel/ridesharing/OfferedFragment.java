@@ -97,7 +97,7 @@ public class OfferedFragment extends Fragment {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
             if (dataSnapshot.hasChildren()) {
-                Log.v(TAG,"Post Data: "+dataSnapshot.toString());
+                Log.v(TAG, "Post Data: " + dataSnapshot.toString());
                 FirebaseDatabase.getInstance().getReference().child("Posts").child("Canceled").child(mAuth.getUid()).child(dataSnapshot.getKey()).setValue(dataSnapshot.getValue());
                 databaseReference.removeValue();
                 databaseReference.removeEventListener(cancelPost);
@@ -113,26 +113,28 @@ public class OfferedFragment extends Fragment {
     ValueEventListener sendNotifications = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot categoriesDataSnapshot) {
-            if(categoriesDataSnapshot.hasChildren()){
-                for (DataSnapshot categories: categoriesDataSnapshot.getChildren()) {
-                    for(final DataSnapshot userID : categories.getChildren()){
-                        Log.v(TAG,userID.toString());
-                        databaseReferenceToken = FirebaseDatabase.getInstance().getReference().child("Users").child(userID.getKey()).child("token");
-                        notificationToToken = new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                postHelpingMethod.sendNotification("Ride Canceled","Please find another one.",dataSnapshot.getValue().toString());
-                            }
+            if (categoriesDataSnapshot.hasChildren()) {
+                for (DataSnapshot categories : categoriesDataSnapshot.getChildren()) {
+                    if (categories.getKey().equals("Pending") || categories.getKey().equals("Active")) {
+                        for (final DataSnapshot userID : categories.getChildren()) {
+                            Log.v(TAG, userID.toString());
+                            databaseReferenceToken = FirebaseDatabase.getInstance().getReference().child("Users").child(userID.getKey()).child("token");
+                            notificationToToken = new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    postHelpingMethod.sendNotification("Ride Canceled", "Please find another one.", dataSnapshot.getValue().toString());
+                                }
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                            }
-                        };
-                        databaseReferenceToken.addValueEventListener(notificationToToken);
-                        databaseReferenceNotification.removeEventListener(sendNotifications);
-                        FirebaseDatabase.getInstance().getReference().child("Find").child(userID.getKey()).child("Pending").removeValue();
-                        FirebaseDatabase.getInstance().getReference().child("Find").child(userID.getKey()).child("Active").removeValue();
+                                }
+                            };
+                            databaseReferenceToken.addValueEventListener(notificationToToken);
+                            databaseReferenceNotification.removeEventListener(sendNotifications);
+                            FirebaseDatabase.getInstance().getReference().child("Find").child(userID.getKey()).child("Pending").removeValue();
+                            FirebaseDatabase.getInstance().getReference().child("Find").child(userID.getKey()).child("Active").removeValue();
+                        }
                     }
                 }
 

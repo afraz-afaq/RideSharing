@@ -34,6 +34,7 @@ public class PendingRequestsFragment extends Fragment {
     private DatabaseReference databaseReferenceActive,databaseReferencePendingList;
     private FirebaseAuth mAuth;
     private String postId = "";
+    ValueEventListener getTokenForCancelValueEventListener;
     private  ValueEventListener activePostValueEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -67,7 +68,22 @@ public class PendingRequestsFragment extends Fragment {
                     View.OnClickListener cancelEvent = new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            Toast.makeText(getActivity(), "Canceled "+snapshot, Toast.LENGTH_SHORT).show();
+                            final DatabaseReference getTokenForCancel = FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot.getKey()).child("token");
+                            getTokenForCancelValueEventListener = new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    Toast.makeText(getActivity(), "Canceled "+dataSnapshot, Toast.LENGTH_SHORT).show();
+                                    getTokenForCancel.removeEventListener(getTokenForCancelValueEventListener);
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            };
+                            getTokenForCancel.addValueEventListener(getTokenForCancelValueEventListener);
+
+
                         }
                     };
 
@@ -78,9 +94,9 @@ public class PendingRequestsFragment extends Fragment {
                         }
                     };
                     try {
-                        requestArrayList.add(new Request(snapshot.child("name").getValue().toString(), snapshot.child("seats").getValue().toString(), snapshot.child("location").getValue().toString(), snapshot.child("token").getValue().toString(), cancelEvent, acceptEvent));
+                        requestArrayList.add(new Request(snapshot.child("name").getValue().toString(), snapshot.child("seats").getValue().toString(), snapshot.child("location").getValue().toString(), cancelEvent, acceptEvent));
                     }catch (Exception e){
-
+                        Log.v(TAG,e.getMessage());
                     }
                 }
                 pendingRequestAdapter.notifyDataSetChanged();

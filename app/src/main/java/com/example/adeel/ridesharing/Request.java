@@ -4,14 +4,13 @@ import android.view.View;
 import android.widget.Button;
 
 public class Request {
-    String mName, mSeats, mLoc, mToken;
+    String mName, mSeats, mLoc;
     View.OnClickListener cancelOnClickListener, acceptOnClickListener;
 
-    public Request(String mName, String mSeats, String mLoc, String mToken, View.OnClickListener cancelOnClickListener, View.OnClickListener acceptOnClickListener) {
+    public Request(String mName, String mSeats, String mLoc, View.OnClickListener cancelOnClickListener, View.OnClickListener acceptOnClickListener) {
         this.mName = mName;
         this.mSeats = mSeats;
         this.mLoc = mLoc;
-        this.mToken = mToken;
         this.cancelOnClickListener = cancelOnClickListener;
         this.acceptOnClickListener = acceptOnClickListener;
     }
@@ -38,14 +37,6 @@ public class Request {
 
     public void setmLoc(String mLoc) {
         this.mLoc = mLoc;
-    }
-
-    public String getmToken() {
-        return mToken;
-    }
-
-    public void setmToken(String mToken) {
-        this.mToken = mToken;
     }
 
     public View.OnClickListener getCancelOnClickListener() {

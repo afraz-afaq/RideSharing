@@ -208,7 +208,6 @@ public class FindRideFragment extends Fragment {
                                                                             DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Requests").child(findRideItems.get(index).getPostId()).child("Pending").child(mAuth.getUid());
                                                                             databaseReference1.child("seats").setValue(iSeats);
                                                                             databaseReference1.child("name").setValue(preferencesClass.getUSER_NAME());
-                                                                            databaseReference1.child("token").setValue(preferencesClass.getUSER_TOKEN());
                                                                             if(flag)
                                                                                 databaseReference1.child("location").setValue(findRideItems.get(index).getToAddress());
                                                                             else
