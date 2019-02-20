@@ -15,6 +15,13 @@ public class Request {
         this.acceptOnClickListener = acceptOnClickListener;
     }
 
+    public Request(String mName, String mSeats, String mLoc, View.OnClickListener cancelOnClickListener) {
+        this.mName = mName;
+        this.mSeats = mSeats;
+        this.mLoc = mLoc;
+        this.cancelOnClickListener = cancelOnClickListener;
+    }
+
     public String getmName() {
         return mName;
     }

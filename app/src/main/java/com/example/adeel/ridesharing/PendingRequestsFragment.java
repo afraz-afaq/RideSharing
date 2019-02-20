@@ -9,9 +9,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -20,6 +23,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 /**
@@ -32,7 +36,9 @@ public class PendingRequestsFragment extends Fragment {
     private ListView requestList;
     private PendingRequestAdapter pendingRequestAdapter;
     private DatabaseReference databaseReferenceActive,databaseReferencePendingList;
+    ValueEventListener getFindPendingToAcceptValueEventListener;
     private FirebaseAuth mAuth;
+    private Button mAccept_Button,mCancel_Button;
     private String postId = "";
     ValueEventListener getTokenForCancelValueEventListener;
     private  ValueEventListener activePostValueEventListener = new ValueEventListener() {
@@ -72,7 +78,8 @@ public class PendingRequestsFragment extends Fragment {
                             getTokenForCancelValueEventListener = new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    Toast.makeText(getActivity(), "Canceled "+dataSnapshot, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getActivity(), "Canceled "+dataSnapshot.getValue().toString(), Toast.LENGTH_SHORT).show();
+
                                     getTokenForCancel.removeEventListener(getTokenForCancelValueEventListener);
                                 }
 
@@ -90,7 +97,46 @@ public class PendingRequestsFragment extends Fragment {
                     View.OnClickListener acceptEvent = new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            Toast.makeText(getActivity(), "Accepted "+snapshot, Toast.LENGTH_SHORT).show();
+                            DatabaseReference Acceptedref = FirebaseDatabase.getInstance().getReference().child("Requests").child(postId).child("Accepted").child(snapshot.getKey());
+                            Acceptedref.setValue(snapshot.getValue()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()){
+                                        Toast.makeText(getActivity(), "done", Toast.LENGTH_SHORT).show();
+                                        DatabaseReference removeref = FirebaseDatabase.getInstance().getReference().child("Requests").child(postId).child("Pending").child(snapshot.getKey());
+                                        databaseReferencePendingList.removeEventListener(penndinglistListener);
+                                        removeref.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                databaseReferencePendingList.addValueEventListener(penndinglistListener);
+                                            }
+                                        });
+
+
+                                        final DatabaseReference getFindPendingToAccept = FirebaseDatabase.getInstance().getReference().child("Find").child(snapshot.getKey()).child("Pending").child(postId);
+                                        getFindPendingToAcceptValueEventListener = new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                FirebaseDatabase.getInstance().getReference().child("Find").child(snapshot.getKey()).child("Active").child(postId).setValue(dataSnapshot.getValue());
+                                                getFindPendingToAccept.removeEventListener(getFindPendingToAcceptValueEventListener);
+                                                getFindPendingToAccept.removeValue();
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                            }
+                                        };
+                                        getFindPendingToAccept.addValueEventListener(getFindPendingToAcceptValueEventListener);
+
+
+                                    }
+                                    else {
+                                        String error = task.getException().toString();
+                                        Toast.makeText(getActivity(), "fail "+error, Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
                         }
                     };
                     try {
@@ -99,10 +145,10 @@ public class PendingRequestsFragment extends Fragment {
                         Log.v(TAG,e.getMessage());
                     }
                 }
-                pendingRequestAdapter.notifyDataSetChanged();
             }else{
                 Toast.makeText(getActivity(), "No Pending Requests", Toast.LENGTH_SHORT).show();
             }
+            pendingRequestAdapter.notifyDataSetChanged();
         }
         @Override
         public void onCancelled(@NonNull DatabaseError databaseError) {

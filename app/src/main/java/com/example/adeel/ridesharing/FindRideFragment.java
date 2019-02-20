@@ -89,6 +89,7 @@ public class FindRideFragment extends Fragment {
     private ArrayList<FindRideItem> findRideItems;
     private PostHelpingMethod postHelpingMethod;
     private PreferencesClass preferencesClass;
+    ValueEventListener notify;
     private LatLngBounds mLatLngBounds = new LatLngBounds(new LatLng(24, 67), new LatLng(25, 68));
     LatLng latLng;
     LatLng latLngUser;
@@ -184,26 +185,25 @@ public class FindRideFragment extends Fragment {
                                                     findRideItems.get(index).setRequestBtnClickListener(new View.OnClickListener() {
                                                         @Override
                                                         public void onClick(View v) {
-                                                            final ValueEventListener notify = new ValueEventListener() {
-                                                                @Override
-                                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                                    postHelpingMethod.sendNotification("New Request",preferencesClass.getUSER_NAME()+"("+preferencesClass.getUserRegno()+") wants to ride with you!",dataSnapshot.getValue().toString());
-                                                                }
-
-                                                                @Override
-                                                                public void onCancelled(@NonNull DatabaseError databaseError) {
-                                                                    Toast.makeText(getActivity(),databaseError.getMessage().toString(),Toast.LENGTH_LONG).show();
-                                                                }
-                                                            };
-
                                                             DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
                                                                 @Override
                                                                 public void onClick(DialogInterface dialog, int which) {
                                                                     switch (which) {
                                                                         case DialogInterface.BUTTON_POSITIVE:
                                                                             //Yes button clicked
+                                                                            final DatabaseReference notifyDriver = FirebaseDatabase.getInstance().getReference().child("Users").child(findRideItems.get(index).getDriverUid()).child("token");
+                                                                            notify = new ValueEventListener() {
+                                                                                @Override
+                                                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                                    postHelpingMethod.sendNotification("New Request",preferencesClass.getUSER_NAME()+"("+preferencesClass.getUserRegno()+") wants to ride with you!",dataSnapshot.getValue().toString());
+                                                                                    notifyDriver.removeEventListener(notify);
+                                                                                }
 
-                                                                            DatabaseReference notifyDriver = FirebaseDatabase.getInstance().getReference().child("Users").child(findRideItems.get(index).getDriverUid()).child("token");
+                                                                                @Override
+                                                                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                                                                    Toast.makeText(getActivity(),databaseError.getMessage().toString(),Toast.LENGTH_LONG).show();
+                                                                                }
+                                                                            };
                                                                             notifyDriver.addValueEventListener(notify);
                                                                             DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Requests").child(findRideItems.get(index).getPostId()).child("Pending").child(mAuth.getUid());
                                                                             databaseReference1.child("seats").setValue(iSeats);
