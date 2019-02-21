@@ -57,6 +57,7 @@ public class BookedFragment extends Fragment {
     ValueEventListener showPendingPost = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
             if (dataSnapshot.hasChildren()) {
                 pendingPost.setVisibility(View.VISIBLE);
                 cancel.setVisibility(View.VISIBLE);
@@ -106,6 +107,7 @@ public class BookedFragment extends Fragment {
     ValueEventListener showActivePost = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
             if (dataSnapshot.hasChildren()) {
                 bookedListView.setVisibility(View.GONE);
                 cancel.setVisibility(View.GONE);
@@ -192,6 +194,7 @@ public class BookedFragment extends Fragment {
         pendingPost = rootView.findViewById(R.id.pendingPost);
         mBookedOptions=rootView.findViewById(R.id.spinner_bookedoptions);
         postHelpingMethod = new PostHelpingMethod(getActivity());
+
         mAuth = FirebaseAuth.getInstance();
         storageReference = FirebaseStorage.getInstance().getReference();
         historyPosts = new ArrayList<HistoryPost>();

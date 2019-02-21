@@ -56,6 +56,7 @@ public class OfferedFragment extends Fragment {
     private HistoryAdapter historyPostArrayAdapter;
     DatabaseReference databaseReferenceActive, databaseReference, databaseReferenceNotification, databaseReferenceToken;
     ValueEventListener notificationToToken;
+    DatabaseReference getPostData;
 
     ValueEventListener showActivePost = new ValueEventListener() {
         @Override
@@ -146,6 +147,42 @@ public class OfferedFragment extends Fragment {
 
         }
     };
+    ValueEventListener sendNotificationstostart = new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot categoriesDataSnapshot) {
+            if (categoriesDataSnapshot.hasChildren()) {
+                for (DataSnapshot categories : categoriesDataSnapshot.getChildren()) {
+                    if (categories.getKey().equals("Pending") || categories.getKey().equals("Active")) {
+                        for (final DataSnapshot userID : categories.getChildren()) {
+                            Log.v(TAG, userID.toString());
+                            databaseReferenceToken = FirebaseDatabase.getInstance().getReference().child("Users").child(userID.getKey()).child("token");
+                            notificationToToken = new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    postHelpingMethod.sendNotification("Ride Started", "Please be on your current location", dataSnapshot.getValue().toString());
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            };
+                            databaseReferenceToken.addValueEventListener(notificationToToken);
+                            getPostData.removeEventListener(sendNotificationstostart);/*
+                            FirebaseDatabase.getInstance().getReference().child("Find").child(userID.getKey()).child("Pending").removeValue();
+                            FirebaseDatabase.getInstance().getReference().child("Find").child(userID.getKey()).child("Active").removeValue();*/
+                        }
+                    }
+                }
+
+            }
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+        }
+    };
 
     DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
         @Override
@@ -157,6 +194,7 @@ public class OfferedFragment extends Fragment {
                     databaseReference.addValueEventListener(cancelPost);
                     databaseReferenceNotification = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID);
                     databaseReferenceNotification.addValueEventListener(sendNotifications);
+
                     break;
 
                 case DialogInterface.BUTTON_NEGATIVE:
@@ -207,7 +245,23 @@ public class OfferedFragment extends Fragment {
             public void onClick(View view) {
                 if (start.getText().toString().equals("START")) {
                     Toast.makeText(getActivity(), "Notify All", Toast.LENGTH_SHORT).show();
-                    FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postID).child("onway").setValue("true");
+                    getPostData = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postID).child("onway");
+                    getPostData.setValue("true").addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            DatabaseReference ad = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postID);
+                            databaseReference.addValueEventListener(cancelPost);
+                            databaseReferenceNotification = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID);
+                            databaseReferenceNotification.addValueEventListener(sendNotificationstostart);
+
+
+
+
+                        }
+                    });
+
+
+
                     start.setText("COMPLETED");
                 } else {
                     Toast.makeText(getActivity(), "Ride Completed", Toast.LENGTH_SHORT).show();
