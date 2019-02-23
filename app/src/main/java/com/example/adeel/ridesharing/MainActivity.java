@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity  implements CarBottomSheet.G
                         break;
                     case R.id.nav_myBookings:
                         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                                new MyBookingFragment()).commit();
+                                new MyBookingFragment(),"bookings").commit();
                         mNavigationView.setCheckedItem(R.id.nav_myBookings);
                         mtoolbar.setTitle(R.string.my_bookings);
                         break;

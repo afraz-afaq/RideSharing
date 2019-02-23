@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
 import android.text.TextUtils;
@@ -31,6 +32,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
+import java.util.EventListener;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -51,6 +53,7 @@ public class BookedFragment extends Fragment {
     private PostHelpingMethod postHelpingMethod;
     private ArrayList<HistoryPost> historyPosts;
     private HistoryAdapter historyPostArrayAdapter;
+    DatabaseReference databaseReferencePopulateList;
     DatabaseReference getPostData , databaseReferencePending, databaseReferenceActive, databaseReference, databaseReferenceNotification, databaseReferenceToken;
     ValueEventListener notificationToToken, getPostDataValueEventListener;
 
@@ -194,15 +197,12 @@ public class BookedFragment extends Fragment {
         pendingPost = rootView.findViewById(R.id.pendingPost);
         mBookedOptions=rootView.findViewById(R.id.spinner_bookedoptions);
         postHelpingMethod = new PostHelpingMethod(getActivity());
-
         mAuth = FirebaseAuth.getInstance();
         storageReference = FirebaseStorage.getInstance().getReference();
         historyPosts = new ArrayList<HistoryPost>();
         historyPostArrayAdapter = new HistoryAdapter(getActivity(), historyPosts);
         bookedListView.setAdapter(historyPostArrayAdapter);
         spinnerBookedOptions();
-        showActive();
-        showPending();
         return rootView;
     }
 
@@ -218,8 +218,8 @@ public class BookedFragment extends Fragment {
                 String selection = (String) adapterView.getItemAtPosition(i);
                 if (!TextUtils.isEmpty(selection)){
                     if (selection.equals(getString(R.string.past_bookings))){
-                        iBookedOptions=R.string.past_bookings;
-                        showActive();
+                            iBookedOptions = R.string.past_bookings;
+                            showActive();
                     }
                     else if (selection.equals(getString(R.string.today_bookings))){
                         iBookedOptions=R.string.today_bookings;
@@ -227,13 +227,13 @@ public class BookedFragment extends Fragment {
                     }
                     else if (selection.equals(getString(R.string.canceled_bookings))){
                         iBookedOptions=R.string.canceled_bookings;
-                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Find").child(mAuth.getUid()).child("Canceled");
-                        populateList(databaseReference);
+                        databaseReferencePopulateList = FirebaseDatabase.getInstance().getReference().child("Find").child(mAuth.getUid()).child("Canceled");
+                        populateList(databaseReferencePopulateList);
                     }
                     else {
                         iBookedOptions=R.string.complete_bookings;
-                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Find").child(mAuth.getUid()).child("Completed");
-                        populateList(databaseReference);
+                        databaseReferencePopulateList = FirebaseDatabase.getInstance().getReference().child("Find").child(mAuth.getUid()).child("Completed");
+                        populateList(databaseReferencePopulateList);
                     }
                 }
             }
@@ -257,64 +257,61 @@ public class BookedFragment extends Fragment {
         databaseReferenceActive.addValueEventListener(showActivePost);
     }
 
+
+
+    ValueEventListener populateValueEventListener =  new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+            if (dataSnapshot.hasChildren()) {
+                pendingPost.setVisibility(View.GONE);
+                bookedListView.setVisibility(View.VISIBLE);
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    postID = snapshot.getKey();
+                    driverId = snapshot.child("driver").getValue().toString();
+                    Log.v(TAG,"Driver: "+driverId);
+
+                    getPostData = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(driverId).child(postID);
+                    getPostDataValueEventListener = new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            HistoryPost historyPost = new HistoryPost(snapshot.child("Origin").child("name").getValue().toString(), snapshot.child("Destination").child("name").getValue().toString(), snapshot.child("fare").getValue().toString() + "Rs", snapshot.child("isCar").getValue().toString().equals("true") ? "Car" : "Bike", snapshot.child("vehicle").getValue().toString(), snapshot.child("departTime").getValue().toString());
+                            historyPosts.add(historyPost);
+                            historyPostArrayAdapter.notifyDataSetChanged();
+                        }
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    };
+                    getPostData.addValueEventListener(getPostDataValueEventListener);
+                }
+            } else {
+                Toast.makeText(getActivity(), "No Posts Available", Toast.LENGTH_LONG).show();
+                pendingPost.setVisibility(View.GONE);
+            }
+
+
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+        }
+    };
+
     private void populateList(DatabaseReference databaseReference) {
         historyPosts.clear();
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                if (dataSnapshot.hasChildren()) {
-                    pendingPost.setVisibility(View.GONE);
-                    bookedListView.setVisibility(View.VISIBLE);
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        postID = snapshot.getKey();
-                        driverId = snapshot.child("driver").getValue().toString();
-                        Log.v(TAG,"Driver: "+driverId);
-
-                        getPostData = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(driverId).child(postID);
-                        getPostDataValueEventListener = new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                HistoryPost historyPost = new HistoryPost(snapshot.child("Origin").child("name").getValue().toString(), snapshot.child("Destination").child("name").getValue().toString(), snapshot.child("fare").getValue().toString() + "Rs", snapshot.child("isCar").getValue().toString().equals("true") ? "Car" : "Bike", snapshot.child("vehicle").getValue().toString(), snapshot.child("departTime").getValue().toString());
-                                historyPosts.add(historyPost);
-                            }
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                            }
-                        };
-                        getPostData.addValueEventListener(getPostDataValueEventListener);
-
-                    }
-                } else {
-                    Toast.makeText(getActivity(), "No Pending Post", Toast.LENGTH_LONG).show();
-                    pendingPost.setVisibility(View.GONE);
-                }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                historyPostArrayAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        databaseReference.addValueEventListener(populateValueEventListener);
 
     }
 
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        databaseReferencePending.removeEventListener(showPendingPost);
+        databaseReferenceActive.removeEventListener(showActivePost);
+        getPostData.removeEventListener(getPostDataValueEventListener);
+        databaseReferencePopulateList.removeEventListener(populateValueEventListener);
+    }
 }

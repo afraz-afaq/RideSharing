@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 
 public class MyBookingFragment extends Fragment {
 
-    private TabLayout mTabLayout;
+    public static TabLayout mTabLayout;
     private ViewPager mViewPager;
     private BookingPagerAdapter mAdapter;
 
@@ -30,6 +30,8 @@ public class MyBookingFragment extends Fragment {
 
         mViewPager.setAdapter(mAdapter);
         mTabLayout.setupWithViewPager(mViewPager);
+
+
 
         return rootView;
     }

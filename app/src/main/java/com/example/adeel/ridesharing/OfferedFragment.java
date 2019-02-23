@@ -5,7 +5,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.text.TextUtils;
@@ -46,6 +48,7 @@ public class OfferedFragment extends Fragment {
     private Spinner mOffredOptions;
     private int iOffredOptions = 0;
     private TextView from, to, distance, time, seats, price;
+    TabLayout tabLayout;
     private Button start, cancel;
     private ListView offeredListView;
     private CardView activePost;
@@ -220,6 +223,7 @@ public class OfferedFragment extends Fragment {
         price = rootView.findViewById(R.id.title_price);
         start = rootView.findViewById(R.id.startRide);
         cancel = rootView.findViewById(R.id.cancelRide);
+        tabLayout = new MyBookingFragment().mTabLayout;
         offeredListView = rootView.findViewById(R.id.listView_offered);
         activePost = rootView.findViewById(R.id.activePost);
         mOffredOptions = rootView.findViewById(R.id.spinner_offeredoptions);
@@ -228,6 +232,7 @@ public class OfferedFragment extends Fragment {
         historyPosts = new ArrayList<HistoryPost>();
         historyPostArrayAdapter = new HistoryAdapter(getActivity(), historyPosts);
         offeredListView.setAdapter(historyPostArrayAdapter);
+
 
         databaseReferenceActive = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid());
 
@@ -253,14 +258,8 @@ public class OfferedFragment extends Fragment {
                             databaseReference.addValueEventListener(cancelPost);
                             databaseReferenceNotification = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID);
                             databaseReferenceNotification.addValueEventListener(sendNotificationstostart);
-
-
-
-
                         }
                     });
-
-
 
                     start.setText("COMPLETED");
                 } else {
@@ -269,8 +268,8 @@ public class OfferedFragment extends Fragment {
 
             }
         });
-
         spinnerOffredOptions();
+
         return rootView;
     }
 
@@ -287,7 +286,27 @@ public class OfferedFragment extends Fragment {
                 if (!TextUtils.isEmpty(selection)) {
                     if (selection.equals(getString(R.string.past_bookings))) {
                         iOffredOptions = R.string.past_bookings;
-                        showActive();
+                        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+                            @Override
+                            public void onTabSelected(TabLayout.Tab tab) {
+                                if(tab.getPosition() == 1)
+                                    showActive();
+                            }
+
+                            @Override
+                            public void onTabUnselected(TabLayout.Tab tab) {
+                                databaseReferenceActive.removeEventListener(showActivePost);
+                                databaseReferenceNotification.removeEventListener(sendNotifications);
+                                databaseReference.removeEventListener(cancelPost);
+                                databaseReferenceToken.removeEventListener(notificationToToken);
+                                databaseReference.removeEventListener(populateValueEventListener);
+                            }
+
+                            @Override
+                            public void onTabReselected(TabLayout.Tab tab) {
+
+                            }
+                        });
                     } else if (selection.equals(getString(R.string.canceled_bookings))) {
                         iOffredOptions = R.string.canceled_bookings;
                         activePost.setVisibility(View.GONE);
@@ -320,28 +339,28 @@ public class OfferedFragment extends Fragment {
 
     }
 
+    ValueEventListener populateValueEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            if (dataSnapshot.hasChildren()) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    HistoryPost historyPost = new HistoryPost(snapshot.child("Origin").child("name").getValue().toString(), snapshot.child("Destination").child("name").getValue().toString(), snapshot.child("fare").getValue().toString() + "Rs", snapshot.child("isCar").getValue().toString().equals("true") ? "Car" : "Bike", snapshot.child("vehicle").getValue().toString(), snapshot.child("departTime").getValue().toString());
+                    historyPosts.add(historyPost);
+                }
+            } else {
+                Toast.makeText(getActivity(), "No Posts Available", Toast.LENGTH_SHORT).show();
+            }
+            historyPostArrayAdapter.notifyDataSetChanged();
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+        }
+    };
     private void populateList(DatabaseReference databaseReference) {
         historyPosts.clear();
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChildren()) {
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        HistoryPost historyPost = new HistoryPost(snapshot.child("Origin").child("name").getValue().toString(), snapshot.child("Destination").child("name").getValue().toString(), snapshot.child("fare").getValue().toString() + "Rs", snapshot.child("isCar").getValue().toString().equals("true") ? "Car" : "Bike", snapshot.child("vehicle").getValue().toString(), snapshot.child("departTime").getValue().toString());
-                        historyPosts.add(historyPost);
-                    }
-                } else {
-
-                }
-
-                historyPostArrayAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        databaseReference.addValueEventListener(populateValueEventListener);
 
     }
 
@@ -350,5 +369,10 @@ public class OfferedFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         databaseReferenceActive.removeEventListener(showActivePost);
+        databaseReferenceNotification.removeEventListener(sendNotifications);
+        databaseReference.removeEventListener(cancelPost);
+        databaseReferenceToken.removeEventListener(notificationToToken);
+        databaseReference.removeEventListener(populateValueEventListener);
     }
+
 }
