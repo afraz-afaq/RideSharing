@@ -142,7 +142,7 @@ public class PendingRequestsFragment extends Fragment {
                     try {
                         requestArrayList.add(new Request(snapshot.child("name").getValue().toString(), snapshot.child("seats").getValue().toString(), snapshot.child("location").getValue().toString(), cancelEvent, acceptEvent));
                     }catch (Exception e){
-                        Log.v(TAG,e.getMessage());
+
                     }
                 }
             }else{

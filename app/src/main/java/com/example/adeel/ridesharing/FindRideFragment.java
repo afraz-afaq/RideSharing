@@ -1,73 +1,73 @@
 package com.example.adeel.ridesharing;
 
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
-import android.net.Uri;
-import android.nfc.Tag;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.constraint.solver.widgets.Snapshot;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
-import android.text.TextUtils;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
-import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.Spinner;
-import android.widget.Switch;
-import android.widget.Toast;
+        import android.app.ProgressDialog;
+        import android.content.DialogInterface;
+        import android.graphics.Bitmap;
+        import android.graphics.drawable.BitmapDrawable;
+        import android.graphics.drawable.Drawable;
+        import android.location.Address;
+        import android.location.Geocoder;
+        import android.location.Location;
+        import android.net.Uri;
+        import android.nfc.Tag;
+        import android.os.AsyncTask;
+        import android.os.Bundle;
+        import android.support.annotation.NonNull;
+        import android.support.annotation.Nullable;
+        import android.support.constraint.solver.widgets.Snapshot;
+        import android.support.v4.app.Fragment;
+        import android.support.v7.app.AlertDialog;
+        import android.text.TextUtils;
+        import android.util.Log;
+        import android.view.LayoutInflater;
+        import android.view.View;
+        import android.view.ViewGroup;
+        import android.widget.AdapterView;
+        import android.widget.ArrayAdapter;
+        import android.widget.AutoCompleteTextView;
+        import android.widget.Button;
+        import android.widget.CompoundButton;
+        import android.widget.EditText;
+        import android.widget.LinearLayout;
+        import android.widget.ListView;
+        import android.widget.Spinner;
+        import android.widget.Switch;
+        import android.widget.Toast;
 
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.RequestOptions;
-import com.bumptech.glide.request.target.Target;
-import com.google.android.gms.location.places.Places;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.mikhaellopez.circularimageview.CircularImageView;
-import com.ramotion.foldingcell.FoldingCell;
+        import com.bumptech.glide.load.DataSource;
+        import com.bumptech.glide.load.engine.GlideException;
+        import com.bumptech.glide.request.RequestListener;
+        import com.bumptech.glide.request.RequestOptions;
+        import com.bumptech.glide.request.target.Target;
+        import com.google.android.gms.location.places.Places;
+        import com.google.android.gms.maps.model.LatLng;
+        import com.google.android.gms.maps.model.LatLngBounds;
+        import com.google.android.gms.tasks.OnCompleteListener;
+        import com.google.android.gms.tasks.OnFailureListener;
+        import com.google.android.gms.tasks.OnSuccessListener;
+        import com.google.android.gms.tasks.Task;
+        import com.google.firebase.auth.FirebaseAuth;
+        import com.google.firebase.database.DataSnapshot;
+        import com.google.firebase.database.DatabaseError;
+        import com.google.firebase.database.DatabaseReference;
+        import com.google.firebase.database.FirebaseDatabase;
+        import com.google.firebase.database.ValueEventListener;
+        import com.google.firebase.storage.FirebaseStorage;
+        import com.google.firebase.storage.StorageReference;
+        import com.mikhaellopez.circularimageview.CircularImageView;
+        import com.ramotion.foldingcell.FoldingCell;
 
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+        import java.io.IOException;
+        import java.text.DateFormat;
+        import java.text.DecimalFormat;
+        import java.text.ParseException;
+        import java.text.SimpleDateFormat;
+        import java.util.ArrayList;
+        import java.util.Date;
+        import java.util.HashMap;
+        import java.util.List;
+        import java.util.Timer;
+        import java.util.TimerTask;
 
 public class FindRideFragment extends Fragment {
 
@@ -280,7 +280,7 @@ public class FindRideFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-         rootView = inflater.inflate(R.layout.fragment_findride, container, false);
+        rootView = inflater.inflate(R.layout.fragment_findride, container, false);
         mStorageRef = FirebaseStorage.getInstance().getReference();
         mAuth = FirebaseAuth.getInstance();
         findRideItems = new ArrayList<>();
@@ -369,12 +369,12 @@ public class FindRideFragment extends Fragment {
 
         ListView theListView = rootView.findViewById(R.id.ListView_findRide);
         populateFindList();
-         adapter = new FindRideCellAdapter(getActivity(), findRideItems);
+        adapter = new FindRideCellAdapter(getActivity(), findRideItems);
         adapter.setDefaultRequestBtnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Toast.makeText(getActivity(), "DEFAULT HANDLER FOR ALL BUTTONS", Toast.LENGTH_SHORT).
-                show();
+                        show();
             }
         });
 

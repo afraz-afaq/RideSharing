@@ -57,7 +57,7 @@ public class OfferedFragment extends Fragment {
     private PostHelpingMethod postHelpingMethod;
     private ArrayList<HistoryPost> historyPosts;
     private HistoryAdapter historyPostArrayAdapter;
-    DatabaseReference databaseReferenceActive, databaseReference, databaseReferenceNotification, databaseReferenceToken;
+    DatabaseReference databaseReferenceActive, databaseReference, databaseReferenceNotification, databaseReferenceToken, databaseReferenceNotificationToAccepted,databaseReferenceforcompleted,databasereferencerating,databaseReferenceusercompleted;
     ValueEventListener notificationToToken;
     DatabaseReference getPostData;
 
@@ -113,6 +113,47 @@ public class OfferedFragment extends Fragment {
 
         }
     };
+    ValueEventListener completed = new ValueEventListener() {
+
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            if (dataSnapshot.hasChildren()) {
+                Log.v(TAG, "Post Data: " + dataSnapshot.toString());
+                    FirebaseDatabase.getInstance().getReference().child("Posts").child("Completed").child(mAuth.getUid()).child(dataSnapshot.getKey()).setValue(dataSnapshot.getValue());
+
+
+                   databaseReferenceforcompleted.removeValue();
+                databaseReferenceforcompleted.removeEventListener(completed);
+            }
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+        }
+    };
+    ValueEventListener ratingcheck = new ValueEventListener() {
+
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            if (dataSnapshot.hasChildren()) {
+                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren())
+                {
+                    FirebaseDatabase.getInstance().getReference().child("Users").child(dataSnapshot1.getKey())
+                            .child("ratingchecker").setValue("false");
+                    FirebaseDatabase.getInstance().getReference().child("Find").child(dataSnapshot1.getKey()).child("Active").child(postID).removeValue();
+                    FirebaseDatabase.getInstance().getReference().child("Find").child(dataSnapshot1.getKey()).child("Completed").child(postID).child("driver").setValue(mAuth.getUid());
+
+
+                }
+            }
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+        }
+    };
 
     ValueEventListener sendNotifications = new ValueEventListener() {
         @Override
@@ -152,17 +193,14 @@ public class OfferedFragment extends Fragment {
     };
     ValueEventListener sendNotificationstostart = new ValueEventListener() {
         @Override
-        public void onDataChange(@NonNull DataSnapshot categoriesDataSnapshot) {
-            if (categoriesDataSnapshot.hasChildren()) {
-                for (DataSnapshot categories : categoriesDataSnapshot.getChildren()) {
-                    if (categories.getKey().equals("Pending") || categories.getKey().equals("Active")) {
-                        for (final DataSnapshot userID : categories.getChildren()) {
-                            Log.v(TAG, userID.toString());
-                            databaseReferenceToken = FirebaseDatabase.getInstance().getReference().child("Users").child(userID.getKey()).child("token");
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot user : dataSnapshot.getChildren()) {
+                            Log.v(TAG, user.toString());
+                            databaseReferenceToken = FirebaseDatabase.getInstance().getReference().child("Users").child(user.getKey()).child("token");
                             notificationToToken = new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    postHelpingMethod.sendNotification("Ride Started", "Please be on your current location", dataSnapshot.getValue().toString());
+                                    postHelpingMethod.sendNotification("Ride Started", "Driver is on his way!", dataSnapshot.getValue().toString());
                                 }
 
                                 @Override
@@ -171,14 +209,9 @@ public class OfferedFragment extends Fragment {
                                 }
                             };
                             databaseReferenceToken.addValueEventListener(notificationToToken);
-                            getPostData.removeEventListener(sendNotificationstostart);/*
-                            FirebaseDatabase.getInstance().getReference().child("Find").child(userID.getKey()).child("Pending").removeValue();
-                            FirebaseDatabase.getInstance().getReference().child("Find").child(userID.getKey()).child("Active").removeValue();*/
-                        }
-                    }
-                }
+                            databaseReferenceNotificationToAccepted.removeEventListener(sendNotificationstostart);
 
-            }
+                }
         }
 
         @Override
@@ -254,15 +287,21 @@ public class OfferedFragment extends Fragment {
                     getPostData.setValue("true").addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
-                            DatabaseReference ad = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postID);
-                            databaseReference.addValueEventListener(cancelPost);
-                            databaseReferenceNotification = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID);
-                            databaseReferenceNotification.addValueEventListener(sendNotificationstostart);
+                            databaseReferenceNotificationToAccepted = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID).child("Accepted");
+                            databaseReferenceNotificationToAccepted.addValueEventListener(sendNotificationstostart);
                         }
                     });
 
                     start.setText("COMPLETED");
                 } else {
+                    databaseReferenceforcompleted = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postID);
+                    databasereferencerating = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID).child("Accepted");
+
+                    databasereferencerating.addValueEventListener(ratingcheck);
+
+                    databaseReferenceforcompleted.addValueEventListener(completed);
+
+
                     Toast.makeText(getActivity(), "Ride Completed", Toast.LENGTH_SHORT).show();
                 }
 
@@ -292,16 +331,14 @@ public class OfferedFragment extends Fragment {
                                 if(tab.getPosition() == 1)
                                     showActive();
                             }
-
                             @Override
                             public void onTabUnselected(TabLayout.Tab tab) {
-                                databaseReferenceActive.removeEventListener(showActivePost);
-                                databaseReferenceNotification.removeEventListener(sendNotifications);
-                                databaseReference.removeEventListener(cancelPost);
-                                databaseReferenceToken.removeEventListener(notificationToToken);
-                                databaseReference.removeEventListener(populateValueEventListener);
+//                                databaseReferenceActive.removeEventListener(showActivePost);
+//                                databaseReferenceNotification.removeEventListener(sendNotifications);
+//                                databaseReference.removeEventListener(cancelPost);
+//                                databaseReferenceToken.removeEventListener(notificationToToken);
+//                                databaseReference.removeEventListener(populateValueEventListener);
                             }
-
                             @Override
                             public void onTabReselected(TabLayout.Tab tab) {
 
@@ -373,6 +410,7 @@ public class OfferedFragment extends Fragment {
         databaseReference.removeEventListener(cancelPost);
         databaseReferenceToken.removeEventListener(notificationToToken);
         databaseReference.removeEventListener(populateValueEventListener);
+        databasereferencerating.removeEventListener(ratingcheck);
     }
 
 }

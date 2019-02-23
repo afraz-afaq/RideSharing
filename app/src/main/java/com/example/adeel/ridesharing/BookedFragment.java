@@ -55,7 +55,7 @@ public class BookedFragment extends Fragment {
     private HistoryAdapter historyPostArrayAdapter;
     DatabaseReference databaseReferencePopulateList;
     DatabaseReference getPostData , databaseReferencePending, databaseReferenceActive, databaseReference, databaseReferenceNotification, databaseReferenceToken;
-    ValueEventListener notificationToToken, getPostDataValueEventListener;
+    ValueEventListener  getPostDataValueEventListener;
 
     ValueEventListener showPendingPost = new ValueEventListener() {
         @Override
@@ -150,7 +150,7 @@ public class BookedFragment extends Fragment {
                             time.setText(dataSnapshot.child("departTime").getValue().toString().split("\\s+")[1]);
                             price.setText(dataSnapshot.child("fare").getValue().toString() + "Rs");
                             name.setText(dataSnapshot.child("name").getValue().toString());
-
+                            getPostData.removeEventListener(getPostDataValueEventListener);
                         }
                         @Override
                         public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -271,13 +271,20 @@ public class BookedFragment extends Fragment {
                     driverId = snapshot.child("driver").getValue().toString();
                     Log.v(TAG,"Driver: "+driverId);
 
-                    getPostData = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(driverId).child(postID);
+                    getPostData = FirebaseDatabase.getInstance().getReference().child("Posts").child("Completed").child(driverId).child(postID);
                     getPostDataValueEventListener = new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            HistoryPost historyPost = new HistoryPost(snapshot.child("Origin").child("name").getValue().toString(), snapshot.child("Destination").child("name").getValue().toString(), snapshot.child("fare").getValue().toString() + "Rs", snapshot.child("isCar").getValue().toString().equals("true") ? "Car" : "Bike", snapshot.child("vehicle").getValue().toString(), snapshot.child("departTime").getValue().toString());
-                            historyPosts.add(historyPost);
-                            historyPostArrayAdapter.notifyDataSetChanged();
+                            if(snapshot.hasChildren()) {
+                                HistoryPost historyPost = new HistoryPost(snapshot.child("Origin").child("name").getValue().toString(), snapshot.child("Destination").child("name").getValue().toString(), snapshot.child("fare").getValue().toString() + "Rs", snapshot.child("isCar").getValue().toString().equals("true") ? "Car" : "Bike", snapshot.child("vehicle").getValue().toString(), snapshot.child("departTime").getValue().toString());
+                                historyPosts.add(historyPost);
+                                historyPostArrayAdapter.notifyDataSetChanged();
+                            }
+                            else{
+                                getPostData.removeEventListener(getPostDataValueEventListener);
+                                getPostData = FirebaseDatabase.getInstance().getReference().child("Posts").child("Canceled").child(driverId).child(postID);
+                                getPostData.addValueEventListener(getPostDataValueEventListener);
+                            }
                         }
                         @Override
                         public void onCancelled(@NonNull DatabaseError databaseError) {
