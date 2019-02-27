@@ -24,6 +24,7 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,7 +46,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.mikhaellopez.circularimageview.CircularImageView;
 
-public class MainActivity extends AppCompatActivity  implements CarBottomSheet.GetDeleteStatus{
+public class MainActivity extends AppCompatActivity implements CarBottomSheet.GetDeleteStatus {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     DrawerLayout mDrawerlayout;
@@ -56,6 +57,7 @@ public class MainActivity extends AppCompatActivity  implements CarBottomSheet.G
     private PreferencesClass preferencesClass;
     private StorageReference mStorageRef;
     private FirebaseAuth mAuth;
+    private DatabaseReference mUserDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +72,7 @@ public class MainActivity extends AppCompatActivity  implements CarBottomSheet.G
 
         drawerSetup();
 
-        if (savedInstanceState==null) {
+        if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                     new HomeFragment()).commit();
             mNavigationView.setCheckedItem(R.id.nav_home);
@@ -112,8 +114,8 @@ public class MainActivity extends AppCompatActivity  implements CarBottomSheet.G
                         break;
                     case R.id.nav_logout:
                         preferencesClass.clearUser();
-                        FirebaseAuth mAuth  = FirebaseAuth.getInstance();
-                        Intent logout = new Intent(MainActivity.this,LoginActivity.class);
+                        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+                        Intent logout = new Intent(MainActivity.this, LoginActivity.class);
                         mAuth.signOut();
                         startActivity(logout);
                         finish();
@@ -152,7 +154,7 @@ public class MainActivity extends AppCompatActivity  implements CarBottomSheet.G
                         break;
                     case R.id.nav_myBookings:
                         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                                new MyBookingFragment(),"bookings").commit();
+                                new MyBookingFragment(), "bookings").commit();
                         mNavigationView.setCheckedItem(R.id.nav_myBookings);
                         mtoolbar.setTitle(R.string.my_bookings);
                         break;
@@ -166,6 +168,78 @@ public class MainActivity extends AppCompatActivity  implements CarBottomSheet.G
                 mDrawerlayout.closeDrawer(GravityCompat.START);
 
                 return false;
+            }
+        });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users");
+        mUserDatabase.child(mAuth.getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String status = dataSnapshot.child("ratingchecker").getValue().toString();
+                if (status.equals("false")) {
+                    showRatingDialog();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void showRatingDialog() {
+        final Dialog dialogRating = new Dialog(MainActivity.this);
+        dialogRating.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialogRating.setContentView(R.layout.rating_dialog);
+        ImageView buttonClose = dialogRating.findViewById(R.id.imageView_close);
+        RatingBar ratingBar = dialogRating.findViewById(R.id.ratingBar);
+
+        dialogRating.show();
+        ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
+            @Override
+            public void onRatingChanged(RatingBar ratingBar, final float rating, boolean fromUser) {
+
+                final DatabaseReference mUserDatabase;
+                mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid());
+                mUserDatabase.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        Double over_rating = 0.0, count = 0.0;
+                        over_rating = Double.parseDouble(dataSnapshot.child("rating").getValue().toString());
+                        count = Double.parseDouble(dataSnapshot.child("ratingcount").getValue().toString());
+                        String ratingCheck = dataSnapshot.child("ratingchecker").getValue().toString();
+                        String driver = dataSnapshot.child("driverrate").getValue().toString();
+                        if (ratingCheck.equals("false")){
+                            Double result = ((over_rating * count) + rating) / (count + 1);
+                            mUserDatabase.child("ratingchecker").setValue("true");
+                            mUserDatabase.child("ratingcount").setValue(++count);
+                            mUserDatabase.child("rating").setValue(over_rating);
+                            dialogRating.dismiss();
+                        }
+
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
+
+            }
+        });
+
+
+        buttonClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialogRating.cancel();
             }
         });
     }
@@ -205,21 +279,20 @@ public class MainActivity extends AppCompatActivity  implements CarBottomSheet.G
 
     @Override
     public void onBackPressed() {
-        if(mDrawerlayout.isDrawerOpen(GravityCompat.START)){
+        if (mDrawerlayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerlayout.closeDrawer(GravityCompat.START);
-        }else {
+        } else {
 
             super.onBackPressed();
         }
     }
 
-    private void setHeaderImage(){
+    private void setHeaderImage() {
         String sImage = preferencesClass.getUserImage();
-        if(sImage != null){
+        if (sImage != null) {
             CircularImageView imageView = (CircularImageView) headerView.findViewById(R.id.imageHeader);
             imageView.setImageBitmap(preferencesClass.decodeBase64(sImage));
-        }
-        else{
+        } else {
             String path = mAuth.getUid();
             mStorageRef.child(path).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                 @Override
@@ -240,8 +313,8 @@ public class MainActivity extends AppCompatActivity  implements CarBottomSheet.G
 
                                 @Override
                                 public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                                    Bitmap icon = ((BitmapDrawable)resource).getBitmap();
-                                    String img = preferencesClass.encodeToBase64(icon,Bitmap.CompressFormat.JPEG, 100);
+                                    Bitmap icon = ((BitmapDrawable) resource).getBitmap();
+                                    String img = preferencesClass.encodeToBase64(icon, Bitmap.CompressFormat.JPEG, 100);
                                     preferencesClass.setUserImage(img);
                                     return false;
                                 }
@@ -251,16 +324,16 @@ public class MainActivity extends AppCompatActivity  implements CarBottomSheet.G
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
-                    Toast.makeText(getBaseContext(),exception.toString(),Toast.LENGTH_LONG).show();
+                    Toast.makeText(getBaseContext(), exception.toString(), Toast.LENGTH_LONG).show();
                 }
             });
 
         }
     }
 
-    private void profileChecker(){
+    private void profileChecker() {
         Intent intent = getIntent();
-        if(intent.hasExtra("FromProfile")){
+        if (intent.hasExtra("FromProfile")) {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                     new ProfileFragment()).commit();
             mNavigationView.setCheckedItem(R.id.nav_profile);
@@ -274,7 +347,7 @@ public class MainActivity extends AppCompatActivity  implements CarBottomSheet.G
     public void onDeleteStatusPassed(String deleteStatus) {
         MyVehicles myVehicles = new MyVehicles();
         Bundle bundle = new Bundle();
-        bundle.putString("deleteStatus",deleteStatus);
+        bundle.putString("deleteStatus", deleteStatus);
         myVehicles.setArguments(bundle);
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                 myVehicles).commit();

@@ -52,6 +52,7 @@ public class OfferedFragment extends Fragment {
     private Button start, cancel;
     private ListView offeredListView;
     private CardView activePost;
+    private ValueEventListener checkRating;
     private String postID;
     private FirebaseAuth mAuth;
     private PostHelpingMethod postHelpingMethod;
@@ -120,8 +121,23 @@ public class OfferedFragment extends Fragment {
             if (dataSnapshot.hasChildren()) {
                 Log.v(TAG, "Post Data: " + dataSnapshot.toString());
                     FirebaseDatabase.getInstance().getReference().child("Posts").child("Completed").child(mAuth.getUid()).child(dataSnapshot.getKey()).setValue(dataSnapshot.getValue());
+                    final DatabaseReference databaseReferenceRate = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID).child("Accepted");
+                    checkRating = new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot.getKey()).child("driverrate")
+                                        .setValue(mAuth.getUid());
+                            }
+                            databaseReferenceRate.removeEventListener(checkRating);
+                        }
 
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
 
+                        }
+                    };
+                databaseReferenceRate.addValueEventListener(checkRating);
                    databaseReferenceforcompleted.removeValue();
                 databaseReferenceforcompleted.removeEventListener(completed);
             }
@@ -405,12 +421,29 @@ public class OfferedFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        databaseReferenceActive.removeEventListener(showActivePost);
-        databaseReferenceNotification.removeEventListener(sendNotifications);
-        databaseReference.removeEventListener(cancelPost);
-        databaseReferenceToken.removeEventListener(notificationToToken);
-        databaseReference.removeEventListener(populateValueEventListener);
-        databasereferencerating.removeEventListener(ratingcheck);
+        if(databaseReferenceActive != null){
+            databaseReferenceActive.removeEventListener(showActivePost);
+        }
+        if(databaseReferenceNotification != null){
+            databaseReferenceNotification.removeEventListener(sendNotifications);
+        }
+        if(databaseReference != null){
+            databaseReference.removeEventListener(cancelPost);
+        }
+        if(databaseReferenceToken != null){
+            databaseReferenceToken.removeEventListener(notificationToToken);
+        }
+        if(databaseReference != null){
+            databaseReference.removeEventListener(populateValueEventListener);
+        }
+        if(databasereferencerating != null){
+            databasereferencerating.removeEventListener(ratingcheck);
+        }
+
+
+
+
+
     }
 
 }

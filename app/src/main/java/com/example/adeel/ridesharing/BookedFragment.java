@@ -78,14 +78,15 @@ public class BookedFragment extends Fragment {
                     getPostDataValueEventListener = new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            from.setText(dataSnapshot.child("Origin").child("name").getValue().toString());
-                            to.setText(dataSnapshot.child("Destination").child("name").getValue().toString());
-                            seats.setText(dataSnapshot.child("seats").getValue().toString());
-                            distance.setText(dataSnapshot.child("distance").getValue().toString() + "KM");
-                            time.setText(dataSnapshot.child("departTime").getValue().toString().split("\\s+")[1]);
-                            price.setText(dataSnapshot.child("fare").getValue().toString() + "Rs");
-                            name.setText(dataSnapshot.child("name").getValue().toString());
-
+                            if(dataSnapshot.hasChildren()) {
+                                from.setText(dataSnapshot.child("Origin").child("name").getValue().toString());
+                                to.setText(dataSnapshot.child("Destination").child("name").getValue().toString());
+                                seats.setText(dataSnapshot.child("seats").getValue().toString());
+                                distance.setText(dataSnapshot.child("distance").getValue().toString() + "KM");
+                                time.setText(dataSnapshot.child("departTime").getValue().toString().split("\\s+")[1]);
+                                price.setText(dataSnapshot.child("fare").getValue().toString() + "Rs");
+                                name.setText(dataSnapshot.child("name").getValue().toString());
+                            }
                         }
                         @Override
                         public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -143,14 +144,16 @@ public class BookedFragment extends Fragment {
                     getPostDataValueEventListener = new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            from.setText(dataSnapshot.child("Origin").child("name").getValue().toString());
-                            to.setText(dataSnapshot.child("Destination").child("name").getValue().toString());
-                            seats.setText(dataSnapshot.child("seats").getValue().toString());
-                            distance.setText(dataSnapshot.child("distance").getValue().toString() + "KM");
-                            time.setText(dataSnapshot.child("departTime").getValue().toString().split("\\s+")[1]);
-                            price.setText(dataSnapshot.child("fare").getValue().toString() + "Rs");
-                            name.setText(dataSnapshot.child("name").getValue().toString());
-                            getPostData.removeEventListener(getPostDataValueEventListener);
+                            if(dataSnapshot.hasChildren()) {
+                                from.setText(dataSnapshot.child("Origin").child("name").getValue().toString());
+                                to.setText(dataSnapshot.child("Destination").child("name").getValue().toString());
+                                seats.setText(dataSnapshot.child("seats").getValue().toString());
+                                distance.setText(dataSnapshot.child("distance").getValue().toString() + "KM");
+                                time.setText(dataSnapshot.child("departTime").getValue().toString().split("\\s+")[1]);
+                                price.setText(dataSnapshot.child("fare").getValue().toString() + "Rs");
+                                name.setText(dataSnapshot.child("name").getValue().toString());
+                                getPostData.removeEventListener(getPostDataValueEventListener);
+                            }
                         }
                         @Override
                         public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -316,9 +319,18 @@ public class BookedFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        databaseReferencePending.removeEventListener(showPendingPost);
-        databaseReferenceActive.removeEventListener(showActivePost);
-        getPostData.removeEventListener(getPostDataValueEventListener);
-        databaseReferencePopulateList.removeEventListener(populateValueEventListener);
+        if (databaseReferencePending != null){
+            databaseReferencePending.removeEventListener(showPendingPost);
+        }
+        if (databaseReferenceActive != null){
+            databaseReferenceActive.removeEventListener(showActivePost);
+        }
+        if (getPostData != null){
+            getPostData.removeEventListener(getPostDataValueEventListener);
+        }
+        if (databaseReferencePopulateList != null){
+            databaseReferencePopulateList.removeEventListener(populateValueEventListener);
+        }
+
     }
 }
