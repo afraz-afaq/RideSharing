@@ -46,6 +46,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.mikhaellopez.circularimageview.CircularImageView;
 
+import java.text.DecimalFormat;
+
 public class MainActivity extends AppCompatActivity implements CarBottomSheet.GetDeleteStatus {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -57,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
     private PreferencesClass preferencesClass;
     private StorageReference mStorageRef;
     private FirebaseAuth mAuth;
+    ValueEventListener valueEventListener, checkRatingValueEventListener;
     private DatabaseReference mUserDatabase;
 
     @Override
@@ -206,22 +209,37 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
 
                 final DatabaseReference mUserDatabase;
                 mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid());
-                mUserDatabase.addValueEventListener(new ValueEventListener() {
+                checkRatingValueEventListener = new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        Double over_rating = 0.0, count = 0.0;
-                        over_rating = Double.parseDouble(dataSnapshot.child("rating").getValue().toString());
-                        count = Double.parseDouble(dataSnapshot.child("ratingcount").getValue().toString());
                         String ratingCheck = dataSnapshot.child("ratingchecker").getValue().toString();
                         String driver = dataSnapshot.child("driverrate").getValue().toString();
                         if (ratingCheck.equals("false")){
-                            Double result = ((over_rating * count) + rating) / (count + 1);
-                            mUserDatabase.child("ratingchecker").setValue("true");
-                            mUserDatabase.child("ratingcount").setValue(++count);
-                            mUserDatabase.child("rating").setValue(over_rating);
-                            dialogRating.dismiss();
-                        }
 
+                            final DatabaseReference driverDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(driver);
+                            valueEventListener = new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    driverDatabaseReference.removeEventListener(valueEventListener);
+                                    mUserDatabase.removeEventListener(checkRatingValueEventListener);
+                                    Double over_rating = 0.0, count = 0.0;
+                                    over_rating = Double.parseDouble(dataSnapshot.child("rating").getValue().toString());
+                                    count = Double.parseDouble(dataSnapshot.child("ratingcount").getValue().toString());
+                                    Double result = ((over_rating * count) + rating) / (count + 1);
+                                    DecimalFormat df = new DecimalFormat("#.#");
+                                    result = Double.parseDouble(df.format(result));
+                                    driverDatabaseReference.child("ratingcount").setValue(++count);
+                                    driverDatabaseReference.child("rating").setValue(result);
+                                    dialogRating.dismiss();
+                                    mUserDatabase.child("ratingchecker").setValue("true");
+                                }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            };
+                            driverDatabaseReference.addValueEventListener(valueEventListener);
+                        }
 
                     }
 
@@ -229,7 +247,8 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
                     public void onCancelled(@NonNull DatabaseError databaseError) {
 
                     }
-                });
+                };
+                mUserDatabase.addValueEventListener(checkRatingValueEventListener);
 
 
             }

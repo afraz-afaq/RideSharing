@@ -229,7 +229,7 @@ public class OfferRideFragment extends Fragment {
                             @Override
                             protected void onPostExecute(String s) {
 
-                                if(mOriginAddress == null || mOriginAddress == null){
+                                if(mOriginAddress == null || mDestinationAddress == null){
                                     AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                                     builder.setMessage("Location fetching error please try again.")
                                             .setTitle("Alert");

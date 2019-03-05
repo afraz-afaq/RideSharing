@@ -59,6 +59,7 @@ public class FindRideCellAdapter extends ArrayAdapter<FindRideItem> {
             viewHolder.carName = cell.findViewById(R.id.content_delivery_time);
             viewHolder.carColor = cell.findViewById(R.id.content_delivery_date);
             viewHolder.carReg = cell.findViewById(R.id.content_deadline_time);
+            viewHolder.rating = cell.findViewById(R.id.content_rating_stars);
             viewHolder.imageView = cell.findViewById(R.id.content_avatar);
 
             viewHolder.contentRequestBtn = cell.findViewById(R.id.content_request_btn);
@@ -93,6 +94,7 @@ public class FindRideCellAdapter extends ArrayAdapter<FindRideItem> {
         viewHolder.carName.setText(item.getCarName());
         viewHolder.carColor.setText(item.getCarColor());
         viewHolder.carReg.setText(item.getCarReg());
+        viewHolder.rating.setText(item.getRating());
         Log.v("Tesing","-> "+item.getImage());
         GlideApp.with(getContext()).load(item.getImage()).into(viewHolder.imageView);
 
@@ -151,6 +153,7 @@ public class FindRideCellAdapter extends ArrayAdapter<FindRideItem> {
         TextView carColor;
         TextView carReg;
         TextView time2;
+        TextView rating;
         ImageView imageView;
 
     }

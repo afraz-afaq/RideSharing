@@ -317,7 +317,6 @@ public class OfferedFragment extends Fragment {
 
                     databaseReferenceforcompleted.addValueEventListener(completed);
 
-
                     Toast.makeText(getActivity(), "Ride Completed", Toast.LENGTH_SHORT).show();
                 }
 

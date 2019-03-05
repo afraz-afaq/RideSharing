@@ -22,6 +22,7 @@ public class FindRideItem {
     private String driverName;
     private String driverUid;
     private String postId;
+    private String rating;
     private String image;
 
     private View.OnClickListener requestBtnClickListener;
@@ -29,7 +30,7 @@ public class FindRideItem {
     public FindRideItem() {
     }
 
-    public FindRideItem(String driverUid,String postId,String price, String fromAddress, String toAddress, String seats, String distance, String time, String carName, String carColor, String carReg, String driverName, String image) {
+    public FindRideItem(String driverUid,String postId,String price, String fromAddress, String toAddress, String seats, String distance, String time, String carName, String carColor, String carReg, String driverName, String rating,String image) {
         this.price = price;
         this.fromAddress = fromAddress;
         this.toAddress = toAddress;
@@ -42,6 +43,7 @@ public class FindRideItem {
         this.driverName = driverName;
         this.driverUid = driverUid;
         this.postId = postId;
+        this.rating = rating;
         this.image = image;
     }
 
@@ -149,6 +151,14 @@ public class FindRideItem {
         this.postId = postId;
     }
 
+    public String getRating() {
+        return rating;
+    }
+
+    public void setRating(String rating) {
+        this.rating = rating;
+    }
+
     public View.OnClickListener getRequestBtnClickListener() {
         return requestBtnClickListener;
     }
@@ -184,17 +194,6 @@ public class FindRideItem {
         result = 31 * result + (seats != null ? seats.hashCode() : 0);;
         result = 31 * result + (time != null ? time.hashCode() : 0);
         return result;
-    }
-
-    /**
-     * @return List of elements prepared for tests
-     */
-    public static ArrayList<FindRideItem> getTestingList() {
-        ArrayList<FindRideItem> items = new ArrayList<>();
-        items.add(new FindRideItem("32432dfsd","3452342","$14", "Nipa Chorangi", "Bahria University", "3","2.5km", "10min", "Mehran", "Black", "RRR-098","Farhan","987423abc3274"));
-        items.add(new FindRideItem("32432dfsd","3452342","$14", "Nipa Chorangi", "Bahria University", "3","2.5km", "10min", "Mehran", "Black", "RRR-098","Farhan","987423abc3274"));
-        return items;
-
     }
 
 }

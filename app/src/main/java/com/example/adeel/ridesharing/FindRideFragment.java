@@ -94,6 +94,9 @@ public class FindRideFragment extends Fragment {
     LatLng latLng;
     LatLng latLngUser;
 
+    DatabaseReference driverRatingDatabaseReference;
+    ValueEventListener ratingValueEventListener;
+
 
     ValueEventListener findRideListener = new ValueEventListener() {
         @Override
@@ -173,67 +176,145 @@ public class FindRideFragment extends Fragment {
                                             String path = uId;
                                             mStorageRef.child(path).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                                                 @Override
-                                                public void onSuccess(Uri uri) {
-                                                    String imageURL = uri.toString();
-                                                    String fare = snapShotToString(snapshotposts, "fare");
-                                                    DecimalFormat df = new DecimalFormat();
-                                                    df.setMaximumFractionDigits(1);
-                                                    FindRideItem findRideItem = new FindRideItem(uId, postId, df.format(Double.parseDouble(fare)), snapShotToString(snapshotposts.child("Origin"), "name"), snapShotToString(snapshotposts.child("Destination"), "name"), snapShotToString(snapshotposts, "seats"), snapShotToString(snapshotposts, "distance"), snapShotToString(snapshotposts, "departTime"),
-                                                            snapShotToString(dataSnapshot, "name"), snapShotToString(dataSnapshot, "color"), snapShotToString(snapshotposts, "vehicle"), snapShotToString(snapshotposts, "name"), imageURL);
-                                                    findRideItems.add(findRideItem);
-                                                    final int index = findRideItems.size() - 1;
-                                                    findRideItems.get(index).setRequestBtnClickListener(new View.OnClickListener() {
+                                                public void onSuccess(final Uri uri) {
+
+                                                    driverRatingDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("rating");
+                                                    ratingValueEventListener = new ValueEventListener() {
                                                         @Override
-                                                        public void onClick(View v) {
-                                                            DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshotRating) {
+
+                                                            String imageURL = uri.toString();
+                                                            String fare = snapShotToString(snapshotposts, "fare");
+                                                            DecimalFormat df = new DecimalFormat();
+                                                            df.setMaximumFractionDigits(1);
+                                                            FindRideItem findRideItem = new FindRideItem(uId, postId, df.format(Double.parseDouble(fare)), snapShotToString(snapshotposts.child("Origin"), "name"), snapShotToString(snapshotposts.child("Destination"), "name"), snapShotToString(snapshotposts, "seats"), snapShotToString(snapshotposts, "distance"), snapShotToString(snapshotposts, "departTime"),
+                                                                    snapShotToString(dataSnapshot, "name"), snapShotToString(dataSnapshot, "color"), snapShotToString(snapshotposts, "vehicle"), snapShotToString(snapshotposts, "name"), dataSnapshotRating.getValue().toString(),imageURL);
+                                                            findRideItems.add(findRideItem);
+                                                            final int index = findRideItems.size() - 1;
+                                                            findRideItems.get(index).setRequestBtnClickListener(new View.OnClickListener() {
                                                                 @Override
-                                                                public void onClick(DialogInterface dialog, int which) {
-                                                                    switch (which) {
-                                                                        case DialogInterface.BUTTON_POSITIVE:
-                                                                            //Yes button clicked
-                                                                            final DatabaseReference notifyDriver = FirebaseDatabase.getInstance().getReference().child("Users").child(findRideItems.get(index).getDriverUid()).child("token");
-                                                                            notify = new ValueEventListener() {
-                                                                                @Override
-                                                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                                                    postHelpingMethod.sendNotification("New Request",preferencesClass.getUSER_NAME()+"("+preferencesClass.getUserRegno()+") wants to ride with you!",dataSnapshot.getValue().toString());
-                                                                                    notifyDriver.removeEventListener(notify);
-                                                                                }
+                                                                public void onClick(View v) {
+                                                                    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                                                                        @Override
+                                                                        public void onClick(DialogInterface dialog, int which) {
+                                                                            switch (which) {
+                                                                                case DialogInterface.BUTTON_POSITIVE:
+                                                                                    //Yes button clicked
+                                                                                    final DatabaseReference notifyDriver = FirebaseDatabase.getInstance().getReference().child("Users").child(findRideItems.get(index).getDriverUid()).child("token");
+                                                                                    notify = new ValueEventListener() {
+                                                                                        @Override
+                                                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                                            postHelpingMethod.sendNotification("New Request",preferencesClass.getUSER_NAME()+"("+preferencesClass.getUserRegno()+") wants to ride with you!",dataSnapshot.getValue().toString());
+                                                                                            notifyDriver.removeEventListener(notify);
+                                                                                        }
 
-                                                                                @Override
-                                                                                public void onCancelled(@NonNull DatabaseError databaseError) {
-                                                                                    Toast.makeText(getActivity(),databaseError.getMessage().toString(),Toast.LENGTH_LONG).show();
-                                                                                }
-                                                                            };
-                                                                            notifyDriver.addValueEventListener(notify);
-                                                                            DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Requests").child(findRideItems.get(index).getPostId()).child("Pending").child(mAuth.getUid());
-                                                                            databaseReference1.child("seats").setValue(iSeats);
-                                                                            databaseReference1.child("name").setValue(preferencesClass.getUSER_NAME());
-                                                                            if(flag)
-                                                                                databaseReference1.child("location").setValue(findRideItems.get(index).getToAddress());
-                                                                            else
-                                                                                databaseReference1.child("location").setValue(findRideItems.get(index).getFromAddress());
+                                                                                        @Override
+                                                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                                                                                            Toast.makeText(getActivity(),databaseError.getMessage().toString(),Toast.LENGTH_LONG).show();
+                                                                                        }
+                                                                                    };
+                                                                                    notifyDriver.addValueEventListener(notify);
+                                                                                    DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Requests").child(findRideItems.get(index).getPostId()).child("Pending").child(mAuth.getUid());
+                                                                                    databaseReference1.child("seats").setValue(iSeats);
+                                                                                    databaseReference1.child("name").setValue(preferencesClass.getUSER_NAME());
+                                                                                    if(flag)
+                                                                                        databaseReference1.child("location").setValue(findRideItems.get(index).getToAddress());
+                                                                                    else
+                                                                                        databaseReference1.child("location").setValue(findRideItems.get(index).getFromAddress());
 
-                                                                            DatabaseReference databaseReference2 = FirebaseDatabase.getInstance().getReference().child("Find").child(mAuth.getUid()).child("Pending").child(findRideItems.get(index).getPostId());
-                                                                            HashMap<String, String> hashMap = new HashMap<String, String>();
-                                                                            hashMap.put("driver", findRideItems.get(index).getDriverUid());
-                                                                            databaseReference2.setValue(hashMap);
-                                                                            break;
+                                                                                    DatabaseReference databaseReference2 = FirebaseDatabase.getInstance().getReference().child("Find").child(mAuth.getUid()).child("Pending").child(findRideItems.get(index).getPostId());
+                                                                                    HashMap<String, String> hashMap = new HashMap<String, String>();
+                                                                                    hashMap.put("driver", findRideItems.get(index).getDriverUid());
+                                                                                    databaseReference2.setValue(hashMap);
+                                                                                    break;
 
-                                                                        case DialogInterface.BUTTON_NEGATIVE:
-                                                                            //No button clicked
-                                                                            dialog.dismiss();
-                                                                            break;
-                                                                    }
+                                                                                case DialogInterface.BUTTON_NEGATIVE:
+                                                                                    //No button clicked
+                                                                                    dialog.dismiss();
+                                                                                    break;
+                                                                            }
+                                                                        }
+                                                                    };
+
+                                                                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                                                    builder.setMessage("Request this ride?").setPositiveButton("Yes", dialogClickListener)
+                                                                            .setNegativeButton("No", dialogClickListener).show();
                                                                 }
-                                                            };
+                                                            });
 
-                                                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                                                            builder.setMessage("Request this ride?").setPositiveButton("Yes", dialogClickListener)
-                                                                    .setNegativeButton("No", dialogClickListener).show();
+                                                            adapter.notifyDataSetChanged();
+                                                            driverRatingDatabaseReference.removeEventListener(ratingValueEventListener);
+
                                                         }
-                                                    });
 
-                                                    adapter.notifyDataSetChanged();
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                        }
+                                                    };
+                                                    driverRatingDatabaseReference.addValueEventListener(ratingValueEventListener);
+
+
+//                                                    String imageURL = uri.toString();
+//                                                    String fare = snapShotToString(snapshotposts, "fare");
+//                                                    DecimalFormat df = new DecimalFormat();
+//                                                    df.setMaximumFractionDigits(1);
+//                                                    FindRideItem findRideItem = new FindRideItem(uId, postId, df.format(Double.parseDouble(fare)), snapShotToString(snapshotposts.child("Origin"), "name"), snapShotToString(snapshotposts.child("Destination"), "name"), snapShotToString(snapshotposts, "seats"), snapShotToString(snapshotposts, "distance"), snapShotToString(snapshotposts, "departTime"),
+//                                                            snapShotToString(dataSnapshot, "name"), snapShotToString(dataSnapshot, "color"), snapShotToString(snapshotposts, "vehicle"), snapShotToString(snapshotposts, "name"), "",imageURL);
+//                                                    findRideItems.add(findRideItem);
+//                                                    final int index = findRideItems.size() - 1;
+//                                                    findRideItems.get(index).setRequestBtnClickListener(new View.OnClickListener() {
+//                                                        @Override
+//                                                        public void onClick(View v) {
+//                                                            DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+//                                                                @Override
+//                                                                public void onClick(DialogInterface dialog, int which) {
+//                                                                    switch (which) {
+//                                                                        case DialogInterface.BUTTON_POSITIVE:
+//                                                                            //Yes button clicked
+//                                                                            final DatabaseReference notifyDriver = FirebaseDatabase.getInstance().getReference().child("Users").child(findRideItems.get(index).getDriverUid()).child("token");
+//                                                                            notify = new ValueEventListener() {
+//                                                                                @Override
+//                                                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                                                                                    postHelpingMethod.sendNotification("New Request",preferencesClass.getUSER_NAME()+"("+preferencesClass.getUserRegno()+") wants to ride with you!",dataSnapshot.getValue().toString());
+//                                                                                    notifyDriver.removeEventListener(notify);
+//                                                                                }
+//
+//                                                                                @Override
+//                                                                                public void onCancelled(@NonNull DatabaseError databaseError) {
+//                                                                                    Toast.makeText(getActivity(),databaseError.getMessage().toString(),Toast.LENGTH_LONG).show();
+//                                                                                }
+//                                                                            };
+//                                                                            notifyDriver.addValueEventListener(notify);
+//                                                                            DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Requests").child(findRideItems.get(index).getPostId()).child("Pending").child(mAuth.getUid());
+//                                                                            databaseReference1.child("seats").setValue(iSeats);
+//                                                                            databaseReference1.child("name").setValue(preferencesClass.getUSER_NAME());
+//                                                                            if(flag)
+//                                                                                databaseReference1.child("location").setValue(findRideItems.get(index).getToAddress());
+//                                                                            else
+//                                                                                databaseReference1.child("location").setValue(findRideItems.get(index).getFromAddress());
+//
+//                                                                            DatabaseReference databaseReference2 = FirebaseDatabase.getInstance().getReference().child("Find").child(mAuth.getUid()).child("Pending").child(findRideItems.get(index).getPostId());
+//                                                                            HashMap<String, String> hashMap = new HashMap<String, String>();
+//                                                                            hashMap.put("driver", findRideItems.get(index).getDriverUid());
+//                                                                            databaseReference2.setValue(hashMap);
+//                                                                            break;
+//
+//                                                                        case DialogInterface.BUTTON_NEGATIVE:
+//                                                                            //No button clicked
+//                                                                            dialog.dismiss();
+//                                                                            break;
+//                                                                    }
+//                                                                }
+//                                                            };
+//
+//                                                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+//                                                            builder.setMessage("Request this ride?").setPositiveButton("Yes", dialogClickListener)
+//                                                                    .setNegativeButton("No", dialogClickListener).show();
+//                                                        }
+//                                                    });
+//
+//                                                    adapter.notifyDataSetChanged();
 
                                                 }
                                             }).addOnFailureListener(new OnFailureListener() {
