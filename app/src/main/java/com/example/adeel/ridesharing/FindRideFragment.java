@@ -179,7 +179,7 @@ public class FindRideFragment extends Fragment {
                                                 @Override
                                                 public void onSuccess(final Uri uri) {
 
-                                                    driverRatingDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("rating");
+                                                    driverRatingDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(uId).child("rating");
                                                     ratingValueEventListener = new ValueEventListener() {
                                                         @Override
                                                         public void onDataChange(@NonNull DataSnapshot dataSnapshotRating) {

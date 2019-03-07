@@ -157,8 +157,8 @@ public class OfferedFragment extends Fragment {
             if (dataSnapshot.hasChildren()) {
                 for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren())
                 {
-                    FirebaseDatabase.getInstance().getReference().child("Users").child(dataSnapshot1.getKey())
-                            .child("ratingchecker").setValue("false");
+                    FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(dataSnapshot1.getKey())
+                            .child("status").setValue("false");
                     FirebaseDatabase.getInstance().getReference().child("Find").child(dataSnapshot1.getKey()).child("Active").child(postID).removeValue();
                     FirebaseDatabase.getInstance().getReference().child("Find").child(dataSnapshot1.getKey()).child("Completed").child(postID).child("driver").setValue(mAuth.getUid());
 
