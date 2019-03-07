@@ -39,7 +39,7 @@ public class PreferencesClass {
         editor.putString(AppConstants.USER_REGNO,dataSnapshot.child("regno").getValue().toString());
         editor.putString(AppConstants.USER_DEPT,dataSnapshot.child("dept").getValue().toString());
         editor.putString(AppConstants.USER_GENDER,dataSnapshot.child("gender").getValue().toString());
-//        editor.putString(AppConstants.USER_PHONESTATUS,dataSnapshot.child("phonestatus").getValue().toString());
+        editor.putString(AppConstants.USER_POSTSTATUS,dataSnapshot.child("poststatus").getValue().toString());
         //editor.putString(AppConstants.USER_IMAGE,image);
         editor.apply();
 
@@ -62,6 +62,14 @@ public void setUserImage(String image){
         SharedPreferences sharedPreferences = activity.getSharedPreferences(AppConstants.PREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(AppConstants.USER_PASSWORD,password);
+        editor.apply();
+
+    }
+
+    public void setUserPostStatus(String status){
+        SharedPreferences sharedPreferences = activity.getSharedPreferences(AppConstants.PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(AppConstants.USER_POSTSTATUS,status);
         editor.apply();
 
     }
@@ -96,6 +104,13 @@ public void setUserImage(String image){
         String name =  sharedPreferences.getString(AppConstants.USER_NAME, null);
         Log.d(TAG,"NAME: "+name);
         return name;
+    }
+
+    public String getUserPostStatus() {
+        SharedPreferences sharedPreferences = activity.getSharedPreferences(AppConstants.PREF_NAME, Context.MODE_PRIVATE);
+        String status =  sharedPreferences.getString(AppConstants.USER_POSTSTATUS, null);
+        Log.d(TAG,"POST STATUS: "+status);
+        return status;
     }
 
     public String getUSER_TOKEN() {

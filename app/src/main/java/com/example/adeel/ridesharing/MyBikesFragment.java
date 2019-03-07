@@ -60,6 +60,7 @@ public class MyBikesFragment extends Fragment {
 
         emptyView = rootView.findViewById(R.id.empty_viewBike);
         databaseBikes = FirebaseDatabase.getInstance().getReference("Users").child(mAuth.getUid()).child("Bikes");
+        databaseBikes.keepSynced(true);
         progressDialog  = postHelpingMethod.createProgressDialog("Fetching Bikes","Please Wait....");
         mBikeList = rootView.findViewById(R.id.listView_bikes);
         bikesArrayList = new ArrayList<>();
@@ -67,13 +68,21 @@ public class MyBikesFragment extends Fragment {
         mBikeList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                Bundle bundle = new Bundle();
-                bundle.putString("uId",mAuth.getUid());
-                bundle.putString("bikeReg",bikesArrayList.get(position).getmCarRegNo());
-                bundle.putString("from","bike");
-                carBottomSheet = new CarBottomSheet();
-                carBottomSheet.setArguments(bundle);
-                carBottomSheet.show(getFragmentManager(),"");
+                        ConnectivityManager connMgr = (ConnectivityManager)
+                getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (!(networkInfo != null && networkInfo.isConnected())) {
+            createDialog();
+
+        } else {
+            Bundle bundle = new Bundle();
+            bundle.putString("uId", mAuth.getUid());
+            bundle.putString("bikeReg", bikesArrayList.get(position).getmCarRegNo());
+            bundle.putString("from", "bike");
+            carBottomSheet = new CarBottomSheet();
+            carBottomSheet.setArguments(bundle);
+            carBottomSheet.show(getFragmentManager(), "");
+        }
                 return false;
             }
         });
@@ -84,16 +93,9 @@ public class MyBikesFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        ConnectivityManager connMgr = (ConnectivityManager)
-                getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        if (!(networkInfo != null && networkInfo.isConnected())) {
-            //check = true;
-            createDialog();
 
-        } else {
             populateCarsList();
-        }
+
     }
 
     private void createDialog(){

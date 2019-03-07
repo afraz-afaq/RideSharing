@@ -57,6 +57,7 @@ public class MyCarsFragment extends Fragment {
 
         emptyView = rootView.findViewById(R.id.empty_viewCar);
         databaseCars = FirebaseDatabase.getInstance().getReference("Users").child(mAuth.getUid()).child("Cars");
+        databaseCars.keepSynced(true);
         progressDialog  = postHelpingMethod.createProgressDialog("Fetching Cars","Please Wait....");
         mCarList = rootView.findViewById(R.id.listView_cars);
         carsArrayList = new ArrayList<>();
@@ -68,13 +69,26 @@ public class MyCarsFragment extends Fragment {
         mCarList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                Bundle bundle = new Bundle();
-                bundle.putString("uId",mAuth.getUid());
-                bundle.putString("carReg",carsArrayList.get(position).getmCarRegNo());
-                bundle.putString("from","car");
-                carBottomSheet = new CarBottomSheet();
-                carBottomSheet.setArguments(bundle);
-                carBottomSheet.show(getFragmentManager(),"");
+                ConnectivityManager connMgr = (ConnectivityManager)
+                        getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+                if (!(networkInfo != null && networkInfo.isConnected())) {
+                    //check = true;
+                    createDialog();
+
+                } else {
+
+                    Bundle bundle = new Bundle();
+                    bundle.putString("uId", mAuth.getUid());
+                    bundle.putString("carReg", carsArrayList.get(position).getmCarRegNo());
+                    bundle.putString("from", "car");
+                    carBottomSheet = new CarBottomSheet();
+                    carBottomSheet.setArguments(bundle);
+                    carBottomSheet.show(getFragmentManager(), "");
+
+                }
+
+
                 return false;
             }
         });
@@ -86,16 +100,7 @@ public class MyCarsFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        ConnectivityManager connMgr = (ConnectivityManager)
-                getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        if (!(networkInfo != null && networkInfo.isConnected())) {
-            //check = true;
-            createDialog();
-
-        } else {
             populateCarsList();
-        }
     }
 
     private void createDialog(){

@@ -128,6 +128,8 @@ public class OfferedFragment extends Fragment {
                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                 FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot.getKey()).child("driverrate")
                                         .setValue(mAuth.getUid());
+                                FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot.getKey()).child("poststatus")
+                                        .setValue("true");
                             }
                             databaseReferenceRate.removeEventListener(checkRating);
                         }
@@ -242,6 +244,9 @@ public class OfferedFragment extends Fragment {
             switch (which) {
                 case DialogInterface.BUTTON_POSITIVE:
                     //Yes button clicked
+                    PreferencesClass preferencesClass = new PreferencesClass(getActivity());
+                    FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").setValue("true");
+                    preferencesClass.setUserPostStatus("true");
                     databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postID);
                     databaseReference.addValueEventListener(cancelPost);
                     databaseReferenceNotification = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID);
@@ -310,8 +315,16 @@ public class OfferedFragment extends Fragment {
 
                     start.setText("COMPLETED");
                 } else {
+
+                    PreferencesClass preferencesClass = new PreferencesClass(getActivity());
+                    FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").setValue("true");
+                    preferencesClass.setUserPostStatus("true");
+
+
+
                     databaseReferenceforcompleted = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postID);
                     databasereferencerating = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID).child("Accepted");
+
 
                     databasereferencerating.addValueEventListener(ratingcheck);
 

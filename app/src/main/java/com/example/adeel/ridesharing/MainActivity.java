@@ -2,6 +2,7 @@ package com.example.adeel.ridesharing;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
@@ -17,6 +18,7 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
@@ -132,10 +134,23 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
                             createDialog();
 
                         } else {
-                            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                                    new FindRideFragment()).commit();
-                            mNavigationView.setCheckedItem(R.id.nav_findRide);
-                            mtoolbar.setTitle(R.string.find_ride);
+                            if(preferencesClass.getUserPostStatus().equals("false")){
+                                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                                builder.setMessage("Please complete or cancel your current ride!").setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        switch (which) {
+                                            case DialogInterface.BUTTON_POSITIVE:
+                                                dialog.dismiss();
+
+                                                    } }} ).show();
+                            }
+                            else {
+                                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                                        new FindRideFragment()).commit();
+                                mNavigationView.setCheckedItem(R.id.nav_findRide);
+                                mtoolbar.setTitle(R.string.find_ride);
+                            }
                         }
                         break;
                     case R.id.nav_offferRide:
@@ -147,12 +162,25 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
                             createDialog();
 
                         } else {
+                            if(preferencesClass.getUserPostStatus().equals("false")){
+                                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                                builder.setMessage("Please complete or cancel your current ride!").setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        switch (which) {
+                                            case DialogInterface.BUTTON_POSITIVE:
+                                                dialog.dismiss();
+
+                                        } }} ).show();
+                            }
+                            else{
 
                             //checkCars();
                             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                                     new OfferRideFragment()).commit();
                             mNavigationView.setCheckedItem(R.id.nav_offferRide);
                             mtoolbar.setTitle(R.string.offer_ride);
+                            }
                         }
                         break;
                     case R.id.nav_myBookings:
@@ -179,13 +207,25 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
     protected void onStart() {
         super.onStart();
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users");
-        mUserDatabase.child(mAuth.getUid()).addValueEventListener(new ValueEventListener() {
+        mUserDatabase.child(mAuth.getUid()).child("ratingchecker").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String status = dataSnapshot.child("ratingchecker").getValue().toString();
+                String status = dataSnapshot.getValue().toString();
                 if (status.equals("false")) {
                     showRatingDialog();
                 }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                preferencesClass.setUserPostStatus(dataSnapshot.getValue().toString());
             }
 
             @Override
@@ -193,6 +233,7 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
 
             }
         });
+
     }
 
     private void showRatingDialog() {
@@ -259,6 +300,7 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
             @Override
             public void onClick(View view) {
                 dialogRating.cancel();
+                FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("ratingchecker").setValue("true");
             }
         });
     }
@@ -371,4 +413,5 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                 myVehicles).commit();
     }
+
 }

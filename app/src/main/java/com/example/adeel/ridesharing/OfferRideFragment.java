@@ -477,13 +477,12 @@ public class OfferRideFragment extends Fragment {
                 if(task.isSuccessful()){
 
                     Toast.makeText(getActivity(), "Ride Posted Successfully!", Toast.LENGTH_SHORT).show();
+                    FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").setValue("false");
                     mdialog.cancel();
                     getFragmentManager().beginTransaction().replace(R.id.fragment_container,
                             new MyBookingFragment()).commit();
                     mNavigationView.setCheckedItem(R.id.nav_myBookings);
                     mtoolbar.setTitle(R.string.my_bookings);
-
-
 //                    DatabaseReference originRef = postRef.child("Origin");
 //                    DatabaseReference destinationRef = postRef.child("Destination");
 //

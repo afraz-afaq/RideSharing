@@ -92,7 +92,10 @@ public class CarBottomSheet extends BottomSheetDialogFragment {
         return chooserView;
     }
 
-
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
 
     private void deleteCar(){
         DatabaseReference carRef;

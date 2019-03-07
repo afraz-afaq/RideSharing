@@ -2,6 +2,7 @@ package com.example.adeel.ridesharing;
 
         import android.app.ProgressDialog;
         import android.content.DialogInterface;
+        import android.content.Intent;
         import android.graphics.Bitmap;
         import android.graphics.drawable.BitmapDrawable;
         import android.graphics.drawable.Drawable;
@@ -205,7 +206,9 @@ public class FindRideFragment extends Fragment {
                                                                                         @Override
                                                                                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                                                                             postHelpingMethod.sendNotification("New Request",preferencesClass.getUSER_NAME()+"("+preferencesClass.getUserRegno()+") wants to ride with you!",dataSnapshot.getValue().toString());
+                                                                                            FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").setValue("false");
                                                                                             notifyDriver.removeEventListener(notify);
+                                                                                            getFragmentManager().beginTransaction().replace(R.id.fragment_container,new MyBookingFragment()).commit();
                                                                                         }
 
                                                                                         @Override

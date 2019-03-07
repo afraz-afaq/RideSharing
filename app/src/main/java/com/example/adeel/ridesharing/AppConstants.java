@@ -26,6 +26,8 @@ public class AppConstants {
 
     public static String USER_TOKEN = "dsfsdarsdfs";
 
+    public static String USER_POSTSTATUS = "false";
+
     public static String CARS_LIST = "carList";
 
     public static String BIKES_LIST = "bikeList";
