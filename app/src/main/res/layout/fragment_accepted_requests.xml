@@ -5,7 +5,17 @@
     android:layout_height="match_parent"
     tools:context=".AcceptedRequestsFragment">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/noPostMsg"
+        android:text="No Accepted Request(s) Available"
+        android:textStyle="bold"
+        android:textAppearance="?android:textAppearanceMedium"
+        android:gravity="center"/>
+
     <ListView
+        android:visibility="gone"
         android:id="@+id/acceptrequest_list"
         android:layout_width="match_parent"
         android:layout_margin="16dp"

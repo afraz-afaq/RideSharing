@@ -57,7 +57,7 @@ public class MyCarsFragment extends Fragment {
 
         emptyView = rootView.findViewById(R.id.empty_viewCar);
         databaseCars = FirebaseDatabase.getInstance().getReference("Users").child(mAuth.getUid()).child("Cars");
-        databaseCars.keepSynced(true);
+//        databaseCars.keepSynced(true);
         progressDialog  = postHelpingMethod.createProgressDialog("Fetching Cars","Please Wait....");
         mCarList = rootView.findViewById(R.id.listView_cars);
         carsArrayList = new ArrayList<>();

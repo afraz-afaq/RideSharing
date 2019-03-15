@@ -5,7 +5,17 @@
     android:layout_height="match_parent"
     tools:context=".PendingRequestsFragment">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/noPostMsg"
+        android:text="No Pending Request(s) Available"
+        android:textStyle="bold"
+        android:textAppearance="?android:textAppearanceMedium"
+        android:gravity="center"/>
+
     <ListView
+        android:visibility="gone"
         android:id="@+id/pendingrequest_list"
         android:layout_width="match_parent"
         android:layout_margin="16dp"

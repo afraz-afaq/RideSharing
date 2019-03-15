@@ -233,7 +233,7 @@ public class OfferRideFragment extends Fragment {
                                     AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                                     builder.setMessage("Location fetching error please try again.")
                                             .setTitle("Alert");
-                                    builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                    builder.setPositiveButton("Okay", new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int id) {
                                             dialog.dismiss();
                                         }

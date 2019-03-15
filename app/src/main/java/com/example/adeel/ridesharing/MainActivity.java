@@ -63,18 +63,37 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
     private FirebaseAuth mAuth;
     ValueEventListener valueEventListener, checkRatingValueEventListener;
     private DatabaseReference mUserDatabase;
+    private String postStatus = "true";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_main);
-        FirebaseMessaging.getInstance().subscribeToTopic("pushNotifications");
-        preferencesClass = new PreferencesClass(this);
-        mNavigationView = (NavigationView) findViewById(R.id.navigation_menu);
         mStorageRef = FirebaseStorage.getInstance().getReference();
         mAuth = FirebaseAuth.getInstance();
 
+
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(mAuth.getUid()).child("status");
+        mUserDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String status = dataSnapshot.getValue().toString();
+                if (status.equals("false")) {
+                    postStatus = "false";
+                    showRatingDialog();
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+        FirebaseMessaging.getInstance().subscribeToTopic("pushNotifications");
+        preferencesClass = new PreferencesClass(this);
+        mNavigationView = (NavigationView) findViewById(R.id.navigation_menu);
         drawerSetup();
 
         if (savedInstanceState == null) {
@@ -206,22 +225,6 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
     @Override
     protected void onStart() {
         super.onStart();
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(mAuth.getUid()).child("status");
-        mUserDatabase.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    String status = dataSnapshot.getValue().toString();
-                    if (status.equals("false")) {
-                        showRatingDialog();
-                    }
-
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
         FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -250,49 +253,51 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
             public void onRatingChanged(RatingBar ratingBar, final float rating, boolean fromUser) {
 
                 final DatabaseReference mUserDatabase;
-                mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid());
+                mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(mAuth.getUid()).child("drivertorate");
                 checkRatingValueEventListener = new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                        String ratingCheck = dataSnapshot.child("ratingchecker").getValue().toString();
-                        final String driver = dataSnapshot.child("driverrate").getValue().toString();
-//                        if (ratingCheck.equals("false") &&  !driver.equals("")){
+                        final String driver = dataSnapshot.getValue().toString();
+                        if(!driver.isEmpty()){
+                        mUserDatabase.removeEventListener(checkRatingValueEventListener);
 
-                            final DatabaseReference driverDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(driver);
-                            valueEventListener = new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                        final DatabaseReference driverDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(driver);
+                        valueEventListener = new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshotDriver) {
+                                if (postStatus.equals("false")) {
                                     driverDatabaseReference.removeEventListener(valueEventListener);
-                                    mUserDatabase.removeEventListener(checkRatingValueEventListener);
+                                    postStatus = "true";
                                     Double over_rating = 0.0, count = 0.0;
-                                    over_rating = Double.parseDouble(dataSnapshot.child("rating").getValue().toString());
-                                    count = Double.parseDouble(dataSnapshot.child("count").getValue().toString());
+                                    over_rating = Double.parseDouble(dataSnapshotDriver.child("rating").getValue().toString());
+                                    count = Double.parseDouble(dataSnapshotDriver.child("count").getValue().toString());
                                     Double result = ((over_rating * count) + rating) / (count + 1);
                                     DecimalFormat df = new DecimalFormat("#.#");
                                     result = Double.parseDouble(df.format(result));
-                                    DatabaseReference driverRef = FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(driver);
-                                    driverRef.child("count").setValue(++count);
-                                    driverRef.child("rating").setValue(result);
+                                    driverDatabaseReference.child("count").setValue(++count);
+                                    driverDatabaseReference.child("rating").setValue(result);
                                     dialogRating.dismiss();
+                                    mUserDatabase.setValue("");
                                     FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(mAuth.getUid()).child("status").setValue("true");
-                                    mUserDatabase.child("driverrate").setValue("");
                                 }
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                            }
 
-                                }
-                            };
-                            driverDatabaseReference.addValueEventListener(valueEventListener);
-//                        }
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
+                            }
+                        };
+                        driverDatabaseReference.addValueEventListener(valueEventListener);
+                    }
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError databaseError) {
 
                     }
-                };
 
+                };
 
                 mUserDatabase.addValueEventListener(checkRatingValueEventListener);
 

@@ -24,13 +24,15 @@ public class FindRideItem {
     private String postId;
     private String rating;
     private String image;
+    private String isCar;
+    private String detials;
 
     private View.OnClickListener requestBtnClickListener;
 
     public FindRideItem() {
     }
 
-    public FindRideItem(String driverUid,String postId,String price, String fromAddress, String toAddress, String seats, String distance, String time, String carName, String carColor, String carReg, String driverName, String rating,String image) {
+    public FindRideItem(String driverUid,String postId,String price, String fromAddress, String toAddress, String seats, String distance, String time, String carName, String carColor, String carReg, String driverName, String rating,String image, String isCar, String detials) {
         this.price = price;
         this.fromAddress = fromAddress;
         this.toAddress = toAddress;
@@ -45,6 +47,8 @@ public class FindRideItem {
         this.postId = postId;
         this.rating = rating;
         this.image = image;
+        this.isCar = isCar;
+        this.detials = detials;
     }
 
     public String getPrice() {
@@ -157,6 +161,22 @@ public class FindRideItem {
 
     public void setRating(String rating) {
         this.rating = rating;
+    }
+
+    public String getIsCar() {
+        return isCar;
+    }
+
+    public void setIsCar(String isCar) {
+        this.isCar = isCar;
+    }
+
+    public String getDetials() {
+        return detials;
+    }
+
+    public void setDetials(String detials) {
+        this.detials = detials;
     }
 
     public View.OnClickListener getRequestBtnClickListener() {

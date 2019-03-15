@@ -1,5 +1,6 @@
 package com.example.adeel.ridesharing;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -47,7 +48,7 @@ public class OfferedFragment extends Fragment {
     private String TAG = "OFFERED_FRAG";
     private Spinner mOffredOptions;
     private int iOffredOptions = 0;
-    private TextView from, to, distance, time, seats, price;
+    private TextView from, to, distance, time, seats, price, noPostMsg;
     TabLayout tabLayout;
     private Button start, cancel;
     private ListView offeredListView;
@@ -61,13 +62,16 @@ public class OfferedFragment extends Fragment {
     DatabaseReference databaseReferenceActive, databaseReference, databaseReferenceNotification, databaseReferenceToken, databaseReferenceNotificationToAccepted,databaseReferenceforcompleted,databasereferencerating,databaseReferenceusercompleted;
     ValueEventListener notificationToToken;
     DatabaseReference getPostData;
+    Boolean check;
+    private ProgressDialog loadingDialog;
 
     ValueEventListener showActivePost = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            noPostMsg.setVisibility(View.GONE);
+            offeredListView.setVisibility(View.GONE);
+            activePost.setVisibility(View.VISIBLE);
             if (dataSnapshot.hasChildren()) {
-
-                activePost.setVisibility(View.VISIBLE);
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
                     postID = snapshot.getKey();
@@ -84,15 +88,17 @@ public class OfferedFragment extends Fragment {
                     }
                 }
             } else {
-                Toast.makeText(getActivity(), "No Active Post", Toast.LENGTH_LONG).show();
-
+//                Toast.makeText(getActivity(), "No Active Post", Toast.LENGTH_LONG).show();
+                noPostMsg.setVisibility(View.VISIBLE);
                 activePost.setVisibility(View.GONE);
             }
+            loadingDialog.dismiss();
         }
 
         @Override
         public void onCancelled(@NonNull DatabaseError databaseError) {
-
+            loadingDialog.dismiss();
+            noPostMsg.setVisibility(View.VISIBLE);
         }
     };
 
@@ -126,7 +132,7 @@ public class OfferedFragment extends Fragment {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot.getKey()).child("driverrate")
+                                FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(snapshot.getKey()).child("drivertorate")
                                         .setValue(mAuth.getUid());
                                 FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot.getKey()).child("poststatus")
                                         .setValue("true");
@@ -277,11 +283,13 @@ public class OfferedFragment extends Fragment {
         price = rootView.findViewById(R.id.title_price);
         start = rootView.findViewById(R.id.startRide);
         cancel = rootView.findViewById(R.id.cancelRide);
+        noPostMsg = rootView.findViewById(R.id.noPostMsg);
         tabLayout = new MyBookingFragment().mTabLayout;
         offeredListView = rootView.findViewById(R.id.listView_offered);
         activePost = rootView.findViewById(R.id.activePost);
         mOffredOptions = rootView.findViewById(R.id.spinner_offeredoptions);
         postHelpingMethod = new PostHelpingMethod(getActivity());
+        loadingDialog = postHelpingMethod.createProgressDialog("Loading...","Please Wait.");
         mAuth = FirebaseAuth.getInstance();
         historyPosts = new ArrayList<HistoryPost>();
         historyPostArrayAdapter = new HistoryAdapter(getActivity(), historyPosts);
@@ -352,11 +360,13 @@ public class OfferedFragment extends Fragment {
                 String selection = (String) adapterView.getItemAtPosition(i);
                 if (!TextUtils.isEmpty(selection)) {
                     if (selection.equals(getString(R.string.past_bookings))) {
+                        check = true;
                         iOffredOptions = R.string.past_bookings;
                         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
                             @Override
                             public void onTabSelected(TabLayout.Tab tab) {
                                 if(tab.getPosition() == 1)
+                                    check = false;
                                     showActive();
                             }
                             @Override
@@ -372,16 +382,15 @@ public class OfferedFragment extends Fragment {
 
                             }
                         });
+                        if(tabLayout.getSelectedTabPosition() == 1 && check) {
+                            showActive();
+                        }
                     } else if (selection.equals(getString(R.string.canceled_bookings))) {
                         iOffredOptions = R.string.canceled_bookings;
-                        activePost.setVisibility(View.GONE);
-                        offeredListView.setVisibility(View.VISIBLE);
                         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Canceled").child(mAuth.getUid());
                         populateList(databaseReference);
                     } else {
                         iOffredOptions = R.string.complete_bookings;
-                        activePost.setVisibility(View.GONE);
-                        offeredListView.setVisibility(View.VISIBLE);
                         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Completed").child(mAuth.getUid());
                         populateList(databaseReference);
                     }
@@ -398,8 +407,7 @@ public class OfferedFragment extends Fragment {
     }
 
     private void showActive() {
-        offeredListView.setVisibility(View.GONE);
-
+        loadingDialog.show();
         databaseReferenceActive.addValueEventListener(showActivePost);
 
     }
@@ -407,23 +415,30 @@ public class OfferedFragment extends Fragment {
     ValueEventListener populateValueEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            noPostMsg.setVisibility(View.GONE);
+            activePost.setVisibility(View.GONE);
+            offeredListView.setVisibility(View.VISIBLE);
             if (dataSnapshot.hasChildren()) {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     HistoryPost historyPost = new HistoryPost(snapshot.child("Origin").child("name").getValue().toString(), snapshot.child("Destination").child("name").getValue().toString(), snapshot.child("fare").getValue().toString() + "Rs", snapshot.child("isCar").getValue().toString().equals("true") ? "Car" : "Bike", snapshot.child("vehicle").getValue().toString(), snapshot.child("departTime").getValue().toString());
                     historyPosts.add(historyPost);
                 }
             } else {
-                Toast.makeText(getActivity(), "No Posts Available", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getActivity(), "No Posts Available", Toast.LENGTH_SHORT).show();
+                    noPostMsg.setVisibility(View.VISIBLE);
             }
+            loadingDialog.dismiss();
             historyPostArrayAdapter.notifyDataSetChanged();
         }
 
         @Override
         public void onCancelled(@NonNull DatabaseError databaseError) {
-
+            noPostMsg.setVisibility(View.VISIBLE);
+            loadingDialog.dismiss();
         }
     };
     private void populateList(DatabaseReference databaseReference) {
+        loadingDialog.show();
         historyPosts.clear();
         databaseReference.addValueEventListener(populateValueEventListener);
 

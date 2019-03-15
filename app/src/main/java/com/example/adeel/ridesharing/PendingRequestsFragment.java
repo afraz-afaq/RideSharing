@@ -1,6 +1,7 @@
 package com.example.adeel.ridesharing;
 
 
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -11,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -21,6 +23,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,11 +40,13 @@ public class PendingRequestsFragment extends Fragment {
     private ListView requestList;
     private PendingRequestAdapter pendingRequestAdapter;
     private DatabaseReference databaseReferenceActive,databaseReferencePendingList;
-    ValueEventListener getFindPendingToAcceptValueEventListener;
+    private ValueEventListener getFindPendingToAcceptValueEventListener;
     private FirebaseAuth mAuth;
     private Button mAccept_Button,mCancel_Button;
     private String postId = "";
+    private TextView noPostMsg;
     ValueEventListener getTokenForCancelValueEventListener;
+    private ProgressDialog loadingDialog;
     private  ValueEventListener activePostValueEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -54,6 +60,8 @@ public class PendingRequestsFragment extends Fragment {
                 }
             }
             else{
+                noPostMsg.setVisibility(View.VISIBLE);
+                requestList.setVisibility(View.GONE);
                 Log.v(TAG,"No Active Post");
             }
         }
@@ -68,6 +76,9 @@ public class PendingRequestsFragment extends Fragment {
         @Override
         public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
             requestArrayList.clear();
+            loadingDialog.show();
+            noPostMsg.setVisibility(View.GONE);
+            requestList.setVisibility(View.VISIBLE);
             if(dataSnapshot.hasChildren()) {
                 for (final DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Log.v(TAG,dataSnapshot+"");
@@ -102,7 +113,6 @@ public class PendingRequestsFragment extends Fragment {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()){
-                                        Toast.makeText(getActivity(), "done", Toast.LENGTH_SHORT).show();
                                         DatabaseReference removeref = FirebaseDatabase.getInstance().getReference().child("Requests").child(postId).child("Pending").child(snapshot.getKey());
                                         databaseReferencePendingList.removeEventListener(penndinglistListener);
                                         removeref.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -146,13 +156,18 @@ public class PendingRequestsFragment extends Fragment {
                     }
                 }
             }else{
-                Toast.makeText(getActivity(), "No Pending Requests", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getActivity(), "No Pending Requests", Toast.LENGTH_SHORT).show();
+                noPostMsg.setVisibility(View.VISIBLE);
+                requestList.setVisibility(View.GONE);
             }
+            loadingDialog.dismiss();
             pendingRequestAdapter.notifyDataSetChanged();
         }
         @Override
         public void onCancelled(@NonNull DatabaseError databaseError) {
-
+            noPostMsg.setVisibility(View.VISIBLE);
+            requestList.setVisibility(View.GONE);
+            loadingDialog.dismiss();
         }
     };
 
@@ -172,8 +187,9 @@ public class PendingRequestsFragment extends Fragment {
         requestList = v.findViewById(R.id.pendingrequest_list);
         pendingRequestAdapter = new PendingRequestAdapter(getActivity(),requestArrayList);
         requestList.setAdapter(pendingRequestAdapter);
-
-
+        noPostMsg = v.findViewById(R.id.noPostMsg);
+        PostHelpingMethod postHelpingMethod = new PostHelpingMethod(getActivity());
+        loadingDialog = postHelpingMethod.createProgressDialog("Loading...","Please Wait.");
         databaseReferenceActive  = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid());
         databaseReferenceActive.addValueEventListener(activePostValueEventListener);
 

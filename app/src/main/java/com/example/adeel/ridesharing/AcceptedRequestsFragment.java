@@ -1,6 +1,7 @@
 package com.example.adeel.ridesharing;
 
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -10,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -37,6 +39,8 @@ public class AcceptedRequestsFragment extends Fragment {
     private FirebaseAuth mAuth;
     private Button track_Button,call_Button,chat_Button;
     private String postId = "";
+    private TextView noPostMsg;
+    private ProgressDialog loadingDialog;
     ValueEventListener getTokenForCancelValueEventListener;
     private  ValueEventListener activePostValueEventListener = new ValueEventListener() {
         @Override
@@ -52,6 +56,8 @@ public class AcceptedRequestsFragment extends Fragment {
             }
             else{
                 Log.v(TAG,"No Active Post");
+                noPostMsg.setVisibility(View.VISIBLE);
+                acceptList.setVisibility(View.GONE);
             }
         }
 
@@ -65,6 +71,9 @@ public class AcceptedRequestsFragment extends Fragment {
         @Override
         public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
             acceptArrayList.clear();
+            loadingDialog.show();
+            noPostMsg.setVisibility(View.GONE);
+            acceptList.setVisibility(View.VISIBLE);
             if(dataSnapshot.hasChildren()) {
                 for (final DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Log.v(TAG,dataSnapshot+"");
@@ -100,12 +109,17 @@ public class AcceptedRequestsFragment extends Fragment {
                 }
                 acceptRequestAdapter.notifyDataSetChanged();
             }else{
-                Toast.makeText(getActivity(), "No Pending Requests", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getActivity(), "No Pending Requests", Toast.LENGTH_SHORT).show();
+                noPostMsg.setVisibility(View.VISIBLE);
+                acceptList.setVisibility(View.GONE);
             }
+            loadingDialog.dismiss();
         }
         @Override
         public void onCancelled(@NonNull DatabaseError databaseError) {
-
+            noPostMsg.setVisibility(View.VISIBLE);
+            acceptList.setVisibility(View.GONE);
+            loadingDialog.dismiss();
         }
     };
 
@@ -126,6 +140,9 @@ public class AcceptedRequestsFragment extends Fragment {
         acceptList = view.findViewById(R.id.acceptrequest_list);
         acceptRequestAdapter = new AcceptRequestAdapter(getActivity(),acceptArrayList);
         acceptList.setAdapter(acceptRequestAdapter);
+        noPostMsg = view.findViewById(R.id.noPostMsg);
+        PostHelpingMethod postHelpingMethod = new PostHelpingMethod(getActivity());
+        loadingDialog = postHelpingMethod.createProgressDialog("Loading...","Please Wait.");
         databaseReferenceActive  = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid());
         databaseReferenceActive.addValueEventListener(activePostValueEventListener);
 

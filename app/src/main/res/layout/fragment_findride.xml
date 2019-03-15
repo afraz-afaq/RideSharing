@@ -6,6 +6,16 @@
     android:background="@color/white"
     android:orientation="vertical">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:id="@+id/noPostMsg"
+        android:text="No Rides(s) Available Right Now"
+        android:textStyle="bold"
+        android:textAppearance="?android:textAppearanceMedium"
+        android:gravity="center"/>
+
     <LinearLayout
         android:id="@+id/layout_cardFindride"
         android:layout_width="match_parent"

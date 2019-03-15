@@ -60,6 +60,8 @@ public class FindRideCellAdapter extends ArrayAdapter<FindRideItem> {
             viewHolder.carColor = cell.findViewById(R.id.content_delivery_date);
             viewHolder.carReg = cell.findViewById(R.id.content_deadline_time);
             viewHolder.rating = cell.findViewById(R.id.content_rating_stars);
+            viewHolder.vehicleLabel = cell.findViewById(R.id.content_delivery_date_badge);
+            viewHolder.details = cell.findViewById(R.id.extraDetailsText);
             viewHolder.imageView = cell.findViewById(R.id.content_avatar);
 
             viewHolder.contentRequestBtn = cell.findViewById(R.id.content_request_btn);
@@ -95,6 +97,17 @@ public class FindRideCellAdapter extends ArrayAdapter<FindRideItem> {
         viewHolder.carColor.setText(item.getCarColor());
         viewHolder.carReg.setText(item.getCarReg());
         viewHolder.rating.setText(item.getRating());
+
+        if(item.getIsCar().equals("true"))
+            viewHolder.vehicleLabel.setText("Car Name");
+        else
+            viewHolder.vehicleLabel.setText("Bike Name");
+
+        if(item.getDetials().equals("no"))
+            viewHolder.details.setText("-");
+        else
+            viewHolder.details.setText(item.getDetials());
+
         Log.v("Tesing","-> "+item.getImage());
         GlideApp.with(getContext()).load(item.getImage()).into(viewHolder.imageView);
 
@@ -154,6 +167,8 @@ public class FindRideCellAdapter extends ArrayAdapter<FindRideItem> {
         TextView carReg;
         TextView time2;
         TextView rating;
+        TextView vehicleLabel;
+        TextView details;
         ImageView imageView;
 
     }

@@ -1,5 +1,6 @@
 package com.example.adeel.ridesharing;
 
+import android.app.ProgressDialog;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -41,34 +42,35 @@ public class BookedFragment extends Fragment {
     private String TAG = "BOOKED_FRAG";
     private Spinner mBookedOptions;
     private int iBookedOptions=0;
-    private TextView from, to, distance, time, seats, price, name;
+    private TextView from, to, distance, time, seats, price, name, noPostMsg;
     private CircleImageView circleImageView;
     private Button cancel,track,chat,call;
     private ListView bookedListView;
     private CardView pendingPost;
-    private String postID;
-    String driverId;
+    private String postID, driverId;
     private FirebaseAuth mAuth;
     private StorageReference storageReference;
     private PostHelpingMethod postHelpingMethod;
     private ArrayList<HistoryPost> historyPosts;
     private HistoryAdapter historyPostArrayAdapter;
-    DatabaseReference databaseReferencePopulateList;
-    DatabaseReference getPostData , databaseReferencePending, databaseReferenceActive, databaseReference, databaseReferenceNotification, databaseReferenceToken;
-    ValueEventListener  getPostDataValueEventListener;
+    private DatabaseReference databaseReferencePopulateList;
+    private DatabaseReference getPostData , databaseReferencePending, databaseReferenceActive, databaseReference, databaseReferenceNotification, databaseReferenceToken;
+    private ValueEventListener  getPostDataValueEventListener;
+    private ProgressDialog loadingDialog;
 
     ValueEventListener showPendingPost = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
+            noPostMsg.setVisibility(View.GONE);
+            bookedListView.setVisibility(View.GONE);
+            circleImageView.setVisibility(View.GONE);
+            track.setVisibility(View.GONE);
+            chat.setVisibility(View.GONE);
+            call.setVisibility(View.GONE);
             if (dataSnapshot.hasChildren()) {
                 pendingPost.setVisibility(View.VISIBLE);
                 cancel.setVisibility(View.VISIBLE);
-                bookedListView.setVisibility(View.GONE);
-                circleImageView.setVisibility(View.GONE);
-                track.setVisibility(View.GONE);
-                chat.setVisibility(View.GONE);
-                call.setVisibility(View.GONE);
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     postID = snapshot.getKey();
                     driverId = snapshot.child("driver").getValue().toString();
@@ -90,32 +92,35 @@ public class BookedFragment extends Fragment {
                         }
                         @Override
                         public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                            loadingDialog.dismiss();
+                            noPostMsg.setVisibility(View.VISIBLE);
                         }
                     };
                     getPostData.addValueEventListener(getPostDataValueEventListener);
 
                 }
             } else {
-                Toast.makeText(getActivity(), "No Pending Post", Toast.LENGTH_LONG).show();
+//                Toast.makeText(getActivity(), "No Pending Post", Toast.LENGTH_LONG).show();
+                noPostMsg.setVisibility(View.VISIBLE);
                 pendingPost.setVisibility(View.GONE);
             }
+            loadingDialog.dismiss();
         }
 
         @Override
         public void onCancelled(@NonNull DatabaseError databaseError) {
-
+            loadingDialog.dismiss();
+            noPostMsg.setVisibility(View.VISIBLE);
         }
     };
 
     ValueEventListener showActivePost = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
+            bookedListView.setVisibility(View.GONE);
+            cancel.setVisibility(View.GONE);
+            noPostMsg.setVisibility(View.GONE);
             if (dataSnapshot.hasChildren()) {
-                bookedListView.setVisibility(View.GONE);
-                cancel.setVisibility(View.GONE);
-
                 pendingPost.setVisibility(View.VISIBLE);
                 circleImageView.setVisibility(View.VISIBLE);
                 track.setVisibility(View.VISIBLE);
@@ -157,22 +162,27 @@ public class BookedFragment extends Fragment {
                         }
                         @Override
                         public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                            loadingDialog.dismiss();
+                            noPostMsg.setVisibility(View.VISIBLE);
                         }
                     };
                     getPostData.addValueEventListener(getPostDataValueEventListener);
 
                 }
             } else {
-                Toast.makeText(getActivity(), "No Pending Post", Toast.LENGTH_LONG).show();
+//                Toast.makeText(getActivity(), "No Pending Post", Toast.LENGTH_LONG).show();
+                noPostMsg.setVisibility(View.VISIBLE);
                 pendingPost.setVisibility(View.GONE);
             }
+            loadingDialog.dismiss();
         }
 
         @Override
         public void onCancelled(@NonNull DatabaseError databaseError) {
-
+            loadingDialog.dismiss();
+            noPostMsg.setVisibility(View.VISIBLE);
         }
+
     };
 
 
@@ -196,6 +206,7 @@ public class BookedFragment extends Fragment {
         track = rootView.findViewById(R.id.trackRide);
         chat = rootView.findViewById(R.id.chatRide);
         call = rootView.findViewById(R.id.phoneRide);
+        noPostMsg = rootView.findViewById(R.id.noPostMsg);
         bookedListView = rootView.findViewById(R.id.listView_booked);
         pendingPost = rootView.findViewById(R.id.pendingPost);
         mBookedOptions=rootView.findViewById(R.id.spinner_bookedoptions);
@@ -205,6 +216,7 @@ public class BookedFragment extends Fragment {
         historyPosts = new ArrayList<HistoryPost>();
         historyPostArrayAdapter = new HistoryAdapter(getActivity(), historyPosts);
         bookedListView.setAdapter(historyPostArrayAdapter);
+        loadingDialog = postHelpingMethod.createProgressDialog("Loading...","Please Wait.");
         spinnerBookedOptions();
         return rootView;
     }
@@ -251,11 +263,13 @@ public class BookedFragment extends Fragment {
     }
 
     private void showPending() {
+        loadingDialog.show();
         databaseReferencePending = FirebaseDatabase.getInstance().getReference().child("Find").child(mAuth.getUid()).child("Pending");
         databaseReferencePending.addValueEventListener(showPendingPost);
     }
 
     private void showActive() {
+        loadingDialog.show();
         databaseReferenceActive = FirebaseDatabase.getInstance().getReference().child("Find").child(mAuth.getUid()).child("Active");
         databaseReferenceActive.addValueEventListener(showActivePost);
     }
@@ -266,8 +280,9 @@ public class BookedFragment extends Fragment {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
+            noPostMsg.setVisibility(View.GONE);
+            pendingPost.setVisibility(View.GONE);
             if (dataSnapshot.hasChildren()) {
-                pendingPost.setVisibility(View.GONE);
                 bookedListView.setVisibility(View.VISIBLE);
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     postID = snapshot.getKey();
@@ -297,11 +312,12 @@ public class BookedFragment extends Fragment {
                     getPostData.addValueEventListener(getPostDataValueEventListener);
                 }
             } else {
-                Toast.makeText(getActivity(), "No Posts Available", Toast.LENGTH_LONG).show();
+//                Toast.makeText(getActivity(), "No Posts Available", Toast.LENGTH_LONG).show();
+                noPostMsg.setVisibility(View.VISIBLE);
                 pendingPost.setVisibility(View.GONE);
             }
 
-
+loadingDialog.dismiss();
         }
 
         @Override
@@ -311,6 +327,7 @@ public class BookedFragment extends Fragment {
     };
 
     private void populateList(DatabaseReference databaseReference) {
+        loadingDialog.show();
         historyPosts.clear();
         databaseReference.addValueEventListener(populateValueEventListener);
 

@@ -60,7 +60,7 @@ public class MyBikesFragment extends Fragment {
 
         emptyView = rootView.findViewById(R.id.empty_viewBike);
         databaseBikes = FirebaseDatabase.getInstance().getReference("Users").child(mAuth.getUid()).child("Bikes");
-        databaseBikes.keepSynced(true);
+//        databaseBikes.keepSynced(true);
         progressDialog  = postHelpingMethod.createProgressDialog("Fetching Bikes","Please Wait....");
         mBikeList = rootView.findViewById(R.id.listView_bikes);
         bikesArrayList = new ArrayList<>();
