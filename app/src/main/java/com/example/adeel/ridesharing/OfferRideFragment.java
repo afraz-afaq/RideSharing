@@ -92,7 +92,7 @@ public class OfferRideFragment extends Fragment {
     private PlaceAutocompleteAdapter mPlaceAutocompleteAdapter;
     private EditText mFurtherDetails;
     private View rootView;
-
+    ValueEventListener ratingValueEventListener;
 
 
     @Nullable
@@ -441,77 +441,71 @@ public class OfferRideFragment extends Fragment {
         String key = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).push().getKey();
         final DatabaseReference postRef = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(key);
 
-        HashMap<String,Object> hashMap =  new HashMap<>();
-        hashMap.put("isCar",Boolean.toString(isCar));
-        hashMap.put("vehicle",mVehicle.split("\\s+")[0]);
-        hashMap.put("date",mDateTime);
-        hashMap.put("departTime",mDepartTIme);
-        hashMap.put("distance",String.valueOf(mDisitance));
-        hashMap.put("duration",String.valueOf(mDuration));
-        hashMap.put("name",preferencesClass.getUSER_NAME());
-        hashMap.put("regno",preferencesClass.getUserRegno());
-        hashMap.put("seats",mSeats);
-        hashMap.put("onway","false");
-        hashMap.put("fare",String.valueOf(mFare));
-        if(TextUtils.isEmpty(mFurtherDetails.getText().toString()))
-            hashMap.put("extraDetails","no");
-        else
-            hashMap.put("extraDetails",mFurtherDetails.getText().toString());
-
-        final HashMap<String,String> origin = new HashMap<>();
-        origin.put("lat",String.valueOf(mOriginAddress.getLatitude()));
-        origin.put("lng",String.valueOf(mOriginAddress.getLongitude()));
-        origin.put("name",mPickUpText.getText().toString());
-
-        final HashMap<String,String> destination = new HashMap<>();
-        destination.put("lat",String.valueOf(mDestinationAddress.getLatitude()));
-        destination.put("lng",String.valueOf(mDestinationAddress.getLongitude()));
-        destination.put("name",mDepart.getText().toString());
-
-        hashMap.put("Origin",origin);
-        hashMap.put("Destination",destination);
-
-        postRef.setValue(hashMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+        final DatabaseReference driverRatingDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(mAuth.getUid()).child("rating");
+        ratingValueEventListener = new ValueEventListener() {
             @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if(task.isSuccessful()){
+            public void onDataChange(@NonNull DataSnapshot dataSnapshotRating) {
+                driverRatingDatabaseReference.removeEventListener(ratingValueEventListener);
 
-                    Toast.makeText(getActivity(), "Ride Posted Successfully!", Toast.LENGTH_SHORT).show();
-                    FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").setValue("false");
-                    mdialog.cancel();
-                    getFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                            new MyBookingFragment()).commit();
-                    mNavigationView.setCheckedItem(R.id.nav_myBookings);
-                    mtoolbar.setTitle(R.string.my_bookings);
-//                    DatabaseReference originRef = postRef.child("Origin");
-//                    DatabaseReference destinationRef = postRef.child("Destination");
-//
-//                    originRef.setValue(origin);
-//                    destinationRef.setValue(destination).addOnCompleteListener(new OnCompleteListener<Void>() {
-//                        @Override
-//                        public void onComplete(@NonNull Task<Void> task) {
-//                            if(task.isSuccessful()){
-//
-//                                Toast.makeText(getActivity(), "Ride Posted Successfully!", Toast.LENGTH_SHORT).show();
-//                                mdialog.cancel();
-//                                getFragmentManager().beginTransaction().replace(R.id.fragment_container,
-//                                        new MyBookingFragment()).commit();
-//                                mNavigationView.setCheckedItem(R.id.nav_myBookings);
-//                                mtoolbar.setTitle(R.string.my_bookings);
-//                            }
-//                            else{
-//                                Toast.makeText(getActivity(), task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-//                            }
-//                        }
-//                    });
+                HashMap<String,Object> hashMap =  new HashMap<>();
+                hashMap.put("rating",dataSnapshotRating.getValue().toString());
+                hashMap.put("isCar",Boolean.toString(isCar));
+                hashMap.put("vehicle",mVehicle.split("\\s+")[0]);
+                hashMap.put("date",mDateTime);
+                hashMap.put("departTime",mDepartTIme);
+                hashMap.put("distance",String.valueOf(mDisitance));
+                hashMap.put("duration",String.valueOf(mDuration));
+                hashMap.put("name",preferencesClass.getUSER_NAME());
+                hashMap.put("regno",preferencesClass.getUserRegno());
+                hashMap.put("seats",mSeats);
+                hashMap.put("onway","false");
+                hashMap.put("fare",String.valueOf(mFare));
+                if(TextUtils.isEmpty(mFurtherDetails.getText().toString()))
+                    hashMap.put("extraDetails","no");
+                else
+                    hashMap.put("extraDetails",mFurtherDetails.getText().toString());
 
-                }
-                else{
-                    Toast.makeText(getActivity(), task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                }
+                final HashMap<String,String> origin = new HashMap<>();
+                origin.put("lat",String.valueOf(mOriginAddress.getLatitude()));
+                origin.put("lng",String.valueOf(mOriginAddress.getLongitude()));
+                origin.put("name",mPickUpText.getText().toString());
+
+                final HashMap<String,String> destination = new HashMap<>();
+                destination.put("lat",String.valueOf(mDestinationAddress.getLatitude()));
+                destination.put("lng",String.valueOf(mDestinationAddress.getLongitude()));
+                destination.put("name",mDepart.getText().toString());
+
+                hashMap.put("Origin",origin);
+                hashMap.put("Destination",destination);
+
+                postRef.setValue(hashMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if(task.isSuccessful()){
+
+                            Toast.makeText(getActivity(), "Ride Posted Successfully!", Toast.LENGTH_SHORT).show();
+                            FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").setValue("false");
+                            mdialog.cancel();
+                            getFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                                    new MyBookingFragment()).commit();
+                            mNavigationView.setCheckedItem(R.id.nav_myBookings);
+                            mtoolbar.setTitle(R.string.my_bookings);
+
+                        }
+                        else{
+                            Toast.makeText(getActivity(), task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+
             }
-        });
 
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        };
+        driverRatingDatabaseReference.addValueEventListener(ratingValueEventListener);
     }
     public Date stringToDate(String mDateTime) throws ParseException {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");

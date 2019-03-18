@@ -37,6 +37,8 @@ public class PendingRequestsFragment extends Fragment {
 
     private final String TAG = "PENDING LIST";
     private ArrayList<Request> requestArrayList;
+    PostHelpingMethod postHelpingMethod;
+    PreferencesClass preferencesClass;
     private ListView requestList;
     private PendingRequestAdapter pendingRequestAdapter;
     private DatabaseReference databaseReferenceActive,databaseReferencePendingList;
@@ -88,8 +90,18 @@ public class PendingRequestsFragment extends Fragment {
                             final DatabaseReference getTokenForCancel = FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot.getKey()).child("token");
                             getTokenForCancelValueEventListener = new ValueEventListener() {
                                 @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    Toast.makeText(getActivity(), "Canceled "+dataSnapshot.getValue().toString(), Toast.LENGTH_SHORT).show();
+                                public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
+                                    DatabaseReference removeref = FirebaseDatabase.getInstance().getReference().child("Requests").child(postId).child("Pending").child(snapshot.getKey());
+                                    removeref.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            final DatabaseReference getFindPendingToCancel = FirebaseDatabase.getInstance().getReference().child("Find").child(snapshot.getKey()).child("Pending").child(postId);
+                                            getFindPendingToCancel.removeValue();
+                                            FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot.getKey()).child("poststatus").setValue("true");
+                                            postHelpingMethod.sendNotification("Request Cancelled",preferencesClass.getUSER_NAME()+" has cancelled your request please find another one :(",dataSnapshot.getValue().toString());
+                                            databaseReferencePendingList.addValueEventListener(penndinglistListener);
+                                        }
+                                    });
 
                                     getTokenForCancel.removeEventListener(getTokenForCancelValueEventListener);
                                 }
@@ -140,6 +152,27 @@ public class PendingRequestsFragment extends Fragment {
                                         getFindPendingToAccept.addValueEventListener(getFindPendingToAcceptValueEventListener);
 
 
+
+
+                                        final DatabaseReference getTokenForCancel = FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot.getKey()).child("token");
+                                        getTokenForCancelValueEventListener = new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                postHelpingMethod.sendNotification("Request Accepted",preferencesClass.getUSER_NAME()+" has accepted your request you can contact him/her now",dataSnapshot.getValue().toString());
+                                                getTokenForCancel.removeEventListener(getTokenForCancelValueEventListener);
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                            }
+                                        };
+                                        getTokenForCancel.addValueEventListener(getTokenForCancelValueEventListener);
+
+
+
+
+
                                     }
                                     else {
                                         String error = task.getException().toString();
@@ -188,7 +221,8 @@ public class PendingRequestsFragment extends Fragment {
         pendingRequestAdapter = new PendingRequestAdapter(getActivity(),requestArrayList);
         requestList.setAdapter(pendingRequestAdapter);
         noPostMsg = v.findViewById(R.id.noPostMsg);
-        PostHelpingMethod postHelpingMethod = new PostHelpingMethod(getActivity());
+        postHelpingMethod = new PostHelpingMethod(getActivity());
+        preferencesClass = new PreferencesClass(getActivity());
         loadingDialog = postHelpingMethod.createProgressDialog("Loading...","Please Wait.");
         databaseReferenceActive  = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid());
         databaseReferenceActive.addValueEventListener(activePostValueEventListener);

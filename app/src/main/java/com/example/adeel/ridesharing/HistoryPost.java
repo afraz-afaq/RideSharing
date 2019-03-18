@@ -12,14 +12,18 @@ public class HistoryPost {
     String via;
     String vehicle;
     String date;
+    String driver;
+    String regno;
 
-    public HistoryPost(String from, String to, String price, String via, String vehicle, String date) {
+    public HistoryPost(String from, String to, String price, String via, String vehicle, String date, String driver, String regno) {
         this.from = from;
         this.to = to;
         this.price = price;
         this.via = via;
         this.vehicle = vehicle;
         this.date = date;
+        this.driver = driver;
+        this.regno = regno;
     }
 
     public String getFrom() {
@@ -68,5 +72,21 @@ public class HistoryPost {
 
     public void setDate(String date) {
         this.date = date;
+    }
+
+    public String getDriver() {
+        return driver;
+    }
+
+    public void setDriver(String driver) {
+        this.driver = driver;
+    }
+
+    public String getRegno() {
+        return regno;
+    }
+
+    public void setRegno(String regno) {
+        this.regno = regno;
     }
 }

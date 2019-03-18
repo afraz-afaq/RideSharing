@@ -37,6 +37,8 @@ public class HistoryAdapter extends ArrayAdapter<HistoryPost> {
         TextView via = (TextView) listViewItem.findViewById(R.id.title_requests_count);
         TextView vehicle = (TextView) listViewItem.findViewById(R.id.title_pledge);
         TextView date = (TextView) listViewItem.findViewById(R.id.title_weight);
+        TextView name = (TextView) listViewItem.findViewById(R.id.driverName);
+        TextView regno = (TextView) listViewItem.findViewById(R.id.regno);
 
         //TextView mComfortLevel = (TextView) listViewItem.findViewById(R.id.textView_comfortLevel);
         HistoryPost historyPost = posts.get(position);
@@ -46,6 +48,8 @@ public class HistoryAdapter extends ArrayAdapter<HistoryPost> {
         via.setText(historyPost.getVia());
         vehicle.setText(historyPost.getVehicle());
         date.setText(historyPost.getDate());
+        name.setText(historyPost.getDriver());
+        regno.setText(historyPost.getRegno());
 
         return listViewItem;
     }

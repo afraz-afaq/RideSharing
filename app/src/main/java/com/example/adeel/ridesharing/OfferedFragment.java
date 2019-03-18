@@ -187,6 +187,8 @@ public class OfferedFragment extends Fragment {
                     if (categories.getKey().equals("Pending") || categories.getKey().equals("Active")) {
                         for (final DataSnapshot userID : categories.getChildren()) {
                             Log.v(TAG, userID.toString());
+                            FirebaseDatabase.getInstance().getReference().child("Users").child(userID.getKey()).child("poststatus")
+                                    .setValue("true");
                             databaseReferenceToken = FirebaseDatabase.getInstance().getReference().child("Users").child(userID.getKey()).child("token");
                             notificationToToken = new ValueEventListener() {
                                 @Override
@@ -420,7 +422,7 @@ public class OfferedFragment extends Fragment {
             offeredListView.setVisibility(View.VISIBLE);
             if (dataSnapshot.hasChildren()) {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    HistoryPost historyPost = new HistoryPost(snapshot.child("Origin").child("name").getValue().toString(), snapshot.child("Destination").child("name").getValue().toString(), snapshot.child("fare").getValue().toString() + "Rs", snapshot.child("isCar").getValue().toString().equals("true") ? "Car" : "Bike", snapshot.child("vehicle").getValue().toString(), snapshot.child("departTime").getValue().toString());
+                    HistoryPost historyPost = new HistoryPost(snapshot.child("Origin").child("name").getValue().toString(), snapshot.child("Destination").child("name").getValue().toString(), snapshot.child("fare").getValue().toString() + "Rs", snapshot.child("isCar").getValue().toString().equals("true") ? "Car" : "Bike", snapshot.child("vehicle").getValue().toString(), snapshot.child("departTime").getValue().toString(),snapshot.child("name").getValue().toString(),snapshot.child("regno").getValue().toString());
                     historyPosts.add(historyPost);
                 }
             } else {

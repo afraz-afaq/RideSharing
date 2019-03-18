@@ -55,7 +55,7 @@ public class BookedFragment extends Fragment {
     private HistoryAdapter historyPostArrayAdapter;
     private DatabaseReference databaseReferencePopulateList;
     private DatabaseReference getPostData , databaseReferencePending, databaseReferenceActive, databaseReference, databaseReferenceNotification, databaseReferenceToken;
-    private ValueEventListener  getPostDataValueEventListener;
+    private ValueEventListener  getPostDataValueEventListener, getFindPendingToCancelValueEventListener;
     private ProgressDialog loadingDialog;
 
     ValueEventListener showPendingPost = new ValueEventListener() {
@@ -218,6 +218,29 @@ public class BookedFragment extends Fragment {
         bookedListView.setAdapter(historyPostArrayAdapter);
         loadingDialog = postHelpingMethod.createProgressDialog("Loading...","Please Wait.");
         spinnerBookedOptions();
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final DatabaseReference getFindPendingToCancel = FirebaseDatabase.getInstance().getReference().child("Find").child(mAuth.getUid()).child("Pending").child(postID);
+                getFindPendingToCancelValueEventListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        FirebaseDatabase.getInstance().getReference().child("Find").child(mAuth.getUid()).child("Canceled").child(postID).setValue(dataSnapshot.getValue());
+                        getFindPendingToCancel.removeEventListener(getFindPendingToCancelValueEventListener);
+                        getFindPendingToCancel.removeValue();
+                        FirebaseDatabase.getInstance().getReference().child("Requests").child(postID).child("Pending").child(mAuth.getUid()).removeValue();
+                        FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").setValue("true");
+                    }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                };
+
+                getFindPendingToCancel.addValueEventListener(getFindPendingToCancelValueEventListener);
+            }
+        });
         return rootView;
     }
 
@@ -294,7 +317,7 @@ public class BookedFragment extends Fragment {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
                             if(snapshot.hasChildren()) {
-                                HistoryPost historyPost = new HistoryPost(snapshot.child("Origin").child("name").getValue().toString(), snapshot.child("Destination").child("name").getValue().toString(), snapshot.child("fare").getValue().toString() + "Rs", snapshot.child("isCar").getValue().toString().equals("true") ? "Car" : "Bike", snapshot.child("vehicle").getValue().toString(), snapshot.child("departTime").getValue().toString());
+                                HistoryPost historyPost = new HistoryPost(snapshot.child("Origin").child("name").getValue().toString(), snapshot.child("Destination").child("name").getValue().toString(),  "Rs. "+snapshot.child("fare").getValue().toString(), snapshot.child("isCar").getValue().toString().equals("true") ? "Car" : "Bike", snapshot.child("vehicle").getValue().toString(), snapshot.child("departTime").getValue().toString(),snapshot.child("name").getValue().toString(),snapshot.child("regno").getValue().toString());
                                 historyPosts.add(historyPost);
                                 historyPostArrayAdapter.notifyDataSetChanged();
                             }

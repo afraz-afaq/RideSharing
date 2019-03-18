@@ -72,6 +72,7 @@ public class PostHelpingMethod {
 
     public void sendNotification(String title, String body, String token) {
         final FirebasePush firebasePush = new FirebasePush("AIzaSyDARseKL-2opSy4uMzLigTdjv-Mo6AyTsQ") ;
+
         firebasePush.setAsyncResponse(new PushNotificationTask.AsyncResponse() {
             @Override
             public void onFinishPush(@NotNull String ouput) {
@@ -79,6 +80,7 @@ public class PostHelpingMethod {
             }
         });
         firebasePush.setNotification(new Notification(title,body));
+
         firebasePush.sendToToken(token);
     }
 

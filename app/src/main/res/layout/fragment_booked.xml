@@ -148,7 +148,7 @@
                             android:ellipsize="marquee"
                             android:fadingEdge="horizontal"
                             android:singleLine="true"
-                            android:text="dfsdfsdfsdfsdfsdhjgfg"
+                            android:text="-"
                             android:textColor="@android:color/black"
                             android:textSize="16sp" />
 
@@ -173,7 +173,7 @@
                             android:ellipsize="marquee"
                             android:fadingEdge="horizontal"
                             android:singleLine="true"
-                            android:text="sdfsfsdfsafsdfsdfdfasf"
+                            android:text="-"
                             android:textColor="@android:color/black"
                             android:textSize="16sp" />
 
@@ -186,7 +186,7 @@
                             android:layout_alignParentStart="true"
                             android:layout_alignParentLeft="true"
                             android:layout_alignParentBottom="true"
-                            android:text="4" />
+                            android:text="-" />
 
                         <TextView
                             style="@style/TitleBadgeTitle"
@@ -205,7 +205,7 @@
                             android:layout_alignParentEnd="true"
                             android:layout_alignParentRight="true"
                             android:layout_alignParentBottom="true"
-                            android:text="@string/weight_mock" />
+                            android:text="-" />
 
                         <TextView
                             style="@style/TitleBadgeTitle"
@@ -223,7 +223,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentBottom="true"
                             android:layout_centerHorizontal="true"
-                            android:text="50km" />
+                            android:text="-km" />
 
                         <TextView
                             style="@style/TitleBadgeTitle"

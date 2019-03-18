@@ -346,6 +346,7 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, mDrawerlayout, mtoolbar, R.string.home, R.string.home);
         mDrawerlayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
+
     }
 
     @Override

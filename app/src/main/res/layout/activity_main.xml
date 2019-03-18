@@ -24,6 +24,15 @@
             app:layout_scrollFlags="scroll|enterAlways"
             app:titleTextColor="@color/white">
 
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="end"
+                android:id="@+id/refreshSearch"
+                android:visibility="gone"
+                android:layout_marginRight="16dp"
+                android:src="@drawable/ic_refresh_black_24dp"/>
+
         </android.support.v7.widget.Toolbar>
 
         <FrameLayout

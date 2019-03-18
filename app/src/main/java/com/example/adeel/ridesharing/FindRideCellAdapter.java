@@ -1,6 +1,7 @@
 package com.example.adeel.ridesharing;
 
 import android.content.Context;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,7 +10,12 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.ramotion.foldingcell.FoldingCell;
 
 import java.util.HashSet;
@@ -24,19 +30,22 @@ public class FindRideCellAdapter extends ArrayAdapter<FindRideItem> {
 
     private HashSet<Integer> unfoldedIndexes = new HashSet<>();
     private View.OnClickListener defaultRequestBtnClickListener;
+    Context context;
+    private StorageReference mStorageRef;
 
     public FindRideCellAdapter(Context context, List<FindRideItem> objects) {
         super(context, 0, objects);
+        this.context = context;
     }
 
     @NonNull
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         // get item for selected view
-        FindRideItem item = getItem(position);
+        final FindRideItem item = getItem(position);
         // if cell is exists - reuse it, if not - create the new one from resource
         FoldingCell cell = (FoldingCell) convertView;
-        ViewHolder viewHolder;
+        final ViewHolder viewHolder;
         if (cell == null) {
             viewHolder = new ViewHolder();
             LayoutInflater vi = LayoutInflater.from(getContext());
@@ -80,8 +89,8 @@ public class FindRideCellAdapter extends ArrayAdapter<FindRideItem> {
             return cell;
 
         // bind data from selected element to view through view holder
-        viewHolder.price.setText("₨. "+item.getPrice());
-        viewHolder.price2.setText("₨. "+item.getPrice());
+        viewHolder.price.setText("₨. " + item.getPrice());
+        viewHolder.price2.setText("₨. " + item.getPrice());
         viewHolder.fromAddress.setText(item.getFromAddress());
         viewHolder.toAddress.setText(item.getToAddress());
         viewHolder.fromAddress2.setText(item.getFromAddress());
@@ -98,18 +107,31 @@ public class FindRideCellAdapter extends ArrayAdapter<FindRideItem> {
         viewHolder.carReg.setText(item.getCarReg());
         viewHolder.rating.setText(item.getRating());
 
-        if(item.getIsCar().equals("true"))
+        if (item.getIsCar().equals("true"))
             viewHolder.vehicleLabel.setText("Car Name");
         else
             viewHolder.vehicleLabel.setText("Bike Name");
 
-        if(item.getDetials().equals("no"))
+        if (item.getDetials().equals("no"))
             viewHolder.details.setText("-");
         else
             viewHolder.details.setText(item.getDetials());
 
-        Log.v("Tesing","-> "+item.getImage());
-        GlideApp.with(getContext()).load(item.getImage()).into(viewHolder.imageView);
+        Log.v("Tesing", "-> " + item.getImage());
+        mStorageRef = FirebaseStorage.getInstance().getReference();
+        mStorageRef.child(item.getImage()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            @Override
+            public void onSuccess(final Uri uri) {
+                String imageURL = uri.toString();
+                GlideApp.with(getContext()).load(imageURL).into(viewHolder.imageView);
+            }
+        })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        Toast.makeText(context, exception.toString(), Toast.LENGTH_LONG).show();
+                    }
+                });
 
 
         // set custom btn handler for list item from that item
