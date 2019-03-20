@@ -1,6 +1,7 @@
 package com.example.adeel.ridesharing;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -47,7 +48,7 @@ public class BookedFragment extends Fragment {
     private Button cancel,track,chat,call;
     private ListView bookedListView;
     private CardView pendingPost;
-    private String postID, driverId;
+    private String postID, driverId, driverName;
     private FirebaseAuth mAuth;
     private StorageReference storageReference;
     private PostHelpingMethod postHelpingMethod;
@@ -158,6 +159,7 @@ public class BookedFragment extends Fragment {
                                 price.setText(dataSnapshot.child("fare").getValue().toString() + "Rs");
                                 name.setText(dataSnapshot.child("name").getValue().toString());
                                 getPostData.removeEventListener(getPostDataValueEventListener);
+                                driverName = dataSnapshot.child("name").getValue().toString();
                             }
                         }
                         @Override
@@ -239,6 +241,16 @@ public class BookedFragment extends Fragment {
                 };
 
                 getFindPendingToCancel.addValueEventListener(getFindPendingToCancelValueEventListener);
+            }
+        });
+
+        chat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(),ChatActivity.class);
+                intent.putExtra("driverId",driverId);
+                intent.putExtra("driverName",driverName);
+                startActivity(intent);
             }
         });
         return rootView;

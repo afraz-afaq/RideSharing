@@ -2,6 +2,7 @@ package com.example.adeel.ridesharing;
 
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -89,7 +90,10 @@ public class AcceptedRequestsFragment extends Fragment {
                         @Override
                         public void onClick(View view) {
 
-
+                            Intent intent = new Intent(getActivity(),ChatActivity.class);
+                            intent.putExtra("driverId",snapshot.getKey() );
+                            intent.putExtra("driverName",snapshot.child("name").getValue().toString());
+                            startActivity(intent);
                         }
                     };
 
