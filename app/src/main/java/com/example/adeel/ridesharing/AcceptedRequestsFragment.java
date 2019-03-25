@@ -1,10 +1,14 @@
 package com.example.adeel.ridesharing;
 
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -102,7 +106,13 @@ public class AcceptedRequestsFragment extends Fragment {
                     View.OnClickListener callEvent = new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-
+                            Intent intent = new Intent(Intent.ACTION_CALL);
+                            String phone = "tel:"+snapshot.child("contact").getValue().toString();
+                            intent.setData(Uri.parse(phone));
+                            if (ActivityCompat.checkSelfPermission(getActivity(),
+                                    Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+                                startActivity(intent);
+                            }
                         }
                     };
                     try {

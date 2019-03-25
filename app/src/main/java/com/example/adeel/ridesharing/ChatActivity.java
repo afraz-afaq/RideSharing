@@ -11,8 +11,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -40,6 +43,7 @@ import java.util.Map;
 
 public class ChatActivity extends AppCompatActivity {
 
+    public static boolean seenCheck = false, writingCheck = false;
     private String receiver_id, name, sender_id, messageText;
     private Toolbar mChatToolbar;
     private final int GALLERY_PICK = 1;
@@ -54,18 +58,39 @@ public class ChatActivity extends AppCompatActivity {
     private MessageAdapter messageAdapter;
     private ImageView backImage, mUserImage;
     private final List<Messages> messagesList = new ArrayList<>();
-    private DatabaseReference mDatabaseReference, ChatRef, statusRef;
+    private DatabaseReference mDatabaseReference, ChatRef, statusRef, writingRef;
     ValueEventListener statusValueEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.getValue().toString().equals("true")){
-                    Toast.makeText(ChatActivity.this, "Seen", Toast.LENGTH_SHORT).show();
+            if(dataSnapshot.exists()) {
+                if (dataSnapshot.getValue().toString().equals("true")) {
+                    seenCheck = true;
                     messageAdapter.notifyDataSetChanged();
-                }
-                else{
+                } else {
 
                 }
             }
+            }
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+        }
+    };
+
+    ValueEventListener writingValueEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            if(dataSnapshot.exists()) {
+                    if (dataSnapshot.getValue().toString().equals("true")) {
+                        writingCheck = true;
+                        messageAdapter.notifyDataSetChanged();
+                    } else {
+                        writingCheck = false;
+                        messageAdapter.notifyDataSetChanged();
+                    }
+
+            }
+        }
         @Override
         public void onCancelled(@NonNull DatabaseError databaseError) {
 
@@ -114,8 +139,6 @@ public class ChatActivity extends AppCompatActivity {
         backImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(ChatActivity.this, MainActivity.class);
-                startActivity(intent);
                 finish();
             }
         });
@@ -135,11 +158,32 @@ public class ChatActivity extends AppCompatActivity {
         statusRef = FirebaseDatabase.getInstance().getReference().child("SeenStatus").child(mAuth.getUid());
         statusRef.addValueEventListener(statusValueEventListener);
 
+        writingRef = FirebaseDatabase.getInstance().getReference().child("Messages").child(receiver_id).child(mAuth.getUid()).child("writingstatus");
+        writingRef.addValueEventListener(writingValueEventListener);
+
+        mMessage.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                FirebaseDatabase.getInstance().getReference().child("Messages").child(mAuth.getUid()).child(receiver_id).child("writingstatus").setValue("true");
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(s.length()==0)
+                    FirebaseDatabase.getInstance().getReference().child("Messages").child(mAuth.getUid()).child(receiver_id).child("writingstatus").setValue("false");
+            }
+        });
+
     }
 
     private void AllMessages() {
         ChatRef = FirebaseDatabase.getInstance().getReference().child("Messages").child(sender_id).child(receiver_id);
-        ChatRef.keepSynced(true);
+//        ChatRef.keepSynced(true);
 
         ChatRef.addChildEventListener(seenFunc);
     }
@@ -149,14 +193,16 @@ public class ChatActivity extends AppCompatActivity {
         @Override
         public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
             FirebaseDatabase.getInstance().getReference().child("SeenStatus").child(receiver_id).setValue("true");
-            Messages messages = dataSnapshot.getValue(Messages.class);
-            messages.setId(dataSnapshot.getKey());
-            messages.setReciever(receiver_id);
-            messagesList.add(messages);
-            messageAdapter.notifyDataSetChanged();
-            mRecyclerView.scrollToPosition(messagesList.size() - 1);
-            String sms = dataSnapshot.child("from").getValue().toString();
-            String sen = dataSnapshot.child("seen").getValue().toString();
+            if(!dataSnapshot.getKey().equals("writingstatus")) {
+                Messages messages = dataSnapshot.getValue(Messages.class);
+                messages.setId(dataSnapshot.getKey());
+                messages.setReciever(receiver_id);
+                messagesList.add(messages);
+                messageAdapter.notifyDataSetChanged();
+                mRecyclerView.scrollToPosition(messagesList.size() - 1);
+                String sms = dataSnapshot.child("from").getValue().toString();
+                String sen = dataSnapshot.child("seen").getValue().toString();
+            }
         }
 
         @Override
@@ -179,6 +225,8 @@ public class ChatActivity extends AppCompatActivity {
         public void onCancelled(@NonNull DatabaseError databaseError) {
 
         }
+
+
     };
 
 
@@ -187,6 +235,8 @@ public class ChatActivity extends AppCompatActivity {
         super.onStop();
         ChatRef.removeEventListener(seenFunc);
         statusRef.removeEventListener(statusValueEventListener);
+        FirebaseDatabase.getInstance().getReference().child("Messages").child(mAuth.getUid()).child(receiver_id).child("writingstatus").setValue("false");
+        writingRef.removeEventListener(writingValueEventListener);
     }
 
     private void sendMessage() {
@@ -209,6 +259,7 @@ public class ChatActivity extends AppCompatActivity {
             messageTextDetail.put(recmessRef + "/" + message_push_key, messageTextBody);
 
             FirebaseDatabase.getInstance().getReference().child("SeenStatus").child(mAuth.getUid()).setValue("false");
+            seenCheck = false;
 
             mDatabaseReference.updateChildren(messageTextDetail, new DatabaseReference.CompletionListener() {
                 @Override

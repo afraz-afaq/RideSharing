@@ -450,6 +450,7 @@ public class OfferRideFragment extends Fragment {
                 HashMap<String,Object> hashMap =  new HashMap<>();
                 hashMap.put("rating",dataSnapshotRating.getValue().toString());
                 hashMap.put("isCar",Boolean.toString(isCar));
+                hashMap.put("contact",preferencesClass.getUserContact());
                 hashMap.put("vehicle",mVehicle.split("\\s+")[0]);
                 hashMap.put("date",mDateTime);
                 hashMap.put("departTime",mDepartTIme);

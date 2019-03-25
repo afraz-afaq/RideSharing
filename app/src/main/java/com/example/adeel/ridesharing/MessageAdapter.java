@@ -36,6 +36,7 @@ import java.util.Date;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import pl.droidsonroids.gif.GifImageView;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
 
@@ -64,7 +65,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 messageViewHolder.mTime.setTextColor(Color.WHITE);
 
                 messageViewHolder.mNew.setVisibility(View.VISIBLE);
-                if ((userMessageList.size() - 1) == i) {
+                if ((userMessageList.size() - 1) == i && ChatActivity.seenCheck) {
 
                     messageViewHolder.mSatus.setVisibility(View.VISIBLE);
                 }
@@ -75,6 +76,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
 
             } else {
+
                 messageViewHolder.mSatus.setVisibility(View.GONE);
                 messageViewHolder.shape.setBackgroundResource(R.drawable.messageshape);
                 messageViewHolder.mLinearLayout.setGravity(Gravity.LEFT);
@@ -84,7 +86,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 messageViewHolder.mSatus.setVisibility(View.GONE);
             }
 
+        if ((userMessageList.size() - 1) == i && ChatActivity.writingCheck) {
 
+            messageViewHolder.writingGif.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            messageViewHolder.writingGif.setVisibility(View.GONE);
+        }
 
 
             messageViewHolder.mText.setText(messages.getMessage());
@@ -120,6 +129,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
         private TextView mText, mTime, mSatus;
         private LinearLayout mLinearLayout, mNew, shape;
+        private GifImageView writingGif;
 
         public MessageViewHolder(View view) {
             super(view);
@@ -129,6 +139,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             mTime = view.findViewById(R.id.message_time);
             shape = view.findViewById(R.id.txt_shape);
             mNew = view.findViewById(R.id.new_layout);
+            writingGif = view.findViewById(R.id.writing);
         }
 
 

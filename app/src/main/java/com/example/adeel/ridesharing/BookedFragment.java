@@ -1,12 +1,15 @@
 package com.example.adeel.ridesharing;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
 import android.text.TextUtils;
@@ -48,7 +51,7 @@ public class BookedFragment extends Fragment {
     private Button cancel,track,chat,call;
     private ListView bookedListView;
     private CardView pendingPost;
-    private String postID, driverId, driverName;
+    private String postID, driverId, driverName, contact;
     private FirebaseAuth mAuth;
     private StorageReference storageReference;
     private PostHelpingMethod postHelpingMethod;
@@ -160,6 +163,7 @@ public class BookedFragment extends Fragment {
                                 name.setText(dataSnapshot.child("name").getValue().toString());
                                 getPostData.removeEventListener(getPostDataValueEventListener);
                                 driverName = dataSnapshot.child("name").getValue().toString();
+                                contact = dataSnapshot.child("contact").getValue().toString();
                             }
                         }
                         @Override
@@ -249,8 +253,21 @@ public class BookedFragment extends Fragment {
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(),ChatActivity.class);
                 intent.putExtra("driverId",driverId);
-                intent.putExtra("driverName",driverName);
+                intent.putExtra("name",driverName);
                 startActivity(intent);
+            }
+        });
+
+        call.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_CALL);
+                String phone = "tel:"+contact;
+                intent.setData(Uri.parse(phone));
+                if (ActivityCompat.checkSelfPermission(getActivity(),
+                        Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+                    startActivity(intent);
+                }
             }
         });
         return rootView;
