@@ -270,6 +270,16 @@ public class BookedFragment extends Fragment {
                 }
             }
         });
+
+        track.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(),MapsActivity.class);
+                intent.putExtra("driverId",driverId);
+                intent.putExtra("driver","false");
+                startActivity(intent);
+            }
+        });
         return rootView;
     }
 

@@ -85,7 +85,10 @@ public class AcceptedRequestsFragment extends Fragment {
                     View.OnClickListener trackEvent = new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-
+                            Intent intent = new Intent(getActivity(),MapsActivity.class);
+                            intent.putExtra("driverId",snapshot.getKey() );
+                            intent.putExtra("driver","true");
+                            startActivity(intent);
 
                         }
                     };
