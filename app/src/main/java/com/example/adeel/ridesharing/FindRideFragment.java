@@ -208,9 +208,8 @@ public class FindRideFragment extends Fragment {
 
                                                         Log.v(TAG, "2-> " + dataSnapshot);
                                                                 String fare = snapShotToString(snapshotposts, "fare");
-                                                                DecimalFormat df = new DecimalFormat();
-                                                                df.setMaximumFractionDigits(1);
-                                                                FindRideItem findRideItem = new FindRideItem(uId, postId, df.format(Double.parseDouble(fare)), snapShotToString(snapshotposts.child("Origin"), "name"), snapShotToString(snapshotposts.child("Destination"), "name"), snapShotToString(snapshotposts, "seats"), snapShotToString(snapshotposts, "distance"), snapShotToString(snapshotposts, "departTime"),
+
+                                                                FindRideItem findRideItem = new FindRideItem(uId, postId, postHelpingMethod.decimalPlacer(Double.parseDouble(fare),1), snapShotToString(snapshotposts.child("Origin"), "name"), snapShotToString(snapshotposts.child("Destination"), "name"), snapShotToString(snapshotposts, "seats"), snapShotToString(snapshotposts, "distance"), snapShotToString(snapshotposts, "departTime"),
                                                                         snapShotToString(dataSnapshot, "name"), snapShotToString(dataSnapshot, "color"), snapShotToString(snapshotposts, "vehicle"), snapShotToString(snapshotposts, "name"), snapShotToString(snapshotposts, "rating"), uId, snapShotToString(snapshotposts, "isCar"), snapShotToString(snapshotposts, "extraDetails"));
                                                                 findRideItems.add(findRideItem);
                                                                 final int index = findRideItems.size() - 1;

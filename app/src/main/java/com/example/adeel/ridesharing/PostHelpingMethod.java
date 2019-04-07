@@ -23,6 +23,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -120,27 +121,16 @@ public class PostHelpingMethod {
         return check;
     }
 
-
-    public boolean checkConnection() {
+    public float distanceBetween(LatLng loc1, LatLng loc2) {
         boolean check = false;
-        ConnectivityManager connMgr = (ConnectivityManager)
-                activity.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-
-        if (networkInfo != null && networkInfo.isConnected()) {
-            check = true;
-
-        } else {
-            check = false;
-        }
-
-        return check;
+        float[] result = new float[5];
+        Location.distanceBetween(loc1.latitude, loc1.longitude, loc2.latitude, loc2.longitude, result);
+        return result[0];
     }
 
-    public Dialog createNoConnectionDialog() {
-        Dialog dialog = new Dialog(activity);
-        dialog.setContentView(R.layout.nointernet_dialog);
-        return dialog;
+    public String decimalPlacer(double value,int placement){
+        DecimalFormat df = new DecimalFormat();
+        df.setMaximumFractionDigits(placement);
+        return df.format(value);
     }
 }
