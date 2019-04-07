@@ -218,5 +218,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onStop() {
         super.onStop();
         trackOtherRef.removeEventListener(otherTrackValueEventListener);
+        mLocationProviderClient.removeLocationUpdates(mLocationCallback);
     }
 }

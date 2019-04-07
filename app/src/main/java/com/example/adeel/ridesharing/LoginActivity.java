@@ -70,10 +70,6 @@ public class LoginActivity extends AppCompatActivity {
                 finish();
                 startActivity(intent);
                 progressDialog.cancel(); //Added
-            //progressDialog.cancel();
-//                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-//                startActivity(intent);
-//                finish();
         }
 
         @Override
