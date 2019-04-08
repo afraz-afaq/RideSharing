@@ -192,7 +192,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         buttonFind.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(otherUser, mMap.getCameraPosition().zoom));
+                if (active) {
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(otherUser, mMap.getCameraPosition().zoom));
+                }
             }
         });
     }
