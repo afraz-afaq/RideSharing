@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
         else if(getIntent().hasExtra("canceled")){
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,new FindRideFragment()).commit();
         }
-        else if(getIntent().hasExtra("request")){
+        else if(getIntent().hasExtra("requestc")){
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,new FindRideFragment()).commit();
         }
 

@@ -52,8 +52,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             intent.putExtra("canceled","canceled");
         }
         else if(notificationTitle.equals("Request Canceled")){
-            intent.putExtra("request","request");
+            intent.putExtra("requestc","requestc");
         }
+        else if(notificationTitle.equals("Tracking Request")){
+            if(notificationBody.substring(0,4).equals("User"))
+                intent.putExtra("request","request");
+            else
+                intent.putExtra("accepted","accepted");
+        }
+
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
                 PendingIntent.FLAG_ONE_SHOT);

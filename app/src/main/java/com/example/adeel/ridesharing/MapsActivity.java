@@ -37,6 +37,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -63,7 +65,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     PreferencesClass preferencesClass;
     PostHelpingMethod postHelpingMethod;
     String otherName;
-    boolean firstTime = true, active = false;
+    boolean firstTime = true, active = false, firstTimeLatLng = true;
     AlertDialog.Builder noActiveUserAlert;
     ValueEventListener valueEventListenerToken;
     LatLng otherUser, currentUser;
@@ -83,20 +85,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
                 //Place current location marker
                 trackRef.child("lat").setValue(location.getLatitude());
-                trackRef.child("lng").setValue(location.getLongitude());
+                trackRef.child("lng").setValue(location.getLongitude()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+
+                        if (firstTimeLatLng) {
+                            FirebaseDatabase.getInstance().getReference().child("Track").child(mAuth.getUid()).child("active").setValue("true");
+                            firstTimeLatLng = false;
+                        }
+                    }
+                });
                 LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
                 moveCamera(latLng, "Me");
                 currentUser = latLng;
                 if (active) {
                     try {
                         String distance = String.valueOf(postHelpingMethod.distanceBetween(otherUser, currentUser));
-                        buttonFind.setText("User Online (" + postHelpingMethod.decimalPlacer(Double.valueOf(distance),2) + " Meters Away)");
+                        buttonFind.setText("User Online (" + postHelpingMethod.decimalPlacer(Double.valueOf(distance), 2) + " Meters Away)");
                     } catch (Exception e) {
                         buttonFind.setText("User Online");
                     }
                 }
-
-
             }
         }
     };
@@ -120,7 +129,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                         active = true;
                     } else {
-                        noActiveUserAlert.show();
+                        if(!firstTimeLatLng)
+                            noActiveUserAlert.show();
                         buttonFind.setText("User Offline");
                         active = false;
                     }
@@ -155,7 +165,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 valueEventListenerToken = new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        postHelpingMethod.sendNotification("Tracking Request", "Driver wants to track you", dataSnapshot.getValue().toString());
+                        if (getIntent().getStringExtra("driver").equals("true"))
+                            postHelpingMethod.sendNotification("Tracking Request", "Driver wants to track you", dataSnapshot.getValue().toString());
+                        else
+                            postHelpingMethod.sendNotification("Tracking Request", "User wants to track you", dataSnapshot.getValue().toString());
+
                         dtoken.removeEventListener(valueEventListenerToken);
                     }
 
@@ -188,7 +202,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        FirebaseDatabase.getInstance().getReference().child("Track").child(mAuth.getUid()).child("active").setValue("true");
         buttonFind.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -296,7 +309,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onStart() {
         super.onStart();
-        FirebaseDatabase.getInstance().getReference().child("Track").child(mAuth.getUid()).child("active").setValue("true");
+        if(currentUser!=null)
+            FirebaseDatabase.getInstance().getReference().child("Track").child(mAuth.getUid()).child("active").setValue("true");
         trackOtherRef = FirebaseDatabase.getInstance().getReference().child("Track").child(getIntent().getStringExtra("driverId"));
         trackOtherRef.addValueEventListener(otherTrackValueEventListener);
     }
