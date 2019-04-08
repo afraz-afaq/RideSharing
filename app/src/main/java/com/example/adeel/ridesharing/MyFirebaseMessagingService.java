@@ -18,11 +18,12 @@ import com.google.firebase.messaging.RemoteMessage;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = "FirebaseMessagingServce";
+    String notificationTitle = null, notificationBody = null;
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
 
-        String notificationTitle = null, notificationBody = null;
+
 
         // Check if message contains a notification payload.
         if (remoteMessage.getNotification() != null) {
@@ -38,7 +39,21 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
 
     private void sendNotification(String notificationTitle, String notificationBody) {
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent  = new Intent(this, MainActivity.class);
+        if (notificationTitle.equals("New Request"))
+        {
+            intent.putExtra("request","request");
+
+        }
+        else if(notificationTitle.equals("Request Accepted")){
+            intent.putExtra("accepted","accepted");
+        }
+        else if(notificationTitle.equals("Ride Canceled")){
+            intent.putExtra("canceled","canceled");
+        }
+        else if(notificationTitle.equals("Request Canceled")){
+            intent.putExtra("request","request");
+        }
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
                 PendingIntent.FLAG_ONE_SHOT);

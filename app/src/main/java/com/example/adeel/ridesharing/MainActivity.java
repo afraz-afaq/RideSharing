@@ -74,6 +74,8 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
         mAuth = FirebaseAuth.getInstance();
 
 
+
+
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(mAuth.getUid()).child("status");
         mUserDatabase.addValueEventListener(new ValueEventListener() {
             @Override
@@ -101,6 +103,18 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
                     new HomeFragment()).commit();
             mNavigationView.setCheckedItem(R.id.nav_home);
             mtoolbar.setTitle(R.string.home);
+        }
+        if (getIntent().hasExtra("request")) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,new RequestFragment()).commit();
+        }
+        else if(getIntent().hasExtra("accepted")){
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,new BookedFragment()).commit();
+        }
+        else if(getIntent().hasExtra("canceled")){
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,new FindRideFragment()).commit();
+        }
+        else if(getIntent().hasExtra("request")){
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,new FindRideFragment()).commit();
         }
 
         headerView = mNavigationView.inflateHeaderView(R.layout.drawer_header);

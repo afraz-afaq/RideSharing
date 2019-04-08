@@ -98,7 +98,7 @@ public class PendingRequestsFragment extends Fragment {
                                             final DatabaseReference getFindPendingToCancel = FirebaseDatabase.getInstance().getReference().child("Find").child(snapshot.getKey()).child("Pending").child(postId);
                                             getFindPendingToCancel.removeValue();
                                             FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot.getKey()).child("poststatus").setValue("true");
-                                            postHelpingMethod.sendNotification("Request Cancelled",preferencesClass.getUSER_NAME()+" has cancelled your request please find another one :(",dataSnapshot.getValue().toString());
+                                            postHelpingMethod.sendNotification("Request Canceled",preferencesClass.getUSER_NAME()+" has cancelled your request please find another one :(",dataSnapshot.getValue().toString());
                                             databaseReferencePendingList.addValueEventListener(penndinglistListener);
                                         }
                                     });
