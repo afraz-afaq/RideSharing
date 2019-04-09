@@ -1,9 +1,11 @@
 package com.example.adeel.ridesharing;
 
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -64,7 +66,22 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
     ValueEventListener valueEventListener, checkRatingValueEventListener;
     private DatabaseReference mUserDatabase;
     private String postStatus = "true";
+    BroadcastReceiver mReceiver = new BroadcastReceiver() {
 
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.hasExtra("request")) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new RequestFragment()).commit();
+            } else if (intent.hasExtra("accepted")) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new BookedFragment()).commit();
+            } else if (intent.hasExtra("canceled")) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new FindRideFragment()).commit();
+            } else if (intent.hasExtra("requestc")) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new FindRideFragment()).commit();
+            }
+        }
+
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,8 +90,8 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
         mStorageRef = FirebaseStorage.getInstance().getReference();
         mAuth = FirebaseAuth.getInstance();
 
-
-
+        IntentFilter filter = new IntentFilter("android.intent.CLOSE_ACTIVITY");
+        registerReceiver(mReceiver, filter);
 
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(mAuth.getUid()).child("status");
         mUserDatabase.addValueEventListener(new ValueEventListener() {
@@ -86,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
                     showRatingDialog();
                 }
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
@@ -104,18 +122,7 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
             mNavigationView.setCheckedItem(R.id.nav_home);
             mtoolbar.setTitle(R.string.home);
         }
-        if (getIntent().hasExtra("request")) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,new RequestFragment()).commit();
-        }
-        else if(getIntent().hasExtra("accepted")){
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,new BookedFragment()).commit();
-        }
-        else if(getIntent().hasExtra("canceled")){
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,new FindRideFragment()).commit();
-        }
-        else if(getIntent().hasExtra("requestc")){
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,new FindRideFragment()).commit();
-        }
+
 
         headerView = mNavigationView.inflateHeaderView(R.layout.drawer_header);
         TextView textViewName = (TextView) headerView.findViewById(R.id.nav_name);
@@ -167,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
                             createDialog();
 
                         } else {
-                            if(preferencesClass.getUserPostStatus().equals("false")){
+                            if (preferencesClass.getUserPostStatus().equals("false")) {
                                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                                 builder.setMessage("Please complete or cancel your current ride!").setPositiveButton("Okay", new DialogInterface.OnClickListener() {
                                     @Override
@@ -176,9 +183,10 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
                                             case DialogInterface.BUTTON_POSITIVE:
                                                 dialog.dismiss();
 
-                                                    } }} ).show();
-                            }
-                            else {
+                                        }
+                                    }
+                                }).show();
+                            } else {
                                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                                         new FindRideFragment()).commit();
                                 mNavigationView.setCheckedItem(R.id.nav_findRide);
@@ -195,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
                             createDialog();
 
                         } else {
-                            if(preferencesClass.getUserPostStatus().equals("false")){
+                            if (preferencesClass.getUserPostStatus().equals("false")) {
                                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                                 builder.setMessage("Please complete or cancel your current ride!").setPositiveButton("Okay", new DialogInterface.OnClickListener() {
                                     @Override
@@ -204,15 +212,16 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
                                             case DialogInterface.BUTTON_POSITIVE:
                                                 dialog.dismiss();
 
-                                        } }} ).show();
-                            }
-                            else{
+                                        }
+                                    }
+                                }).show();
+                            } else {
 
-                            //checkCars();
-                            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                                    new OfferRideFragment()).commit();
-                            mNavigationView.setCheckedItem(R.id.nav_offferRide);
-                            mtoolbar.setTitle(R.string.offer_ride);
+                                //checkCars();
+                                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                                        new OfferRideFragment()).commit();
+                                mNavigationView.setCheckedItem(R.id.nav_offferRide);
+                                mtoolbar.setTitle(R.string.offer_ride);
                             }
                         }
                         break;
@@ -272,38 +281,38 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         final String driver = dataSnapshot.getValue().toString();
-                        if(!driver.isEmpty()){
-                        mUserDatabase.removeEventListener(checkRatingValueEventListener);
+                        if (!driver.isEmpty()) {
+                            mUserDatabase.removeEventListener(checkRatingValueEventListener);
 
 
-                        final DatabaseReference driverDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(driver);
-                        valueEventListener = new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshotDriver) {
-                                if (postStatus.equals("false")) {
-                                    driverDatabaseReference.removeEventListener(valueEventListener);
-                                    postStatus = "true";
-                                    Double over_rating = 0.0, count = 0.0;
-                                    over_rating = Double.parseDouble(dataSnapshotDriver.child("rating").getValue().toString());
-                                    count = Double.parseDouble(dataSnapshotDriver.child("count").getValue().toString());
-                                    Double result = ((over_rating * count) + rating) / (count + 1);
-                                    DecimalFormat df = new DecimalFormat("#.#");
-                                    result = Double.parseDouble(df.format(result));
-                                    driverDatabaseReference.child("count").setValue(++count);
-                                    driverDatabaseReference.child("rating").setValue(result);
-                                    dialogRating.dismiss();
-                                    mUserDatabase.setValue("");
-                                    FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(mAuth.getUid()).child("status").setValue("true");
+                            final DatabaseReference driverDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(driver);
+                            valueEventListener = new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshotDriver) {
+                                    if (postStatus.equals("false")) {
+                                        driverDatabaseReference.removeEventListener(valueEventListener);
+                                        postStatus = "true";
+                                        Double over_rating = 0.0, count = 0.0;
+                                        over_rating = Double.parseDouble(dataSnapshotDriver.child("rating").getValue().toString());
+                                        count = Double.parseDouble(dataSnapshotDriver.child("count").getValue().toString());
+                                        Double result = ((over_rating * count) + rating) / (count + 1);
+                                        DecimalFormat df = new DecimalFormat("#.#");
+                                        result = Double.parseDouble(df.format(result));
+                                        driverDatabaseReference.child("count").setValue(++count);
+                                        driverDatabaseReference.child("rating").setValue(result);
+                                        dialogRating.dismiss();
+                                        mUserDatabase.setValue("");
+                                        FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(mAuth.getUid()).child("status").setValue("true");
+                                    }
                                 }
-                            }
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                            }
-                        };
-                        driverDatabaseReference.addValueEventListener(valueEventListener);
-                    }
+                                }
+                            };
+                            driverDatabaseReference.addValueEventListener(valueEventListener);
+                        }
                     }
 
                     @Override

@@ -25,12 +25,15 @@ public class MyBookingFragment extends Fragment {
         mViewPager = rootView.findViewById(R.id.viewPager);
 
         mAdapter = new BookingPagerAdapter(getFragmentManager());
-        mAdapter.AddFragment(new BookedFragment(),"Booked");
-        mAdapter.AddFragment(new OfferedFragment(),"Offered");
+        mAdapter.AddFragment(new BookedFragment(), "Booked");
+        mAdapter.AddFragment(new OfferedFragment(), "Offered");
 
         mViewPager.setAdapter(mAdapter);
         mTabLayout.setupWithViewPager(mViewPager);
-
+        if (getArguments() != null) {
+            TabLayout.Tab tab = mTabLayout.getTabAt(1);
+            tab.select();
+        }
 
 
         return rootView;

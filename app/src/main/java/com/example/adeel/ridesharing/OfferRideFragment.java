@@ -487,8 +487,11 @@ public class OfferRideFragment extends Fragment {
                             Toast.makeText(getActivity(), "Ride Posted Successfully!", Toast.LENGTH_SHORT).show();
                             FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").setValue("false");
                             mdialog.cancel();
-                            getFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                                    new MyBookingFragment()).commit();
+                            MyBookingFragment myBookingFragment = new MyBookingFragment();
+                            Bundle bundle = new Bundle();
+                            bundle.putString("publish","publish");
+                            myBookingFragment.setArguments(bundle);
+                            getFragmentManager().beginTransaction().replace(R.id.fragment_container, myBookingFragment   ).commit();
                             mNavigationView.setCheckedItem(R.id.nav_myBookings);
                             mtoolbar.setTitle(R.string.my_bookings);
 

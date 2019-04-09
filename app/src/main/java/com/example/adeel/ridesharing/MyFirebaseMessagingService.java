@@ -39,7 +39,28 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
 
     private void sendNotification(String notificationTitle, String notificationBody) {
-        Intent intent  = new Intent(this, MainActivity.class);
+//        Intent intent  = new Intent(this, MainActivity.class);
+//        if (notificationTitle.equals("New Request"))
+//        {
+//            intent.putExtra("request","request");
+//
+//        }
+//        else if(notificationTitle.equals("Request Accepted")){
+//            intent.putExtra("accepted","accepted");
+//        }
+//        else if(notificationTitle.equals("Ride Canceled")){
+//            intent.putExtra("canceled","canceled");
+//        }
+//        else if(notificationTitle.equals("Request Canceled")){
+//            intent.putExtra("requestc","requestc");
+//        }
+//        else if(notificationTitle.equals("Tracking Request")){
+//            if(notificationBody.substring(0,4).equals("User"))
+//                intent.putExtra("request","request");
+//            else
+//                intent.putExtra("accepted","accepted");
+//        }
+        Intent intent = new Intent("android.intent.CLOSE_ACTIVITY");
         if (notificationTitle.equals("New Request"))
         {
             intent.putExtra("request","request");
@@ -60,9 +81,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             else
                 intent.putExtra("accepted","accepted");
         }
-
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
         Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
