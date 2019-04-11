@@ -269,7 +269,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="call"
-                    android:drawableLeft="@drawable/ic_local_phone_black_24dp"/>
+                    android:drawableLeft="@drawable/ic_action_call"/>
 
                 <Button
                 android:id="@+id/cancelRide"
