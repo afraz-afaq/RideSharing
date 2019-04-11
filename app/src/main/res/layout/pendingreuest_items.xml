@@ -79,8 +79,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:drawableLeft="@drawable/ic_action_confirm"
-                android:drawableTint="@color/colorAccent"
+                android:drawableLeft="@drawable/ic_action_accept"
                 android:text="Accept" />
 
             <Button
@@ -89,8 +88,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
                 android:layout_weight="1"
-                android:drawableLeft="@drawable/ic_action_cancel"
-                android:drawableTint="@android:color/holo_red_dark"
+                android:drawableLeft="@drawable/ic_action_cancred"
                 android:text="Cancel" />
 
         </LinearLayout>

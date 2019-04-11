@@ -214,12 +214,12 @@ public class LoginActivity extends AppCompatActivity {
                     if (event.getRawX() >= (mPassword.getRight() - mPassword.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width())) {
                         if (count % 2 == 1) {
                             mPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
-                            mPassword.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_lock_black_24dp, 0, R.drawable.ic_visibility_black_24dp, 0);
+                            mPassword.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_action_lock, 0, R.drawable.ic_action_visi, 0);
                             count++;
                             return true;
                         } else {
                             mPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
-                            mPassword.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_lock_black_24dp, 0, R.drawable.ic_visibility_off_black_24dp, 0);
+                            mPassword.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_action_lock, 0, R.drawable.ic_action_visioff, 0);
                             count++;
                         }
                     }

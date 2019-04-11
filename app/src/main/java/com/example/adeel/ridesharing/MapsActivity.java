@@ -219,16 +219,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         trackValueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
                 if(dataSnapshot.getValue().equals("true")){
                     trackDialog.dismiss();
                     trackOtherRef.addValueEventListener(otherTrackValueEventListener);
                     active = true;
-                }else{
+                }else {
                     trackOtherRef.removeEventListener(otherTrackValueEventListener);
                     trackDialog.show();
                     buttonFind.setText("User Offline");
                     active = false;
-                }
+                }}
             }
 
             @Override
