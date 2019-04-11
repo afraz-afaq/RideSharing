@@ -69,6 +69,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     AlertDialog.Builder noActiveUserAlert;
     ValueEventListener valueEventListenerToken;
     LatLng otherUser, currentUser;
+    DatabaseReference databaseReferenceTrack;
+    ValueEventListener trackValueEventListener;
+    AlertDialog trackDialog;
 
 
     LocationCallback mLocationCallback = new LocationCallback() {
@@ -92,7 +95,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         if (firstTimeLatLng) {
                             FirebaseDatabase.getInstance().getReference().child("Track").child(mAuth.getUid()).child("active").setValue("true");
                             firstTimeLatLng = false;
-                        }
+                       }
                     }
                 });
                 LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
@@ -115,7 +118,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
             if (mMap != null) {
                 if (dataSnapshot.exists()) {
-                    if (dataSnapshot.child("active").exists()) {
+//                    if (dataSnapshot.child("active").equals("true")) {
                         LatLng latLng = new LatLng(Double.parseDouble(dataSnapshot.child("lat").getValue().toString()), Double.parseDouble(dataSnapshot.child("lng").getValue().toString()));
                         if (mOtherLocationMarker != null)
                             mOtherLocationMarker.remove();
@@ -127,15 +130,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         } catch (Exception e) {
                             buttonFind.setText("User Online");
                         }
-                        active = true;
-                    } else {
-                        if(!firstTimeLatLng)
-                            noActiveUserAlert.show();
-                        buttonFind.setText("User Offline");
-                        active = false;
-                    }
+//                    } else {
+//                        if(!firstTimeLatLng)
+//                            noActiveUserAlert.show();
+//                        buttonFind.setText("User Offline");
+//                        active = false;
+//                    }
                 } else {
                     buttonFind.setText("User Offline");
+                    trackDialog.show();
                 }
             }
         }
@@ -189,6 +192,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
+        trackDialog = noActiveUserAlert.create();
         if (getIntent().getStringExtra("driver").equals("true"))
             otherName = "To Pick";
         else
@@ -210,6 +214,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
         });
+        trackOtherRef = FirebaseDatabase.getInstance().getReference().child("Track").child(getIntent().getStringExtra("driverId"));
+        databaseReferenceTrack = FirebaseDatabase.getInstance().getReference().child("Track").child(getIntent().getStringExtra("driverId")).child("active");
+        trackValueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue().equals("true")){
+                    trackDialog.dismiss();
+                    trackOtherRef.addValueEventListener(otherTrackValueEventListener);
+                    active = true;
+                }else{
+                    trackOtherRef.removeEventListener(otherTrackValueEventListener);
+                    trackDialog.show();
+                    buttonFind.setText("User Offline");
+                    active = false;
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        };
+        databaseReferenceTrack.addValueEventListener(trackValueEventListener);
     }
 
 
@@ -233,6 +260,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         mLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
         mMap.setMyLocationEnabled(true);
+
+
+        FirebaseDatabase.getInstance().getReference().child("Track").child(mAuth.getUid()).child("active").setValue("true");
+
+
     }
 
     private void initPoint() {
@@ -309,16 +341,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onStart() {
         super.onStart();
-        if(currentUser!=null)
-            FirebaseDatabase.getInstance().getReference().child("Track").child(mAuth.getUid()).child("active").setValue("true");
-        trackOtherRef = FirebaseDatabase.getInstance().getReference().child("Track").child(getIntent().getStringExtra("driverId"));
-        trackOtherRef.addValueEventListener(otherTrackValueEventListener);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        databaseReferenceTrack.removeEventListener(trackValueEventListener);
         trackOtherRef.removeEventListener(otherTrackValueEventListener);
-        FirebaseDatabase.getInstance().getReference().child("Track").child(mAuth.getUid()).child("active").removeValue();
+        mLocationProviderClient.removeLocationUpdates(mLocationCallback);
+        FirebaseDatabase.getInstance().getReference().child("Track").child(mAuth.getUid()).child("active").setValue("false");
     }
+
+
 }
