@@ -118,7 +118,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
             if (mMap != null) {
                 if (dataSnapshot.exists()) {
-//                    if (dataSnapshot.child("active").equals("true")) {
+                    if (dataSnapshot.child("lat").exists() && dataSnapshot.child("lng").exists()) {
                         LatLng latLng = new LatLng(Double.parseDouble(dataSnapshot.child("lat").getValue().toString()), Double.parseDouble(dataSnapshot.child("lng").getValue().toString()));
                         if (mOtherLocationMarker != null)
                             mOtherLocationMarker.remove();
@@ -130,6 +130,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         } catch (Exception e) {
                             buttonFind.setText("User Online");
                         }
+                    }
 //                    } else {
 //                        if(!firstTimeLatLng)
 //                            noActiveUserAlert.show();
@@ -230,6 +231,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     buttonFind.setText("User Offline");
                     active = false;
                 }}
+                else {
+                    trackDialog.show();
+                    active = false;
+                }
             }
 
             @Override

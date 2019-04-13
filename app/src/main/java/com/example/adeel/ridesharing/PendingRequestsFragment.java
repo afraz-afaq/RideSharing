@@ -45,7 +45,7 @@ public class PendingRequestsFragment extends Fragment {
     private ValueEventListener getFindPendingToAcceptValueEventListener;
     private FirebaseAuth mAuth;
     private Button mAccept_Button,mCancel_Button;
-    private String postId = "";
+    private String postId = "",isCar="";
     private TextView noPostMsg;
     ValueEventListener getTokenForCancelValueEventListener;
     private ProgressDialog loadingDialog;
@@ -55,6 +55,7 @@ public class PendingRequestsFragment extends Fragment {
             if(dataSnapshot.hasChildren()) {
                 for (final DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     postId = snapshot.getKey();
+                    isCar = snapshot.child("isCar").getValue().toString();
                     Log.v(TAG,"POSTID: "+postId);
                     databaseReferencePendingList = FirebaseDatabase.getInstance().getReference().child("Requests").child(postId).child("Pending");
                     databaseReferencePendingList.addValueEventListener(penndinglistListener);
@@ -120,16 +121,64 @@ public class PendingRequestsFragment extends Fragment {
                     View.OnClickListener acceptEvent = new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
+
                             DatabaseReference Acceptedref = FirebaseDatabase.getInstance().getReference().child("Requests").child(postId).child("Accepted").child(snapshot.getKey());
                             Acceptedref.setValue(snapshot.getValue()).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()){
-                                        DatabaseReference removeref = FirebaseDatabase.getInstance().getReference().child("Requests").child(postId).child("Pending").child(snapshot.getKey());
+
+
+
+                                        final DatabaseReference removeref = FirebaseDatabase.getInstance().getReference().child("Requests").child(postId).child("Pending").child(snapshot.getKey());
+
                                         databaseReferencePendingList.removeEventListener(penndinglistListener);
                                         removeref.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
+                                                if (isCar.equals("false")){
+
+                                                    DatabaseReference databaseReferenceremovealluser = FirebaseDatabase.getInstance().getReference().child("Requests").child(postId).child("Pending");
+
+
+                                                    databaseReferenceremovealluser.addValueEventListener(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                            for (final DataSnapshot dataSnapshot1: dataSnapshot.getChildren())
+                                                            {
+                                                                 DatabaseReference getTokenForCancelirde = FirebaseDatabase.getInstance().getReference().child("Users").child(dataSnapshot1.getKey()).child("token");
+                                                                getTokenForCancelirde.addValueEventListener(new ValueEventListener() {
+                                                                    @Override
+                                                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                        postHelpingMethod.sendNotification("Request Canceled","Sorry, no seat is available",dataSnapshot.getValue().toString());
+                                                                        FirebaseDatabase.getInstance().getReference().child("Users").child(dataSnapshot1.getKey()).child("poststatus")
+                                                                                .setValue("true");
+
+                                                                    }
+
+                                                                    @Override
+                                                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                                    }
+                                                                });
+
+
+
+                                                            }
+                                                            FirebaseDatabase.getInstance().getReference().child("Requests").child(postId).child("Pending").removeValue();
+
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                        }
+                                                    });
+
+                                                }
+
+
+
                                                 databaseReferencePendingList.addValueEventListener(penndinglistListener);
                                             }
                                         });
