@@ -59,11 +59,36 @@ public class OfferedFragment extends Fragment {
     private PostHelpingMethod postHelpingMethod;
     private ArrayList<HistoryPost> historyPosts;
     private HistoryAdapter historyPostArrayAdapter;
-    DatabaseReference databaseReferenceActive, databaseReference, databaseReferenceNotification, databaseReferenceToken, databaseReferenceNotificationToAccepted,databaseReferenceforcompleted,databasereferencerating,databaseReferenceusercompleted;
+    DatabaseReference databaseReferenceActive,databaseReferencenostart, databaseReference, databaseReferenceNotification, databaseReferenceToken, databaseReferenceNotificationToAccepted, databaseReferenceforcompleted, databasereferencerating, databaseReferenceusercompleted;
     ValueEventListener notificationToToken;
     DatabaseReference getPostData;
     Boolean check;
     private ProgressDialog loadingDialog;
+
+    ValueEventListener noStartListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            if (dataSnapshot.hasChild("Accepted")) {
+                Toast.makeText(getActivity(), "Notify All", Toast.LENGTH_SHORT).show();
+                getPostData = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postID).child("onway");
+                getPostData.setValue("true").addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        databaseReferenceNotificationToAccepted = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID).child("Accepted");
+                        databaseReferenceNotificationToAccepted.addValueEventListener(sendNotificationstostart);
+                    }
+                });
+
+                start.setText("COMPLETED");
+            }
+            databaseReferencenostart.removeEventListener(noStartListener);
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+        }
+    };
 
     ValueEventListener showActivePost = new ValueEventListener() {
         @Override
@@ -126,27 +151,27 @@ public class OfferedFragment extends Fragment {
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
             if (dataSnapshot.hasChildren()) {
                 Log.v(TAG, "Post Data: " + dataSnapshot.toString());
-                    FirebaseDatabase.getInstance().getReference().child("Posts").child("Completed").child(mAuth.getUid()).child(dataSnapshot.getKey()).setValue(dataSnapshot.getValue());
-                    final DatabaseReference databaseReferenceRate = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID).child("Accepted");
-                    checkRating = new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(snapshot.getKey()).child("drivertorate")
-                                        .setValue(mAuth.getUid());
-                                FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot.getKey()).child("poststatus")
-                                        .setValue("true");
-                            }
-                            databaseReferenceRate.removeEventListener(checkRating);
+                FirebaseDatabase.getInstance().getReference().child("Posts").child("Completed").child(mAuth.getUid()).child(dataSnapshot.getKey()).setValue(dataSnapshot.getValue());
+                final DatabaseReference databaseReferenceRate = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID).child("Accepted");
+                checkRating = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(snapshot.getKey()).child("drivertorate")
+                                    .setValue(mAuth.getUid());
+                            FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot.getKey()).child("poststatus")
+                                    .setValue("true");
                         }
+                        databaseReferenceRate.removeEventListener(checkRating);
+                    }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                        }
-                    };
+                    }
+                };
                 databaseReferenceRate.addValueEventListener(checkRating);
-                   databaseReferenceforcompleted.removeValue();
+                databaseReferenceforcompleted.removeValue();
                 databaseReferenceforcompleted.removeEventListener(completed);
             }
         }
@@ -161,8 +186,7 @@ public class OfferedFragment extends Fragment {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
             if (dataSnapshot.hasChildren()) {
-                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren())
-                {
+                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
                     FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(dataSnapshot1.getKey())
                             .child("status").setValue("false");
                     FirebaseDatabase.getInstance().getReference().child("Find").child(dataSnapshot1.getKey()).child("Active").child(postID).removeValue();
@@ -184,7 +208,7 @@ public class OfferedFragment extends Fragment {
         public void onDataChange(@NonNull DataSnapshot categoriesDataSnapshot) {
             if (categoriesDataSnapshot.hasChildren()) {
                 for (DataSnapshot categories : categoriesDataSnapshot.getChildren()) {
-                    if (categories.getKey().equals("Pending") || categories.getKey().equals("Active")) {
+                    if (categories.getKey().equals("Pending") || categories.getKey().equals("Accepted")) {
                         for (final DataSnapshot userID : categories.getChildren()) {
                             Log.v(TAG, userID.toString());
                             FirebaseDatabase.getInstance().getReference().child("Users").child(userID.getKey()).child("poststatus")
@@ -220,24 +244,24 @@ public class OfferedFragment extends Fragment {
     ValueEventListener sendNotificationstostart = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot user : dataSnapshot.getChildren()) {
-                            Log.v(TAG, user.toString());
-                            databaseReferenceToken = FirebaseDatabase.getInstance().getReference().child("Users").child(user.getKey()).child("token");
-                            notificationToToken = new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    postHelpingMethod.sendNotification("Ride Started", "Driver is on his way!", dataSnapshot.getValue().toString());
-                                }
+            for (DataSnapshot user : dataSnapshot.getChildren()) {
+                Log.v(TAG, user.toString());
+                databaseReferenceToken = FirebaseDatabase.getInstance().getReference().child("Users").child(user.getKey()).child("token");
+                notificationToToken = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        postHelpingMethod.sendNotification("Ride Started", "Driver is on his way!", dataSnapshot.getValue().toString());
+                    }
 
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                }
-                            };
-                            databaseReferenceToken.addValueEventListener(notificationToToken);
-                            databaseReferenceNotificationToAccepted.removeEventListener(sendNotificationstostart);
+                    }
+                };
+                databaseReferenceToken.addValueEventListener(notificationToToken);
+                databaseReferenceNotificationToAccepted.removeEventListener(sendNotificationstostart);
 
-                }
+            }
         }
 
         @Override
@@ -291,7 +315,7 @@ public class OfferedFragment extends Fragment {
         activePost = rootView.findViewById(R.id.activePost);
         mOffredOptions = rootView.findViewById(R.id.spinner_offeredoptions);
         postHelpingMethod = new PostHelpingMethod(getActivity());
-        loadingDialog = postHelpingMethod.createProgressDialog("Loading...","Please Wait.");
+        loadingDialog = postHelpingMethod.createProgressDialog("Loading...", "Please Wait.");
         mAuth = FirebaseAuth.getInstance();
         historyPosts = new ArrayList<HistoryPost>();
         historyPostArrayAdapter = new HistoryAdapter(getActivity(), historyPosts);
@@ -312,167 +336,161 @@ public class OfferedFragment extends Fragment {
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 if (start.getText().toString().equals("START")) {
-                    Toast.makeText(getActivity(), "Notify All", Toast.LENGTH_SHORT).show();
-                    getPostData = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postID).child("onway");
-                    getPostData.setValue("true").addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            databaseReferenceNotificationToAccepted = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID).child("Accepted");
-                            databaseReferenceNotificationToAccepted.addValueEventListener(sendNotificationstostart);
-                        }
-                    });
-
-                    start.setText("COMPLETED");
-                } else {
-
-                    PreferencesClass preferencesClass = new PreferencesClass(getActivity());
-                    FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").setValue("true");
-                    preferencesClass.setUserPostStatus("true");
+                    databaseReferencenostart = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID);
+                    databaseReferencenostart.addValueEventListener(noStartListener);
 
 
+                    } else{
 
-                    databaseReferenceforcompleted = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postID);
-                    databasereferencerating = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID).child("Accepted");
+                        PreferencesClass preferencesClass = new PreferencesClass(getActivity());
+                        FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").setValue("true");
+                        preferencesClass.setUserPostStatus("true");
 
 
-                    databasereferencerating.addValueEventListener(ratingcheck);
+                        databaseReferenceforcompleted = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postID);
+                        databasereferencerating = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID).child("Accepted");
 
-                    databaseReferenceforcompleted.addValueEventListener(completed);
 
-                    Toast.makeText(getActivity(), "Ride Completed", Toast.LENGTH_SHORT).show();
+                        databasereferencerating.addValueEventListener(ratingcheck);
+
+                        databaseReferenceforcompleted.addValueEventListener(completed);
+
+                        Toast.makeText(getActivity(), "Ride Completed", Toast.LENGTH_SHORT).show();
+                    }
+
+
                 }
+            });
 
-            }
-        });
-        spinnerOffredOptions();
+            spinnerOffredOptions();
 
         return rootView;
-    }
+        }
 
-    private void spinnerOffredOptions() {
+        private void spinnerOffredOptions () {
 
-        ArrayAdapter arrayAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.bookings_options_driver, android.R.layout.simple_spinner_item);
-        arrayAdapter.setDropDownViewResource(android.R.layout.simple_list_item_1);
-        mOffredOptions.setAdapter(arrayAdapter);
+            ArrayAdapter arrayAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.bookings_options_driver, android.R.layout.simple_spinner_item);
+            arrayAdapter.setDropDownViewResource(android.R.layout.simple_list_item_1);
+            mOffredOptions.setAdapter(arrayAdapter);
 
-        mOffredOptions.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                String selection = (String) adapterView.getItemAtPosition(i);
-                if (!TextUtils.isEmpty(selection)) {
-                    if (selection.equals(getString(R.string.past_bookings))) {
-                        check = true;
-                        iOffredOptions = R.string.past_bookings;
-                        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-                            @Override
-                            public void onTabSelected(TabLayout.Tab tab) {
-                                if(tab.getPosition() == 1)
-                                    check = false;
+            mOffredOptions.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                    String selection = (String) adapterView.getItemAtPosition(i);
+                    if (!TextUtils.isEmpty(selection)) {
+                        if (selection.equals(getString(R.string.past_bookings))) {
+                            check = true;
+                            iOffredOptions = R.string.past_bookings;
+                            tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+                                @Override
+                                public void onTabSelected(TabLayout.Tab tab) {
+                                    if (tab.getPosition() == 1)
+                                        check = false;
                                     showActive();
-                            }
-                            @Override
-                            public void onTabUnselected(TabLayout.Tab tab) {
+                                }
+
+                                @Override
+                                public void onTabUnselected(TabLayout.Tab tab) {
 //                                databaseReferenceActive.removeEventListener(showActivePost);
 //                                databaseReferenceNotification.removeEventListener(sendNotifications);
 //                                databaseReference.removeEventListener(cancelPost);
 //                                databaseReferenceToken.removeEventListener(notificationToToken);
 //                                databaseReference.removeEventListener(populateValueEventListener);
-                            }
-                            @Override
-                            public void onTabReselected(TabLayout.Tab tab) {
+                                }
 
+                                @Override
+                                public void onTabReselected(TabLayout.Tab tab) {
+
+                                }
+                            });
+                            if (tabLayout.getSelectedTabPosition() == 1 && check) {
+                                showActive();
                             }
-                        });
-                        if(tabLayout.getSelectedTabPosition() == 1 && check) {
-                            showActive();
+                        } else if (selection.equals(getString(R.string.canceled_bookings))) {
+                            iOffredOptions = R.string.canceled_bookings;
+                            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Canceled").child(mAuth.getUid());
+                            populateList(databaseReference);
+                        } else {
+                            iOffredOptions = R.string.complete_bookings;
+                            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Completed").child(mAuth.getUid());
+                            populateList(databaseReference);
                         }
-                    } else if (selection.equals(getString(R.string.canceled_bookings))) {
-                        iOffredOptions = R.string.canceled_bookings;
-                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Canceled").child(mAuth.getUid());
-                        populateList(databaseReference);
-                    } else {
-                        iOffredOptions = R.string.complete_bookings;
-                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Completed").child(mAuth.getUid());
-                        populateList(databaseReference);
                     }
                 }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> adapterView) {
+                    iOffredOptions = R.string.show_all;
+
+                }
+            });
+
+        }
+
+        private void showActive () {
+            loadingDialog.show();
+            databaseReferenceActive.addValueEventListener(showActivePost);
+
+        }
+
+        ValueEventListener populateValueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                noPostMsg.setVisibility(View.GONE);
+                activePost.setVisibility(View.GONE);
+                offeredListView.setVisibility(View.VISIBLE);
+                if (dataSnapshot.hasChildren()) {
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        HistoryPost historyPost = new HistoryPost(snapshot.child("Origin").child("name").getValue().toString(), snapshot.child("Destination").child("name").getValue().toString(), snapshot.child("fare").getValue().toString() + "Rs", snapshot.child("isCar").getValue().toString().equals("true") ? "Car" : "Bike", snapshot.child("vehicle").getValue().toString(), snapshot.child("departTime").getValue().toString(), snapshot.child("name").getValue().toString(), snapshot.child("regno").getValue().toString());
+                        historyPosts.add(historyPost);
+                    }
+                } else {
+//                Toast.makeText(getActivity(), "No Posts Available", Toast.LENGTH_SHORT).show();
+                    noPostMsg.setVisibility(View.VISIBLE);
+                }
+                loadingDialog.dismiss();
+                historyPostArrayAdapter.notifyDataSetChanged();
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-                iOffredOptions = R.string.show_all;
-
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                noPostMsg.setVisibility(View.VISIBLE);
+                loadingDialog.dismiss();
             }
-        });
+        };
+        private void populateList (DatabaseReference databaseReference){
+            loadingDialog.show();
+            historyPosts.clear();
+            databaseReference.addValueEventListener(populateValueEventListener);
 
-    }
-
-    private void showActive() {
-        loadingDialog.show();
-        databaseReferenceActive.addValueEventListener(showActivePost);
-
-    }
-
-    ValueEventListener populateValueEventListener = new ValueEventListener() {
-        @Override
-        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-            noPostMsg.setVisibility(View.GONE);
-            activePost.setVisibility(View.GONE);
-            offeredListView.setVisibility(View.VISIBLE);
-            if (dataSnapshot.hasChildren()) {
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    HistoryPost historyPost = new HistoryPost(snapshot.child("Origin").child("name").getValue().toString(), snapshot.child("Destination").child("name").getValue().toString(), snapshot.child("fare").getValue().toString() + "Rs", snapshot.child("isCar").getValue().toString().equals("true") ? "Car" : "Bike", snapshot.child("vehicle").getValue().toString(), snapshot.child("departTime").getValue().toString(),snapshot.child("name").getValue().toString(),snapshot.child("regno").getValue().toString());
-                    historyPosts.add(historyPost);
-                }
-            } else {
-//                Toast.makeText(getActivity(), "No Posts Available", Toast.LENGTH_SHORT).show();
-                    noPostMsg.setVisibility(View.VISIBLE);
-            }
-            loadingDialog.dismiss();
-            historyPostArrayAdapter.notifyDataSetChanged();
         }
+
 
         @Override
-        public void onCancelled(@NonNull DatabaseError databaseError) {
-            noPostMsg.setVisibility(View.VISIBLE);
-            loadingDialog.dismiss();
+        public void onDetach () {
+            super.onDetach();
+            if (databaseReferenceActive != null) {
+                databaseReferenceActive.removeEventListener(showActivePost);
+            }
+            if (databaseReferenceNotification != null) {
+                databaseReferenceNotification.removeEventListener(sendNotifications);
+            }
+            if (databaseReference != null) {
+                databaseReference.removeEventListener(cancelPost);
+            }
+            if (databaseReferenceToken != null) {
+                databaseReferenceToken.removeEventListener(notificationToToken);
+            }
+            if (databaseReference != null) {
+                databaseReference.removeEventListener(populateValueEventListener);
+            }
+            if (databasereferencerating != null) {
+                databasereferencerating.removeEventListener(ratingcheck);
+            }
+
+
         }
-    };
-    private void populateList(DatabaseReference databaseReference) {
-        loadingDialog.show();
-        historyPosts.clear();
-        databaseReference.addValueEventListener(populateValueEventListener);
 
     }
-
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        if(databaseReferenceActive != null){
-            databaseReferenceActive.removeEventListener(showActivePost);
-        }
-        if(databaseReferenceNotification != null){
-            databaseReferenceNotification.removeEventListener(sendNotifications);
-        }
-        if(databaseReference != null){
-            databaseReference.removeEventListener(cancelPost);
-        }
-        if(databaseReferenceToken != null){
-            databaseReferenceToken.removeEventListener(notificationToToken);
-        }
-        if(databaseReference != null){
-            databaseReference.removeEventListener(populateValueEventListener);
-        }
-        if(databasereferencerating != null){
-            databasereferencerating.removeEventListener(ratingcheck);
-        }
-
-
-
-
-
-    }
-
-}

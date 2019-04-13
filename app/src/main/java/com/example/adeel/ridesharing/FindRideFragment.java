@@ -38,19 +38,11 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.RequestOptions;
-import com.bumptech.glide.request.target.Target;
+
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -207,98 +199,72 @@ public class FindRideFragment extends Fragment {
                                                     public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
 
                                                         Log.v(TAG, "2-> " + dataSnapshot);
-                                                                String fare = snapShotToString(snapshotposts, "fare");
+                                                        String fare = snapShotToString(snapshotposts, "fare");
 
-                                                                FindRideItem findRideItem = new FindRideItem(uId, postId, postHelpingMethod.decimalPlacer(Double.parseDouble(fare),1), snapShotToString(snapshotposts.child("Origin"), "name"), snapShotToString(snapshotposts.child("Destination"), "name"), snapShotToString(snapshotposts, "seats"), snapShotToString(snapshotposts, "distance"), snapShotToString(snapshotposts, "departTime"),
-                                                                        snapShotToString(dataSnapshot, "name"), snapShotToString(dataSnapshot, "color"), snapShotToString(snapshotposts, "vehicle"), snapShotToString(snapshotposts, "name"), snapShotToString(snapshotposts, "rating"), uId, snapShotToString(snapshotposts, "isCar"), snapShotToString(snapshotposts, "extraDetails"));
-                                                                findRideItems.add(findRideItem);
-                                                                final int index = findRideItems.size() - 1;
-                                                                findRideItems.get(index).setRequestBtnClickListener(new View.OnClickListener() {
+                                                        FindRideItem findRideItem = new FindRideItem(uId, postId, postHelpingMethod.decimalPlacer(Double.parseDouble(fare), 1), snapShotToString(snapshotposts.child("Origin"), "name"), snapShotToString(snapshotposts.child("Destination"), "name"), snapShotToString(snapshotposts, "seats"), snapShotToString(snapshotposts, "distance"), snapShotToString(snapshotposts, "departTime"),
+                                                                snapShotToString(dataSnapshot, "name"), snapShotToString(dataSnapshot, "color"), snapShotToString(snapshotposts, "vehicle"), snapShotToString(snapshotposts, "name"), snapShotToString(snapshotposts, "rating"), uId, snapShotToString(snapshotposts, "isCar"), snapShotToString(snapshotposts, "extraDetails"));
+                                                        findRideItems.add(findRideItem);
+                                                        final int index = findRideItems.size() - 1;
+                                                        findRideItems.get(index).setRequestBtnClickListener(new View.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(View v) {
+                                                                final DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
                                                                     @Override
-                                                                    public void onClick(View v) {
-                                                                        final DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                                                                            @Override
-                                                                            public void onClick(DialogInterface dialog, int which) {
-                                                                                switch (which) {
-                                                                                    case DialogInterface.BUTTON_POSITIVE:
-                                                                                        //Yes button clicked
-                                                                                        final DatabaseReference notifyDriver = FirebaseDatabase.getInstance().getReference().child("Users").child(findRideItems.get(index).getDriverUid()).child("token");
-                                                                                        notify = new ValueEventListener() {
-                                                                                            @Override
-                                                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                                                                postHelpingMethod.sendNotification("New Request", preferencesClass.getUSER_NAME() + "(" + preferencesClass.getUserRegno() + ") wants to ride with you!", dataSnapshot.getValue().toString());
-                                                                                                FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").setValue("false");
-                                                                                                notifyDriver.removeEventListener(notify);
-                                                                                                getFragmentManager().beginTransaction().replace(R.id.fragment_container, new MyBookingFragment()).commit();
-                                                                                            }
-
-                                                                                            @Override
-                                                                                            public void onCancelled(@NonNull DatabaseError databaseError) {
-                                                                                                Toast.makeText(getActivity(), databaseError.getMessage().toString(), Toast.LENGTH_LONG).show();
-                                                                                            }
-                                                                                        };
-                                                                                        notifyDriver.addValueEventListener(notify);
-                                                                                        DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Requests").child(findRideItems.get(index).getPostId()).child("Pending").child(mAuth.getUid());
-                                                                                        databaseReference1.child("seats").setValue(iSeats);
-                                                                                        databaseReference1.child("contact").setValue(preferencesClass.getUserContact());
-                                                                                        databaseReference1.child("name").setValue(preferencesClass.getUSER_NAME());
-                                                                                        if (flag)
-                                                                                            databaseReference1.child("location").setValue(findRideItems.get(index).getToAddress());
-                                                                                        else
-                                                                                            databaseReference1.child("location").setValue(findRideItems.get(index).getFromAddress());
-
-                                                                                        DatabaseReference databaseReference2 = FirebaseDatabase.getInstance().getReference().child("Find").child(mAuth.getUid()).child("Pending").child(findRideItems.get(index).getPostId());
-                                                                                        HashMap<String, String> hashMap = new HashMap<String, String>();
-                                                                                        hashMap.put("driver", findRideItems.get(index).getDriverUid());
-                                                                                        databaseReference2.setValue(hashMap);
-                                                                                        break;
-
-                                                                                    case DialogInterface.BUTTON_NEGATIVE:
-                                                                                        //No button clicked
-                                                                                        dialog.dismiss();
-                                                                                        break;
-                                                                                }
-                                                                            }
-                                                                        };
-                                                                        final DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(uId).child(postId);
-                                                                        valueEventListener = new ValueEventListener() {
-                                                                            @Override
-                                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                                                if(dataSnapshot.hasChildren()){
-                                                                                    if(dataSnapshot.child("onway").getValue().toString().equals("false")) {
-                                                                                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                                                                                        builder.setMessage("Request this ride?").setPositiveButton("Yes", dialogClickListener)
-                                                                                                .setNegativeButton("No", dialogClickListener).show();
+                                                                    public void onClick(DialogInterface dialog, int which) {
+                                                                        switch (which) {
+                                                                            case DialogInterface.BUTTON_POSITIVE:
+                                                                                //Yes button clicked
+                                                                                final DatabaseReference notifyDriver = FirebaseDatabase.getInstance().getReference().child("Users").child(findRideItems.get(index).getDriverUid()).child("token");
+                                                                                notify = new ValueEventListener() {
+                                                                                    @Override
+                                                                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                                        postHelpingMethod.sendNotification("New Request", preferencesClass.getUSER_NAME() + "(" + preferencesClass.getUserRegno() + ") wants to ride with you!", dataSnapshot.getValue().toString());
+                                                                                        FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").setValue("false");
+                                                                                        notifyDriver.removeEventListener(notify);
+                                                                                        getFragmentManager().beginTransaction().replace(R.id.fragment_container, new MyBookingFragment()).commit();
                                                                                     }
-                                                                                    else{
-                                                                                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                                                                                        builder.setMessage("This ride is no longer available!").setPositiveButton("Okay", new DialogInterface.OnClickListener() {
-                                                                                            @Override
-                                                                                            public void onClick(DialogInterface dialog, int which) {
-                                                                                                dialog.dismiss();
-                                                                                            }
-                                                                                        })
-                                                                                                .show();
+
+                                                                                    @Override
+                                                                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                                                                                        Toast.makeText(getActivity(), databaseError.getMessage().toString(), Toast.LENGTH_LONG).show();
                                                                                     }
-                                                                                }
-                                                                                else{
-                                                                                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                                                                                    builder.setMessage("This ride is no longer available!").setPositiveButton("Okay", new DialogInterface.OnClickListener() {
-                                                                                        @Override
-                                                                                        public void onClick(DialogInterface dialog, int which) {
-                                                                                            dialog.dismiss();
-                                                                                        }
-                                                                                    })
-                                                                                            .show();
-                                                                                }
+                                                                                };
+                                                                                notifyDriver.addValueEventListener(notify);
+                                                                                DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Requests").child(findRideItems.get(index).getPostId()).child("Pending").child(mAuth.getUid());
+                                                                                databaseReference1.keepSynced(true);
+                                                                                databaseReference1.child("seats").setValue(iSeats);
+                                                                                databaseReference1.child("contact").setValue(preferencesClass.getUserContact());
+                                                                                databaseReference1.child("name").setValue(preferencesClass.getUSER_NAME());
+                                                                                if (flag)
+                                                                                    databaseReference1.child("location").setValue(findRideItems.get(index).getToAddress());
+                                                                                else
+                                                                                    databaseReference1.child("location").setValue(findRideItems.get(index).getFromAddress());
 
-                                                                                databaseReference1.removeEventListener(valueEventListener);
-                                                                            }
+                                                                                DatabaseReference databaseReference2 = FirebaseDatabase.getInstance().getReference().child("Find").child(mAuth.getUid()).child("Pending").child(findRideItems.get(index).getPostId());
+                                                                                HashMap<String, String> hashMap = new HashMap<String, String>();
+                                                                                hashMap.put("driver", findRideItems.get(index).getDriverUid());
+                                                                                databaseReference2.setValue(hashMap);
+                                                                                break;
 
-                                                                            @Override
-                                                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                                                            case DialogInterface.BUTTON_NEGATIVE:
+                                                                                //No button clicked
+                                                                                dialog.dismiss();
+                                                                                break;
+                                                                        }
+                                                                    }
+                                                                };
+                                                                final DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(uId).child(postId);
+                                                                valueEventListener = new ValueEventListener() {
+                                                                    @Override
+                                                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                        if (dataSnapshot.hasChildren()) {
+                                                                            if (dataSnapshot.child("onway").getValue().toString().equals("false")) {
                                                                                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                                                                                builder.setMessage("Theres Something Wrong. "+databaseError.getMessage()).setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+                                                                                builder.setMessage("Request this ride?").setPositiveButton("Yes", dialogClickListener)
+                                                                                        .setNegativeButton("No", dialogClickListener).show();
+                                                                            } else {
+                                                                                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                                                                builder.setMessage("This ride is no longer available!").setPositiveButton("Okay", new DialogInterface.OnClickListener() {
                                                                                     @Override
                                                                                     public void onClick(DialogInterface dialog, int which) {
                                                                                         dialog.dismiss();
@@ -306,14 +272,39 @@ public class FindRideFragment extends Fragment {
                                                                                 })
                                                                                         .show();
                                                                             }
-                                                                        };
-                                                                        databaseReference1.addValueEventListener(valueEventListener);
+                                                                        } else {
+                                                                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                                                            builder.setMessage("This ride is no longer available!").setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+                                                                                @Override
+                                                                                public void onClick(DialogInterface dialog, int which) {
+                                                                                    dialog.dismiss();
+                                                                                }
+                                                                            })
+                                                                                    .show();
+                                                                        }
+
+                                                                        databaseReference1.removeEventListener(valueEventListener);
                                                                     }
-                                                                });
-                                                                progressDialog.dismiss();
-                                                                noPostMsg.setVisibility(View.GONE);
-                                                                mLayout2.setVisibility(View.VISIBLE);
-                                                                adapter.notifyDataSetChanged();
+
+                                                                    @Override
+                                                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                                                                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                                                        builder.setMessage("Theres Something Wrong. " + databaseError.getMessage()).setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+                                                                            @Override
+                                                                            public void onClick(DialogInterface dialog, int which) {
+                                                                                dialog.dismiss();
+                                                                            }
+                                                                        })
+                                                                                .show();
+                                                                    }
+                                                                };
+                                                                databaseReference1.addValueEventListener(valueEventListener);
+                                                            }
+                                                        });
+                                                        progressDialog.dismiss();
+                                                        noPostMsg.setVisibility(View.GONE);
+                                                        mLayout2.setVisibility(View.VISIBLE);
+                                                        adapter.notifyDataSetChanged();
 
                                                     }
 
@@ -332,8 +323,7 @@ public class FindRideFragment extends Fragment {
                                             }
                                         });
 
-                                    }
-                                    else {
+                                    } else {
                                         if (i == dataSnapshot.getChildrenCount()) {
                                             if (findRideItems.isEmpty()) {
                                                 progressDialog.dismiss();
@@ -586,7 +576,7 @@ public class FindRideFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        if(searchIcon != null)
+        if (searchIcon != null)
             searchIcon.setVisibility(View.GONE);
         timer.cancel();
         databaseReference.removeEventListener(findRideListener);

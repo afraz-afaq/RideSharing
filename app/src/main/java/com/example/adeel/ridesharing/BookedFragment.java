@@ -35,6 +35,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.EventListener;
@@ -81,6 +84,7 @@ public class BookedFragment extends Fragment {
                     Log.v(TAG,"Driver: "+driverId);
 
                     getPostData = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(driverId).child(postID);
+                    getPostData.keepSynced(true);
                     getPostDataValueEventListener = new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -138,8 +142,21 @@ public class BookedFragment extends Fragment {
 
                     storageReference.child(driverId).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
-                        public void onSuccess(Uri uri) {
-                            GlideApp.with(getContext()).load(uri.toString()).placeholder(R.drawable.avatar).into(circleImageView);
+                        public void onSuccess(final Uri uri) {
+                            //GlideApp.with(getContext()).load(uri.toString()).placeholder(R.drawable.avatar).into(circleImageView);
+                            Picasso.with(getContext()).load(uri.toString()).networkPolicy(NetworkPolicy.OFFLINE)
+                                    .placeholder(R.drawable.avatar).into(circleImageView, new Callback() {
+                                @Override
+                                public void onSuccess() {
+
+                                }
+
+                                @Override
+                                public void onError() {
+                                    Picasso.with(getContext()).load(uri.toString()).placeholder(R.drawable.avatar).into(circleImageView);
+
+                                }
+                            });
 
                         }
 
@@ -150,6 +167,7 @@ public class BookedFragment extends Fragment {
                         }
                     });
                     getPostData = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(driverId).child(postID);
+                    getPostData.keepSynced(true);
                     getPostDataValueEventListener = new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

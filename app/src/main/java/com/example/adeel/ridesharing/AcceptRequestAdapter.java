@@ -17,6 +17,9 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -57,8 +60,21 @@ public class AcceptRequestAdapter extends ArrayAdapter<Accept> {
         mStorageRef = FirebaseStorage.getInstance().getReference();
         mStorageRef.child(accept.getmImage()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
-            public void onSuccess(Uri uri) {
-                GlideApp.with(getContext()).load(uri.toString()).placeholder(R.drawable.avatar).into(imageView);
+            public void onSuccess(final Uri uri) {
+                //GlideApp.with(getContext()).load(uri.toString()).placeholder(R.drawable.avatar).into(imageView);
+                Picasso.with(getContext()).load(uri.toString()).networkPolicy(NetworkPolicy.OFFLINE)
+                        .placeholder(R.drawable.avatar).into(imageView, new Callback() {
+                    @Override
+                    public void onSuccess() {
+
+                    }
+
+                    @Override
+                    public void onError() {
+                        Picasso.with(getContext()).load(uri.toString()).placeholder(R.drawable.avatar).into(imageView);
+
+                    }
+                });
 
             }
 

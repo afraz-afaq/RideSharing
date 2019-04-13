@@ -57,8 +57,8 @@ public class MyCarsFragment extends Fragment {
 
         emptyView = rootView.findViewById(R.id.empty_viewCar);
         databaseCars = FirebaseDatabase.getInstance().getReference("Users").child(mAuth.getUid()).child("Cars");
-//        databaseCars.keepSynced(true);
-        progressDialog  = postHelpingMethod.createProgressDialog("Fetching Cars","Please Wait....");
+        databaseCars.keepSynced(true);
+        progressDialog = postHelpingMethod.createProgressDialog("Fetching Cars", "Please Wait....");
         mCarList = rootView.findViewById(R.id.listView_cars);
         carsArrayList = new ArrayList<>();
 
@@ -100,10 +100,10 @@ public class MyCarsFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-            populateCarsList();
+        populateCarsList();
     }
 
-    private void createDialog(){
+    private void createDialog() {
 
         final Dialog dialogNet = new Dialog(getActivity());
         dialogNet.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -126,7 +126,7 @@ public class MyCarsFragment extends Fragment {
         });
     }
 
-    public void populateCarsList(){
+    public void populateCarsList() {
         progressDialog.show();
         databaseCars.addValueEventListener(new ValueEventListener() {
             @Override
@@ -151,8 +151,7 @@ public class MyCarsFragment extends Fragment {
 
                     emptyView.setVisibility(View.GONE);
                     progressDialog.dismiss();
-                }
-                else{
+                } else {
 
                     progressDialog.dismiss();
                     emptyView.setVisibility(View.VISIBLE);

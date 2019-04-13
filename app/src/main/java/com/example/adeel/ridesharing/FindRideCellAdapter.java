@@ -17,6 +17,9 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.ramotion.foldingcell.FoldingCell;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
 
 import java.util.HashSet;
 import java.util.List;
@@ -122,8 +125,22 @@ public class FindRideCellAdapter extends ArrayAdapter<FindRideItem> {
         mStorageRef.child(item.getImage()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(final Uri uri) {
-                String imageURL = uri.toString();
-                GlideApp.with(getContext()).load(imageURL).into(viewHolder.imageView);
+                final String imageURL = uri.toString();
+                //GlideApp.with(getContext()).load(imageURL).into(viewHolder.imageView);
+                Picasso.with(getContext()).load(imageURL).networkPolicy(NetworkPolicy.OFFLINE)
+                        .placeholder(R.drawable.avatar).into(viewHolder.imageView, new Callback() {
+                    @Override
+                    public void onSuccess() {
+
+                    }
+
+                    @Override
+                    public void onError() {
+                        Picasso.with(getContext()).load(imageURL).placeholder(R.drawable.avatar).into(viewHolder.imageView);
+
+                    }
+                });
+
             }
         })
                 .addOnFailureListener(new OnFailureListener() {

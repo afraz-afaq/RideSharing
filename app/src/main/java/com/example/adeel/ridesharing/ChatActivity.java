@@ -156,9 +156,11 @@ public class ChatActivity extends AppCompatActivity {
 
         AllMessages();
         statusRef = FirebaseDatabase.getInstance().getReference().child("SeenStatus").child(mAuth.getUid());
+        statusRef.keepSynced(true);
         statusRef.addValueEventListener(statusValueEventListener);
 
         writingRef = FirebaseDatabase.getInstance().getReference().child("Messages").child(receiver_id).child(mAuth.getUid()).child("writingstatus");
+        writingRef.keepSynced(true);
         writingRef.addValueEventListener(writingValueEventListener);
 
         mMessage.addTextChangedListener(new TextWatcher() {

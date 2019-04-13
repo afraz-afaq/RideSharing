@@ -55,6 +55,7 @@ public class AcceptedRequestsFragment extends Fragment {
                     postId = snapshot.getKey();
                     Log.v(TAG,"POSTID: "+postId);
                     databaseReferencePendingList = FirebaseDatabase.getInstance().getReference().child("Requests").child(postId).child("Accepted");
+                    databaseReferencePendingList.keepSynced(true);
                     databaseReferencePendingList.addValueEventListener(acceptlistListener);
                     databaseReferenceActive.removeEventListener(activePostValueEventListener);
                 }
@@ -161,6 +162,7 @@ public class AcceptedRequestsFragment extends Fragment {
         PostHelpingMethod postHelpingMethod = new PostHelpingMethod(getActivity());
         loadingDialog = postHelpingMethod.createProgressDialog("Loading...","Please Wait.");
         databaseReferenceActive  = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid());
+        databaseReferenceActive.keepSynced(true);
         databaseReferenceActive.addValueEventListener(activePostValueEventListener);
 
 

@@ -453,6 +453,7 @@ public class OfferRideFragment extends Fragment {
                 hashMap.put("contact",preferencesClass.getUserContact());
                 hashMap.put("vehicle",mVehicle.split("\\s+")[0]);
                 hashMap.put("date",mDateTime);
+                hashMap.put("seatcount",0);
                 hashMap.put("departTime",mDepartTIme);
                 hashMap.put("distance",String.valueOf(mDisitance));
                 hashMap.put("duration",String.valueOf(mDuration));
