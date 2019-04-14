@@ -192,7 +192,7 @@ public class PendingRequestsFragment extends Fragment {
 
 
                                         } else {
-                                            Toast.makeText(getActivity(), "Sorry ride is full.", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getActivity(), "Sorry seats are full or less than the requested. Please cancel this request", Toast.LENGTH_LONG).show();
                                         }
                                     }
                                 }
