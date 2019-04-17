@@ -25,13 +25,22 @@
             app:titleTextColor="@color/white">
 
             <ImageView
+                android:id="@+id/refreshSearch"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_gravity="end"
-                android:id="@+id/refreshSearch"
-                android:visibility="gone"
                 android:layout_marginRight="16dp"
-                android:src="@drawable/ic_refresh_black_24dp"/>
+                android:src="@drawable/ic_refresh_black_24dp"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/filter"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="end"
+                android:layout_marginRight="16dp"
+                android:src="@drawable/ic_action_filter"
+                android:visibility="gone" />
 
         </android.support.v7.widget.Toolbar>
 
