@@ -41,6 +41,8 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
+import com.github.arturogutierrez.Badges;
+import com.github.arturogutierrez.BadgesNotSupportedException;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -86,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
         }
 
     };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,6 +96,8 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
         setContentView(R.layout.activity_main);
         mStorageRef = FirebaseStorage.getInstance().getReference();
         mAuth = FirebaseAuth.getInstance();
+
+        startService(new Intent(getBaseContext(), BadgeCount.class));
 
         IntentFilter filter = new IntentFilter("android.intent.CLOSE_ACTIVITY");
         registerReceiver(mReceiver, filter);
@@ -135,37 +140,59 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
         TextView textViewEmail = (TextView) headerView.findViewById(R.id.nav_email);
         textViewEmail.setText(preferencesClass.getUSER_EMAIL());
 
+        final TextView ratingView = headerView.findViewById(R.id.nav_rating);
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(mAuth.getUid());
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    String rate = dataSnapshot.child("rating").getValue().toString();
+                    if (rate.equals("0")) {
+                        ratingView.setText("-");
+                    } else {
+                        ratingView.setText(rate);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
         setHeaderImage();
 
         profileChecker();
-        final TextView request_count=(TextView) MenuItemCompat.getActionView(mNavigationView.getMenu().
+        final TextView request_count = (TextView) MenuItemCompat.getActionView(mNavigationView.getMenu().
                 findItem(R.id.nav_request));
         request_count.setGravity(Gravity.CENTER_VERTICAL);
-        request_count.setTypeface(null,Typeface.BOLD);
+        request_count.setTypeface(null, Typeface.BOLD);
         request_count.setTextColor(Color.RED);
 
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid());
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    String key = snapshot.getKey();
-                    FirebaseDatabase.getInstance().getReference().child("Requests").child(key).child("Pending").addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if(dataSnapshot.exists()){
-                            request_count.setText(dataSnapshot.getChildrenCount()+"");
-                        }else {
-                            request_count.setText("");}
-                        }
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        String key = snapshot.getKey();
+                        FirebaseDatabase.getInstance().getReference().child("Requests").child(key).child("Pending").addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.exists()) {
+                                    request_count.setText(dataSnapshot.getChildrenCount() + "");
+                                } else {
+                                    request_count.setText("");
+                                }
+                            }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                        }
-                    });
-                }
+                            }
+                        });
+                    }
                 }
             }
 

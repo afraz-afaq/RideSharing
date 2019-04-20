@@ -22,4 +22,20 @@
     <color name="btnRequest">#ffbf12</color>
     <color name="black_overlay">#66000000</color>
 
+    <color name="dot_dark_screen2">#14a895</color>
+
+    <color name="dot_light_screen2">#8cf9eb</color>
+
+    <array name="array_dot_active">
+        <item>@color/dot_light_screen2</item>
+        <item>@color/dot_light_screen2</item>
+        <item>@color/dot_light_screen2</item>
+    </array>
+
+    <array name="array_dot_inactive">
+        <item>@color/dot_dark_screen2</item>
+        <item>@color/dot_dark_screen2</item>
+        <item>@color/dot_dark_screen2</item>
+    </array>
+
 </resources>

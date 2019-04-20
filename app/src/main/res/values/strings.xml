@@ -54,6 +54,9 @@
     <string name="canceled_bookings">Canceled</string>
     <string name="complete_bookings">Completed</string>
     <string name="api_key">AIzaSyAvjbA-nZFGriv5J-OP1GDH-EYFLe0u28c</string>
+    <string name="skip">SKIP</string>
+    <string name="start">GOT IT</string>
+    <string name="next">NEXT</string>
 
     <string-array name="cars">
         <item>Alto</item>

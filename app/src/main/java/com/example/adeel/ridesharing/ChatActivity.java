@@ -50,6 +50,7 @@ public class ChatActivity extends AppCompatActivity {
     private RecyclerView mRecyclerView;
     private TextView mName, mLastSeen;
     private ImageButton mAdd, mSend;
+    private String token;
     private ProgressBar mBar;
     private EditText mMessage;
     private StorageReference MessageImageStorage;
@@ -57,6 +58,7 @@ public class ChatActivity extends AppCompatActivity {
     private LinearLayoutManager linearLayoutManager;
     private MessageAdapter messageAdapter;
     private ImageView backImage, mUserImage;
+    private PostHelpingMethod helpingMethod;
     private final List<Messages> messagesList = new ArrayList<>();
     private DatabaseReference mDatabaseReference, ChatRef, statusRef, writingRef;
     ValueEventListener statusValueEventListener = new ValueEventListener() {
@@ -126,7 +128,7 @@ public class ChatActivity extends AppCompatActivity {
 
         messageAdapter = new MessageAdapter(messagesList);
 
-
+        helpingMethod = new PostHelpingMethod(ChatActivity.this);
 
         mRecyclerView = findViewById(R.id.messages_list);
         linearLayoutManager = new LinearLayoutManager(this);
@@ -267,6 +269,19 @@ public class ChatActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
                     mMessage.setText("");
+                    FirebaseDatabase.getInstance().getReference().child("Users").child(receiver_id).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            token = dataSnapshot.child("token").getValue().toString();
+                            helpingMethod.sendNotification("New Message",messageText,token);
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+
                 }
             });
 

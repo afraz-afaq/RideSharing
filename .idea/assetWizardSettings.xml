@@ -23,7 +23,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/content/ic_filter_list_black_24dp.xml" />
+                                                <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/action/ic_payment_black_24dp.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -33,7 +33,7 @@
                                   </option>
                                   <option name="values">
                                     <map>
-                                      <entry key="outputName" value="ic_action_filter" />
+                                      <entry key="outputName" value="ic_action_earnicon" />
                                       <entry key="theme" value="HOLO_DARK" />
                                       <entry key="themeColor" value="ffffff" />
                                     </map>
@@ -51,7 +51,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="scalingPercent" value="78" />
+                                                <entry key="scalingPercent" value="67" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -62,17 +62,13 @@
                                   <option name="values">
                                     <map>
                                       <entry key="backgroundAssetType" value="COLOR" />
-                                      <entry key="foregroundImage" value="C:\Users\DELL\Desktop\carshare.png" />
+                                      <entry key="backgroundColor" value="6aafcb" />
+                                      <entry key="foregroundImage" value="C:\Users\DELL\Downloads\ridelogo.jpg" />
                                     </map>
                                   </option>
                                 </PersistentState>
                               </value>
                             </entry>
-                          </map>
-                        </option>
-                        <option name="values">
-                          <map>
-                            <entry key="outputIconType" value="ACTIONBAR" />
                           </map>
                         </option>
                       </PersistentState>

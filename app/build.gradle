@@ -51,6 +51,7 @@ dependencies {
     compile 'com.github.DavidBarbaran:FCM-AndroidToOtherDevice:1.0'
     compile 'pl.droidsonroids.gif:android-gif-drawable:1.1.17'
     compile 'com.android.support:support-v4:28.+'
+    compile 'com.github.arturogutierrez:badges:1.0.5@aar'
     testCompile 'junit:junit:4.12'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'
 

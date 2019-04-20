@@ -14,8 +14,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
+import android.text.method.HideReturnsTransformationMethod;
+import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -74,6 +77,7 @@ public class OfferRideFragment extends Fragment {
     private String mVehicle, mDateTime,mDepartTIme, mTime, mSeats;
     private DatabaseReference mDatabaseReference;
     private FirebaseAuth mAuth;
+    int count = 1;
     private ArrayAdapter mSeatsAdapter, mCarAdapter, mTimeAdapter;
     private ArrayList mCarsList;
     private double mDisitance, mDuration, mFare, mPerKM, mPerMin, mBase;
@@ -339,6 +343,29 @@ public class OfferRideFragment extends Fragment {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.confirmpasswordlayout);
         Button verifyBtn = dialog.findViewById(R.id.button_verify);
+        final EditText mPassword = dialog.findViewById(R.id.editText_password);
+        mPassword.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                final int DRAWABLE_RIGHT = 2;
+
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    if (event.getRawX() >= (mPassword.getRight() - mPassword.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width())) {
+                        if (count % 2 == 1) {
+                            mPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+                            mPassword.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_action_lock, 0, R.drawable.ic_action_visi, 0);
+                            count++;
+                            return true;
+                        } else {
+                            mPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
+                            mPassword.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_action_lock, 0, R.drawable.ic_action_visioff, 0);
+                            count++;
+                        }
+                    }
+                }
+                return false;
+            }
+        });
         final EditText confirm = dialog.findViewById(R.id.editText_password);
         ImageView buttonClose = dialog.findViewById(R.id.imageView_close);
         dialog.show();

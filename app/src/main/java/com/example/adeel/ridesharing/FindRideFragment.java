@@ -1141,9 +1141,9 @@ public class FindRideFragment extends Fragment {
         searchIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(both)
+                if (both)
                     databaseReference.addValueEventListener(findRideListener);
-                else if(bike)
+                else if (bike)
                     databaseReference.addValueEventListener(findBikesListener);
                 else
                     databaseReference.addValueEventListener(findCarsListener);
@@ -1179,9 +1179,10 @@ public class FindRideFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        if (searchIcon != null && filterIcon != null)
+        if (searchIcon != null)
             searchIcon.setVisibility(View.GONE);
-        filterIcon.setVisibility(View.GONE);
+        if (filterIcon != null)
+            filterIcon.setVisibility(View.GONE);
         timer.cancel();
         databaseReference.removeEventListener(findRideListener);
         Log.v("Bye", "Bye Bye");
