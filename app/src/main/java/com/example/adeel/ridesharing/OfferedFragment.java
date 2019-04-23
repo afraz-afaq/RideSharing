@@ -50,6 +50,7 @@ public class OfferedFragment extends Fragment {
     private int iOffredOptions = 0;
     private TextView from, to, distance, time, seats, price, noPostMsg;
     TabLayout tabLayout;
+    private View rootView;
     private Button start, cancel;
     private ListView offeredListView;
     private CardView activePost;
@@ -59,7 +60,7 @@ public class OfferedFragment extends Fragment {
     private PostHelpingMethod postHelpingMethod;
     private ArrayList<HistoryPost> historyPosts;
     private HistoryAdapter historyPostArrayAdapter;
-    DatabaseReference databaseReferenceActive,databaseReferencenostart, databaseReference, databaseReferenceNotification, databaseReferenceToken, databaseReferenceNotificationToAccepted, databaseReferenceforcompleted, databasereferencerating, databaseReferenceusercompleted;
+    DatabaseReference databaseReferenceActive, databaseReferencenostart, databaseReference, databaseReferenceNotification, databaseReferenceToken, databaseReferenceNotificationToAccepted, databaseReferenceforcompleted, databasereferencerating, databaseReferenceusercompleted;
     ValueEventListener notificationToToken;
     DatabaseReference getPostData;
     Boolean check;
@@ -69,7 +70,7 @@ public class OfferedFragment extends Fragment {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
             if (dataSnapshot.hasChild("Accepted")) {
-                Toast.makeText(getActivity(), "Notify All", Toast.LENGTH_SHORT).show();
+                postHelpingMethod.snackbarMessage("Notify Sent to All",rootView);
                 getPostData = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postID).child("onway");
                 getPostData.setValue("true").addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -300,7 +301,7 @@ public class OfferedFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_offered, container, false);
+        rootView = inflater.inflate(R.layout.fragment_offered, container, false);
         from = rootView.findViewById(R.id.title_from_address);
         to = rootView.findViewById(R.id.title_to_address);
         distance = rootView.findViewById(R.id.title_pledge);
@@ -342,155 +343,155 @@ public class OfferedFragment extends Fragment {
                     databaseReferencenostart.addValueEventListener(noStartListener);
 
 
-                    } else{
+                } else {
 
-                        PreferencesClass preferencesClass = new PreferencesClass(getActivity());
-                        FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").setValue("true");
-                        preferencesClass.setUserPostStatus("true");
-
-
-                        databaseReferenceforcompleted = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postID);
-                        databasereferencerating = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID).child("Accepted");
+                    PreferencesClass preferencesClass = new PreferencesClass(getActivity());
+                    FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").setValue("true");
+                    preferencesClass.setUserPostStatus("true");
 
 
-                        databasereferencerating.addValueEventListener(ratingcheck);
-
-                        databaseReferenceforcompleted.addValueEventListener(completed);
-
-                        Toast.makeText(getActivity(), "Ride Completed", Toast.LENGTH_SHORT).show();
-                    }
+                    databaseReferenceforcompleted = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postID);
+                    databasereferencerating = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID).child("Accepted");
 
 
+                    databasereferencerating.addValueEventListener(ratingcheck);
+
+                    databaseReferenceforcompleted.addValueEventListener(completed);
+                    postHelpingMethod.snackbarMessage("Ride Completed", view);
                 }
-            });
 
-            spinnerOffredOptions();
+
+            }
+        });
+
+        spinnerOffredOptions();
 
         return rootView;
-        }
+    }
 
-        private void spinnerOffredOptions () {
+    private void spinnerOffredOptions() {
 
-            ArrayAdapter arrayAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.bookings_options_driver, android.R.layout.simple_spinner_item);
-            arrayAdapter.setDropDownViewResource(android.R.layout.simple_list_item_1);
-            mOffredOptions.setAdapter(arrayAdapter);
+        ArrayAdapter arrayAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.bookings_options_driver, android.R.layout.simple_spinner_item);
+        arrayAdapter.setDropDownViewResource(android.R.layout.simple_list_item_1);
+        mOffredOptions.setAdapter(arrayAdapter);
 
-            mOffredOptions.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                    String selection = (String) adapterView.getItemAtPosition(i);
-                    if (!TextUtils.isEmpty(selection)) {
-                        if (selection.equals(getString(R.string.past_bookings))) {
-                            check = true;
-                            iOffredOptions = R.string.past_bookings;
-                            tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-                                @Override
-                                public void onTabSelected(TabLayout.Tab tab) {
-                                    if (tab.getPosition() == 1)
-                                        check = false;
-                                    showActive();
-                                }
+        mOffredOptions.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String selection = (String) adapterView.getItemAtPosition(i);
+                if (!TextUtils.isEmpty(selection)) {
+                    if (selection.equals(getString(R.string.past_bookings))) {
+                        check = true;
+                        iOffredOptions = R.string.past_bookings;
+                        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+                            @Override
+                            public void onTabSelected(TabLayout.Tab tab) {
+                                if (tab.getPosition() == 1)
+                                    check = false;
+                                showActive();
+                            }
 
-                                @Override
-                                public void onTabUnselected(TabLayout.Tab tab) {
+                            @Override
+                            public void onTabUnselected(TabLayout.Tab tab) {
 //                                databaseReferenceActive.removeEventListener(showActivePost);
 //                                databaseReferenceNotification.removeEventListener(sendNotifications);
 //                                databaseReference.removeEventListener(cancelPost);
 //                                databaseReferenceToken.removeEventListener(notificationToToken);
 //                                databaseReference.removeEventListener(populateValueEventListener);
-                                }
-
-                                @Override
-                                public void onTabReselected(TabLayout.Tab tab) {
-
-                                }
-                            });
-                            if (tabLayout.getSelectedTabPosition() == 1 && check) {
-                                showActive();
                             }
-                        } else if (selection.equals(getString(R.string.canceled_bookings))) {
-                            iOffredOptions = R.string.canceled_bookings;
-                            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Canceled").child(mAuth.getUid());
-                            populateList(databaseReference);
-                        } else {
-                            iOffredOptions = R.string.complete_bookings;
-                            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Completed").child(mAuth.getUid());
-                            populateList(databaseReference);
+
+                            @Override
+                            public void onTabReselected(TabLayout.Tab tab) {
+
+                            }
+                        });
+                        if (tabLayout.getSelectedTabPosition() == 1 && check) {
+                            showActive();
                         }
+                    } else if (selection.equals(getString(R.string.canceled_bookings))) {
+                        iOffredOptions = R.string.canceled_bookings;
+                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Canceled").child(mAuth.getUid());
+                        populateList(databaseReference);
+                    } else {
+                        iOffredOptions = R.string.complete_bookings;
+                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Posts").child("Completed").child(mAuth.getUid());
+                        populateList(databaseReference);
                     }
                 }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> adapterView) {
-                    iOffredOptions = R.string.show_all;
-
-                }
-            });
-
-        }
-
-        private void showActive () {
-            loadingDialog.show();
-            databaseReferenceActive.addValueEventListener(showActivePost);
-
-        }
-
-        ValueEventListener populateValueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                noPostMsg.setVisibility(View.GONE);
-                activePost.setVisibility(View.GONE);
-                offeredListView.setVisibility(View.VISIBLE);
-                if (dataSnapshot.hasChildren()) {
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        HistoryPost historyPost = new HistoryPost(snapshot.child("Origin").child("name").getValue().toString(), snapshot.child("Destination").child("name").getValue().toString(), snapshot.child("fare").getValue().toString() + "Rs", snapshot.child("isCar").getValue().toString().equals("true") ? "Car" : "Bike", snapshot.child("vehicle").getValue().toString(), snapshot.child("departTime").getValue().toString(), snapshot.child("name").getValue().toString(), snapshot.child("regno").getValue().toString());
-                        historyPosts.add(historyPost);
-                    }
-                } else {
-//                Toast.makeText(getActivity(), "No Posts Available", Toast.LENGTH_SHORT).show();
-                    noPostMsg.setVisibility(View.VISIBLE);
-                }
-                loadingDialog.dismiss();
-                historyPostArrayAdapter.notifyDataSetChanged();
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                noPostMsg.setVisibility(View.VISIBLE);
-                loadingDialog.dismiss();
-            }
-        };
-        private void populateList (DatabaseReference databaseReference){
-            loadingDialog.show();
-            historyPosts.clear();
-            databaseReference.addValueEventListener(populateValueEventListener);
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                iOffredOptions = R.string.show_all;
 
-        }
-
-
-        @Override
-        public void onDetach () {
-            super.onDetach();
-            if (databaseReferenceActive != null) {
-                databaseReferenceActive.removeEventListener(showActivePost);
             }
-            if (databaseReferenceNotification != null) {
-                databaseReferenceNotification.removeEventListener(sendNotifications);
-            }
-            if (databaseReference != null) {
-                databaseReference.removeEventListener(cancelPost);
-            }
-            if (databaseReferenceToken != null) {
-                databaseReferenceToken.removeEventListener(notificationToToken);
-            }
-            if (databaseReference != null) {
-                databaseReference.removeEventListener(populateValueEventListener);
-            }
-            if (databasereferencerating != null) {
-                databasereferencerating.removeEventListener(ratingcheck);
-            }
-
-
-        }
+        });
 
     }
+
+    private void showActive() {
+        loadingDialog.show();
+        databaseReferenceActive.addValueEventListener(showActivePost);
+
+    }
+
+    ValueEventListener populateValueEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            noPostMsg.setVisibility(View.GONE);
+            activePost.setVisibility(View.GONE);
+            offeredListView.setVisibility(View.VISIBLE);
+            if (dataSnapshot.hasChildren()) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    HistoryPost historyPost = new HistoryPost(snapshot.child("Origin").child("name").getValue().toString(), snapshot.child("Destination").child("name").getValue().toString(), snapshot.child("fare").getValue().toString() + "Rs", snapshot.child("isCar").getValue().toString().equals("true") ? "Car" : "Bike", snapshot.child("vehicle").getValue().toString(), snapshot.child("departTime").getValue().toString(), snapshot.child("name").getValue().toString(), snapshot.child("regno").getValue().toString());
+                    historyPosts.add(historyPost);
+                }
+            } else {
+//                Toast.makeText(getActivity(), "No Posts Available", Toast.LENGTH_SHORT).show();
+                noPostMsg.setVisibility(View.VISIBLE);
+            }
+            loadingDialog.dismiss();
+            historyPostArrayAdapter.notifyDataSetChanged();
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+            noPostMsg.setVisibility(View.VISIBLE);
+            loadingDialog.dismiss();
+        }
+    };
+
+    private void populateList(DatabaseReference databaseReference) {
+        loadingDialog.show();
+        historyPosts.clear();
+        databaseReference.addValueEventListener(populateValueEventListener);
+
+    }
+
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        if (databaseReferenceActive != null) {
+            databaseReferenceActive.removeEventListener(showActivePost);
+        }
+        if (databaseReferenceNotification != null) {
+            databaseReferenceNotification.removeEventListener(sendNotifications);
+        }
+        if (databaseReference != null) {
+            databaseReference.removeEventListener(cancelPost);
+        }
+        if (databaseReferenceToken != null) {
+            databaseReferenceToken.removeEventListener(notificationToToken);
+        }
+        if (databaseReference != null) {
+            databaseReference.removeEventListener(populateValueEventListener);
+        }
+        if (databasereferencerating != null) {
+            databasereferencerating.removeEventListener(ratingcheck);
+        }
+
+
+    }
+
+}

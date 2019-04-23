@@ -2,20 +2,11 @@ package com.example.adeel.ridesharing;
 
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
-import android.net.Uri;
-import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.constraint.solver.widgets.Snapshot;
 import android.support.design.widget.BottomSheetDialog;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
@@ -30,7 +21,6 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -52,21 +42,16 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.mikhaellopez.circularimageview.CircularImageView;
 import com.ramotion.foldingcell.FoldingCell;
 
-import java.io.IOException;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Semaphore;
 
 public class FindRideFragment extends Fragment {
 
@@ -210,7 +195,7 @@ public class FindRideFragment extends Fragment {
                                                         final int index = findRideItems.size() - 1;
                                                         findRideItems.get(index).setRequestBtnClickListener(new View.OnClickListener() {
                                                             @Override
-                                                            public void onClick(View v) {
+                                                            public void onClick(final View v) {
                                                                 final DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
                                                                     @Override
                                                                     public void onClick(DialogInterface dialog, int which) {
@@ -229,7 +214,7 @@ public class FindRideFragment extends Fragment {
 
                                                                                     @Override
                                                                                     public void onCancelled(@NonNull DatabaseError databaseError) {
-                                                                                        Toast.makeText(getActivity(), databaseError.getMessage().toString(), Toast.LENGTH_LONG).show();
+                                                                                        postHelpingMethod.snackbarMessage(databaseError.getMessage().toString(), v);
                                                                                     }
                                                                                 };
                                                                                 notifyDriver.addValueEventListener(notify);
@@ -474,7 +459,7 @@ public class FindRideFragment extends Fragment {
                                                             final int index = findRideItems.size() - 1;
                                                             findRideItems.get(index).setRequestBtnClickListener(new View.OnClickListener() {
                                                                 @Override
-                                                                public void onClick(View v) {
+                                                                public void onClick(final View v) {
                                                                     final DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
                                                                         @Override
                                                                         public void onClick(DialogInterface dialog, int which) {
@@ -493,7 +478,7 @@ public class FindRideFragment extends Fragment {
 
                                                                                         @Override
                                                                                         public void onCancelled(@NonNull DatabaseError databaseError) {
-                                                                                            Toast.makeText(getActivity(), databaseError.getMessage().toString(), Toast.LENGTH_LONG).show();
+                                                                                            postHelpingMethod.snackbarMessage(databaseError.getMessage().toString(), v);
                                                                                         }
                                                                                     };
                                                                                     notifyDriver.addValueEventListener(notify);
@@ -943,14 +928,14 @@ public class FindRideFragment extends Fragment {
                 boolean check = true;
                 if (flag) {
                     if (TextUtils.isEmpty(mDepart.getText().toString())) {
-                        Toast.makeText(getActivity(), "Please Enter your desstination", Toast.LENGTH_SHORT).show();
+                        postHelpingMethod.snackbarMessage("Please Enter your desstination", v);
                         mDepart.setFocusable(true);
                         mLayout1.setVisibility(View.VISIBLE);
                         check = false;
                     }
 
                 } else if (TextUtils.isEmpty(mPickUpText.getText().toString())) {
-                    Toast.makeText(getActivity(), "Please Enter your location", Toast.LENGTH_SHORT).show();
+                    postHelpingMethod.snackbarMessage("Please Enter your location", v);
                     mPickUpText.setFocusable(true);
                     mLayout1.setVisibility(View.VISIBLE);
                     check = false;
@@ -995,8 +980,7 @@ public class FindRideFragment extends Fragment {
         adapter.setDefaultRequestBtnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getActivity(), "DEFAULT HANDLER FOR ALL BUTTONS", Toast.LENGTH_SHORT).
-                        show();
+                postHelpingMethod.snackbarMessage("DEFAULT HANDLER FOR ALL BUTTONS", v);
             }
         });
 
@@ -1135,7 +1119,7 @@ public class FindRideFragment extends Fragment {
     }
 
     private void populateFindList() {
-        Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
+        Toolbar toolbar = getActivity().findViewById(R.id.toolbar_forgot);
         searchIcon = toolbar.findViewById(R.id.refreshSearch);
         searchIcon.setVisibility(View.VISIBLE);
         searchIcon.setOnClickListener(new View.OnClickListener() {

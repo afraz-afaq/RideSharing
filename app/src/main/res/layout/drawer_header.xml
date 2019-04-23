@@ -19,7 +19,7 @@
         android:layout_width="64dp"
         android:layout_height="64dp"
         app:civ_border_width="2dp"
-        android:src="@drawable/empty_garage"
+        android:src="@drawable/avatar"
         app:civ_border_color="@color/white"/>
 
     <TextView

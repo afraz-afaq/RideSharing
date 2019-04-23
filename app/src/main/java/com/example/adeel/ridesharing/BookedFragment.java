@@ -54,6 +54,7 @@ public class BookedFragment extends Fragment {
     private Button cancel,track,chat,call;
     private ListView bookedListView;
     private CardView pendingPost;
+    private View rootView;
     private String postID, driverId, driverName, contact;
     private FirebaseAuth mAuth;
     private StorageReference storageReference;
@@ -163,7 +164,7 @@ public class BookedFragment extends Fragment {
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(getActivity(), "Network Error "+e.getMessage(), Toast.LENGTH_SHORT).show();
+                            postHelpingMethod.snackbarMessage("Network Error "+e.getMessage(),rootView);
                         }
                     });
                     getPostData = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(driverId).child(postID);
@@ -217,7 +218,7 @@ public class BookedFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_booked, container, false);
+        rootView = inflater.inflate(R.layout.fragment_booked, container, false);
         circleImageView = rootView.findViewById(R.id.dimage);
         from = rootView.findViewById(R.id.title_from_address);
         name = rootView.findViewById(R.id.dname);

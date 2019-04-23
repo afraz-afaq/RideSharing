@@ -6,6 +6,7 @@ package com.example.adeel.ridesharing;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.support.design.widget.Snackbar;
 import android.text.style.CharacterStyle;
 import android.text.style.StyleSpan;
 import android.view.View;
@@ -38,6 +39,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class PlaceAutocompleteAdapter
         extends ArrayAdapter<AutocompletePrediction> implements Filterable {
+    private View row;
 
     private static final CharacterStyle STYLE_BOLD = new StyleSpan(Typeface.BOLD);
     /**
@@ -98,7 +100,7 @@ public class PlaceAutocompleteAdapter
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View row = super.getView(position, convertView, parent);
+        row = super.getView(position, convertView, parent);
 
         // Sets the primary and secondary text for a row.
         // Note that getPrimaryText() and getSecondaryText() return a CharSequence that may contain
@@ -208,8 +210,8 @@ public class PlaceAutocompleteAdapter
             return DataBufferUtils.freezeAndClose(autocompletePredictions);
         } catch (RuntimeExecutionException e) {
             // If the query did not complete successfully return null
-            Toast.makeText(getContext(), "Error contacting API: " + e.toString(),
-                    Toast.LENGTH_SHORT).show();
+            Snackbar.make(row, "Error contacting API: " + e.toString(), Toast.LENGTH_LONG).show();
+
             return null;
         }
     }

@@ -17,7 +17,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -127,8 +126,7 @@ public class AcceptedRequestsFragment extends Fragment {
                 }
                 acceptRequestAdapter.notifyDataSetChanged();
             }else{
-//                Toast.makeText(getActivity(), "No Pending Requests", Toast.LENGTH_SHORT).show();
-                noPostMsg.setVisibility(View.VISIBLE);
+noPostMsg.setVisibility(View.VISIBLE);
                 acceptList.setVisibility(View.GONE);
             }
             loadingDialog.dismiss();

@@ -3,6 +3,7 @@ package com.example.adeel.ridesharing;
 import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,7 +44,7 @@ public class FindRideCellAdapter extends ArrayAdapter<FindRideItem> {
 
     @NonNull
     @Override
-    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+    public View getView(int position, final View convertView, @NonNull ViewGroup parent) {
         // get item for selected view
         final FindRideItem item = getItem(position);
         // if cell is exists - reuse it, if not - create the new one from resource
@@ -120,7 +121,6 @@ public class FindRideCellAdapter extends ArrayAdapter<FindRideItem> {
         else
             viewHolder.details.setText(item.getDetials());
 
-        Log.v("Tesing", "-> " + item.getImage());
         mStorageRef = FirebaseStorage.getInstance().getReference();
         mStorageRef.child(item.getImage()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
@@ -146,7 +146,8 @@ public class FindRideCellAdapter extends ArrayAdapter<FindRideItem> {
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception exception) {
-                        Toast.makeText(context, exception.toString(), Toast.LENGTH_LONG).show();
+                        Snackbar sb = Snackbar.make(convertView, exception.toString(), Snackbar.LENGTH_LONG);
+                        sb.show();
                     }
                 });
 

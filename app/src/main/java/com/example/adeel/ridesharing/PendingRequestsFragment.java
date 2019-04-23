@@ -121,7 +121,7 @@ public class PendingRequestsFragment extends Fragment {
 
                     View.OnClickListener acceptEvent = new View.OnClickListener() {
                         @Override
-                        public void onClick(View view) {
+                        public void onClick(final View view) {
                             databaseSeatCount = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postId);
                             checkAcceptlistener = new ValueEventListener() {
                                 @Override
@@ -185,14 +185,14 @@ public class PendingRequestsFragment extends Fragment {
 
                                                     } else {
                                                         String error = task.getException().toString();
-                                                        Toast.makeText(getActivity(), "fail " + error, Toast.LENGTH_SHORT).show();
+                                                        postHelpingMethod.snackbarMessage("fail " + error,view);
                                                     }
                                                 }
                                             });
 
 
                                         } else {
-                                            Toast.makeText(getActivity(), "Sorry seats are full or less than the requested. Please cancel this request", Toast.LENGTH_LONG).show();
+                                            postHelpingMethod.snackbarMessage("Sorry seats are full or less than the requested. Please cancel this request",view);
                                         }
                                     }
                                 }

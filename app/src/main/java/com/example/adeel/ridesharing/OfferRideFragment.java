@@ -72,9 +72,9 @@ import static java.lang.Math.round;
 public class OfferRideFragment extends Fragment {
 
     private final String TAG = "PostRide2";
-    private Animation fromTop,fromBottom;
+    private Animation fromTop, fromBottom;
     private Address mOriginAddress, mDestinationAddress;
-    private String mVehicle, mDateTime,mDepartTIme, mTime, mSeats;
+    private String mVehicle, mDateTime, mDepartTIme, mTime, mSeats;
     private DatabaseReference mDatabaseReference;
     private FirebaseAuth mAuth;
     int count = 1;
@@ -87,10 +87,10 @@ public class OfferRideFragment extends Fragment {
     //private LatLngBounds mLatLngBounds = new LatLngBounds(new LatLng(-40, -168), new LatLng(71, 136));
     private LatLngBounds mLatLngBounds = new LatLngBounds(new LatLng(24, 67), new LatLng(25, 68));
 
-    private Button mSubmit,mButton_Publish,mButtonCar,mButtonBike;
+    private Button mSubmit, mButton_Publish, mButtonCar, mButtonBike;
     private Spinner mSeatsSpinnner, mCarSpinnner, mTimeSpinner;
-    private LinearLayout mLayout1,mLayout2,mLayoutVia;
-    private AutoCompleteTextView mDepart,mPickUpText;
+    private LinearLayout mLayout1, mLayout2, mLayoutVia;
+    private AutoCompleteTextView mDepart, mPickUpText;
     private Switch mRouteSwitch;
     private Dialog mdialog;
     private PlaceAutocompleteAdapter mPlaceAutocompleteAdapter;
@@ -108,9 +108,9 @@ public class OfferRideFragment extends Fragment {
         mDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid());
 
         preferencesClass = new PreferencesClass(getActivity());
-        mLayout1=rootView.findViewById(R.id.layout_offer1);
-        mLayout2=rootView.findViewById(R.id.layout_offer2);
-        mLayoutVia=rootView.findViewById(R.id.layout_offerVehicle);
+        mLayout1 = rootView.findViewById(R.id.layout_offer1);
+        mLayout2 = rootView.findViewById(R.id.layout_offer2);
+        mLayoutVia = rootView.findViewById(R.id.layout_offerVehicle);
         mLayout1.setVisibility(View.GONE);
         mLayout2.setVisibility(View.GONE);
 
@@ -177,7 +177,7 @@ public class OfferRideFragment extends Fragment {
 
         mCarsList = new ArrayList();
         //populateVehicleList();
-        mCarAdapter = new ArrayAdapter(getActivity(),android.R.layout.simple_list_item_1,mCarsList);
+        mCarAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, mCarsList);
         mCarSpinnner.setAdapter(mCarAdapter);
 
         mSubmit = rootView.findViewById(R.id.button_submit);
@@ -188,7 +188,7 @@ public class OfferRideFragment extends Fragment {
         mPickUpText.getText().clear();
         mPickUpText.setEnabled(true);
 
-        if(TextUtils.isEmpty(mPickUpText.getText().toString())){
+        if (TextUtils.isEmpty(mPickUpText.getText().toString())) {
             mDepart.setFocusable(true);
             mLayout1.setVisibility(View.VISIBLE);
 
@@ -198,63 +198,56 @@ public class OfferRideFragment extends Fragment {
             @Override
             public void onClick(View v) {
 
-                    if(TextUtils.isEmpty(mPickUpText.getText().toString()))
-                    {
-                        Toast.makeText(getActivity(), "Please Enter your location", Toast.LENGTH_SHORT).show();
-                        mPickUpText.setFocusable(true);
-                        mLayout1.setVisibility(View.VISIBLE);
-                    }
-
-                else if(TextUtils.isEmpty(mDepart.getText().toString())){
-                    Toast.makeText(getActivity(), "Please Enter your destination", Toast.LENGTH_SHORT).show();
+                if (TextUtils.isEmpty(mPickUpText.getText().toString())) {
+                    postHelpingMethod.snackbarMessage("Please Enter your location", v);
+                    mPickUpText.setFocusable(true);
+                    mLayout1.setVisibility(View.VISIBLE);
+                } else if (TextUtils.isEmpty(mDepart.getText().toString())) {
+                    postHelpingMethod.snackbarMessage("Please Enter your destination", v);
                     mDepart.setFocusable(true);
                     mLayout1.setVisibility(View.VISIBLE);
 
-                }
-                else if(mTime.equals("Mins before leaving")){
-                    Toast.makeText(getActivity(), "Please select time in leaving", Toast.LENGTH_SHORT).show();
+                } else if (mTime.equals("Mins before leaving")) {
+                    postHelpingMethod.snackbarMessage("Please select leaving time", v);
                     mTimeSpinner.setFocusable(true);
-                }
-               else{
-                        final ProgressDialog progressDialog = postHelpingMethod.createProgressDialog("Fetching","Please wait fetching locations");
-                        final String depart = mDepart.getText().toString();
-                        final String pickup = mPickUpText.getText().toString();
-                        progressDialog.show();
-                        new AsyncTask<String,Void,String>(){
+                } else {
+                    final ProgressDialog progressDialog = postHelpingMethod.createProgressDialog("Fetching", "Please wait fetching locations");
+                    final String depart = mDepart.getText().toString();
+                    final String pickup = mPickUpText.getText().toString();
+                    progressDialog.show();
+                    new AsyncTask<String, Void, String>() {
 
-                            @Override
-                            protected String doInBackground(String... strings) {
+                        @Override
+                        protected String doInBackground(String... strings) {
 
-                                mOriginAddress =  postHelpingMethod.geoLocateSearch(pickup,TAG);
-                                mDestinationAddress =  postHelpingMethod.geoLocateSearch(depart,TAG);
-                                return "";
+                            mOriginAddress = postHelpingMethod.geoLocateSearch(pickup, TAG);
+                            mDestinationAddress = postHelpingMethod.geoLocateSearch(depart, TAG);
+                            return "";
+                        }
+
+                        @Override
+                        protected void onPostExecute(String s) {
+
+                            if (mOriginAddress == null || mDestinationAddress == null) {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                builder.setMessage("Location fetching error please try again.")
+                                        .setTitle("Alert");
+                                builder.setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.dismiss();
+                                    }
+                                });
+
+                                AlertDialog dialog = builder.create();
+                                dialog.show();
+                            } else {
+                                mLayout1.setVisibility(View.GONE);
+                                mLayout2.setVisibility(View.VISIBLE);
+
                             }
-
-                            @Override
-                            protected void onPostExecute(String s) {
-
-                                if(mOriginAddress == null || mDestinationAddress == null){
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                                    builder.setMessage("Location fetching error please try again.")
-                                            .setTitle("Alert");
-                                    builder.setPositiveButton("Okay", new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int id) {
-                                            dialog.dismiss();
-                                        }
-                                    });
-
-                                    AlertDialog dialog = builder.create();
-                                    dialog.show();
-                                }
-                                else {
-                                    mLayout1.setVisibility(View.GONE);
-                                    mLayout2.setVisibility(View.VISIBLE);
-
-                                }
-                                progressDialog.dismiss();
-                            }
-                        }.execute();
-
+                            progressDialog.dismiss();
+                        }
+                    }.execute();
 
 
                 }
@@ -277,8 +270,7 @@ public class OfferRideFragment extends Fragment {
                 }
             }
         });
-        
-        
+
 
         //new  fragment start
 
@@ -314,7 +306,7 @@ public class OfferRideFragment extends Fragment {
         return rootView;
     }
 
-    private void createDialog(){
+    private void createDialog() {
 
         final Dialog dialogNet = new Dialog(getActivity());
         dialogNet.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -337,7 +329,7 @@ public class OfferRideFragment extends Fragment {
         });
     }
 
-    private void createConfirmPasswordDialog(){
+    private void createConfirmPasswordDialog() {
 
         final Dialog dialog = new Dialog(getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -372,16 +364,15 @@ public class OfferRideFragment extends Fragment {
         verifyBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(TextUtils.isEmpty(confirm.getText().toString()))
-                    postHelpingMethod.snackbarMessage("Please enter to verify password",view);
-                else if(confirm.getText().toString().trim().equals(preferencesClass.getUSER_Password())) {
+                if (TextUtils.isEmpty(confirm.getText().toString()))
+                    postHelpingMethod.snackbarMessage("Please enter to verify password", view);
+                else if (confirm.getText().toString().trim().equals(preferencesClass.getUSER_Password())) {
                     mdialog = postHelpingMethod.createDialog("Publishing...");
                     mdialog.show();
                     dialog.cancel();
                     getTimeFromServer();
-                }
-                else
-                    postHelpingMethod.snackbarMessage("Verification failed",view);
+                } else
+                    postHelpingMethod.snackbarMessage("Verification failed", view);
             }
         });
 
@@ -393,9 +384,9 @@ public class OfferRideFragment extends Fragment {
         });
     }
 
-    private void getTimeFromServer(){
+    private void getTimeFromServer() {
         String URLTime = "http://api.geonames.org/timezoneJSON?formatted=true&lat=24.86&lng=67.00&username=zauya&style=full";
-       // Toast.makeText(getActivity(),"In method",Toast.LENGTH_LONG).show();
+        // Toast.makeText(getActivity(),"In method",Toast.LENGTH_LONG).show();
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
                 (Request.Method.GET, URLTime, null, new Response.Listener<JSONObject>() {
 
@@ -404,13 +395,13 @@ public class OfferRideFragment extends Fragment {
                         try {
                             mDateTime = response.getString("time");
 
-                               Date date = stringToDate(mDateTime);
+                            Date date = stringToDate(mDateTime);
 //                            Toast.makeText(getActivity(),date.toString(),Toast.LENGTH_SHORT).show();
 //                            Toast.makeText(getActivity(),formatDate(date)+"",Toast.LENGTH_SHORT).show();
 //                            Toast.makeText(getActivity(),formatDate(new Date(date.getTime() + (Integer.parseInt(mTime) * 60000)))+"",Toast.LENGTH_SHORT).show();
                             mDateTime = formatDate(date);
                             mDepartTIme = formatDate(new Date(date.getTime() + (Integer.parseInt(mTime) * 60000)));
-                            getParsedData(new LatLng(mOriginAddress.getLatitude(),mOriginAddress.getLongitude()),new LatLng(mDestinationAddress.getLatitude(),mDestinationAddress.getLongitude()));
+                            getParsedData(new LatLng(mOriginAddress.getLatitude(), mOriginAddress.getLongitude()), new LatLng(mDestinationAddress.getLatitude(), mDestinationAddress.getLongitude()));
                         } catch (JSONException e) {
                             Log.e(TAG, "Problem parsing the JSON results", e);
                         } catch (ParseException e) {
@@ -427,9 +418,10 @@ public class OfferRideFragment extends Fragment {
         VolleySingleton.getInstance(getContext()).getRequestQueue().add(jsonObjectRequest);
         //publishPost();
     }
+
     private void getParsedData(LatLng origin, LatLng destination) {
-        String originLatLng = origin.latitude+","+origin.longitude;
-        String destinationLatLng = destination.latitude+","+destination.longitude;
+        String originLatLng = origin.latitude + "," + origin.longitude;
+        String destinationLatLng = destination.latitude + "," + destination.longitude;
         String URL = "https://api.myjson.com/bins/k1nd0";//"https://maps.googleapis.com/maps/api/directions/json?origin="+originLatLng+"&destination="+destinationLatLng+"&key=AIzaSyAQjza9vSMtTjbNtdbDrbev6cp9_mbt8Fk";
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, URL, null, new Response.Listener<JSONObject>() {
             @Override
@@ -446,11 +438,11 @@ public class OfferRideFragment extends Fragment {
                     Double duration = durationObject.getDouble("value");
                     DecimalFormat df = new DecimalFormat("#.##");
 
-                    mDisitance = Double.parseDouble(df.format(distance/1000));
-                    mDuration = round(duration/60);
-                    mFare = postHelpingMethod.getFare(mDisitance, mDuration,mPerKM,mPerMin,mBase);
+                    mDisitance = Double.parseDouble(df.format(distance / 1000));
+                    mDuration = round(duration / 60);
+                    mFare = postHelpingMethod.getFare(mDisitance, mDuration, mPerKM, mPerMin, mBase);
                     //Toast.makeText(getActivity(),mDisitance+"  "+mDuration+"  "+mFare,Toast.LENGTH_LONG).show();
-                    publishPost();
+                    publishPost(rootView);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -464,7 +456,8 @@ public class OfferRideFragment extends Fragment {
 
         VolleySingleton.getInstance(getContext()).getRequestQueue().add(jsonObjectRequest);
     }
-    private void publishPost(){
+
+    private void publishPost(final View view) {
         String key = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).push().getKey();
         final DatabaseReference postRef = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(key);
 
@@ -474,58 +467,56 @@ public class OfferRideFragment extends Fragment {
             public void onDataChange(@NonNull DataSnapshot dataSnapshotRating) {
                 driverRatingDatabaseReference.removeEventListener(ratingValueEventListener);
 
-                HashMap<String,Object> hashMap =  new HashMap<>();
-                hashMap.put("rating",dataSnapshotRating.getValue().toString());
-                hashMap.put("isCar",Boolean.toString(isCar));
-                hashMap.put("contact",preferencesClass.getUserContact());
-                hashMap.put("vehicle",mVehicle.split("\\s+")[0]);
-                hashMap.put("date",mDateTime);
-                hashMap.put("seatcount",0);
-                hashMap.put("departTime",mDepartTIme);
-                hashMap.put("distance",String.valueOf(mDisitance));
-                hashMap.put("duration",String.valueOf(mDuration));
-                hashMap.put("name",preferencesClass.getUSER_NAME());
-                hashMap.put("regno",preferencesClass.getUserRegno());
-                hashMap.put("seats",mSeats);
-                hashMap.put("onway","false");
-                hashMap.put("fare",String.valueOf(mFare));
-                if(TextUtils.isEmpty(mFurtherDetails.getText().toString()))
-                    hashMap.put("extraDetails","no");
+                HashMap<String, Object> hashMap = new HashMap<>();
+                hashMap.put("rating", dataSnapshotRating.getValue().toString());
+                hashMap.put("isCar", Boolean.toString(isCar));
+                hashMap.put("contact", preferencesClass.getUserContact());
+                hashMap.put("vehicle", mVehicle.split("\\s+")[0]);
+                hashMap.put("date", mDateTime);
+                hashMap.put("seatcount", 0);
+                hashMap.put("departTime", mDepartTIme);
+                hashMap.put("distance", String.valueOf(mDisitance));
+                hashMap.put("duration", String.valueOf(mDuration));
+                hashMap.put("name", preferencesClass.getUSER_NAME());
+                hashMap.put("regno", preferencesClass.getUserRegno());
+                hashMap.put("seats", mSeats);
+                hashMap.put("onway", "false");
+                hashMap.put("fare", String.valueOf(mFare));
+                if (TextUtils.isEmpty(mFurtherDetails.getText().toString()))
+                    hashMap.put("extraDetails", "no");
                 else
-                    hashMap.put("extraDetails",mFurtherDetails.getText().toString());
+                    hashMap.put("extraDetails", mFurtherDetails.getText().toString());
 
-                final HashMap<String,String> origin = new HashMap<>();
-                origin.put("lat",String.valueOf(mOriginAddress.getLatitude()));
-                origin.put("lng",String.valueOf(mOriginAddress.getLongitude()));
-                origin.put("name",mPickUpText.getText().toString());
+                final HashMap<String, String> origin = new HashMap<>();
+                origin.put("lat", String.valueOf(mOriginAddress.getLatitude()));
+                origin.put("lng", String.valueOf(mOriginAddress.getLongitude()));
+                origin.put("name", mPickUpText.getText().toString());
 
-                final HashMap<String,String> destination = new HashMap<>();
-                destination.put("lat",String.valueOf(mDestinationAddress.getLatitude()));
-                destination.put("lng",String.valueOf(mDestinationAddress.getLongitude()));
-                destination.put("name",mDepart.getText().toString());
+                final HashMap<String, String> destination = new HashMap<>();
+                destination.put("lat", String.valueOf(mDestinationAddress.getLatitude()));
+                destination.put("lng", String.valueOf(mDestinationAddress.getLongitude()));
+                destination.put("name", mDepart.getText().toString());
 
-                hashMap.put("Origin",origin);
-                hashMap.put("Destination",destination);
+                hashMap.put("Origin", origin);
+                hashMap.put("Destination", destination);
 
                 postRef.setValue(hashMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
-                        if(task.isSuccessful()){
-
-                            Toast.makeText(getActivity(), "Ride Posted Successfully!", Toast.LENGTH_SHORT).show();
+                        if (task.isSuccessful()) {
+                            postHelpingMethod.snackbarMessage("Ride Posted Successfully!", view);
                             FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").setValue("false");
                             mdialog.cancel();
                             MyBookingFragment myBookingFragment = new MyBookingFragment();
                             Bundle bundle = new Bundle();
-                            bundle.putString("publish","publish");
+                            bundle.putString("publish", "publish");
                             myBookingFragment.setArguments(bundle);
-                            getFragmentManager().beginTransaction().replace(R.id.fragment_container, myBookingFragment   ).commit();
+                            getFragmentManager().beginTransaction().replace(R.id.fragment_container, myBookingFragment).commit();
                             mNavigationView.setCheckedItem(R.id.nav_myBookings);
                             mtoolbar.setTitle(R.string.my_bookings);
 
-                        }
-                        else{
-                            Toast.makeText(getActivity(), task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        } else {
+                            postHelpingMethod.snackbarMessage(task.getException().getMessage(), view);
                         }
                     }
                 });
@@ -539,18 +530,20 @@ public class OfferRideFragment extends Fragment {
         };
         driverRatingDatabaseReference.addValueEventListener(ratingValueEventListener);
     }
+
     public Date stringToDate(String mDateTime) throws ParseException {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         return dateFormat.parse(mDateTime);
     }
 
-    public String formatDate(Date date){
+    public String formatDate(Date date) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         return dateFormat.format(date);
     }
-    private void populateVehicleList(){
+
+    private void populateVehicleList() {
         final DatabaseReference carRef;
-        if(isCar)
+        if (isCar)
             carRef = mDatabaseReference.child("Cars");
         else
             carRef = mDatabaseReference.child("Bikes");
@@ -558,12 +551,12 @@ public class OfferRideFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                if(mCarsList!=null)
+                if (mCarsList != null)
                     mCarsList.clear();
 
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     //Cars car = new Cars(snapshot.getKey(),snapshot.child("name").getValue().toString(),snapshot.child("color").getValue().toString());
-                    mCarsList.add(snapshot.getKey()+" "+snapshot.child("name").getValue().toString());
+                    mCarsList.add(snapshot.getKey() + " " + snapshot.child("name").getValue().toString());
                 }
 
                 mCarAdapter.notifyDataSetChanged();
@@ -576,9 +569,9 @@ public class OfferRideFragment extends Fragment {
         });
     }
 
-    private void getRates(){
+    private void getRates() {
         DatabaseReference databaseReference;
-        if(isCar)
+        if (isCar)
             databaseReference = FirebaseDatabase.getInstance().getReference().child("Price").child("Car");
         else
             databaseReference = FirebaseDatabase.getInstance().getReference().child("Price").child("Bike");
@@ -589,7 +582,7 @@ public class OfferRideFragment extends Fragment {
                 mBase = Double.parseDouble(dataSnapshot.child("base").getValue().toString());
                 mPerKM = Double.parseDouble(dataSnapshot.child("perkm").getValue().toString());
                 mPerMin = Double.parseDouble(dataSnapshot.child("permin").getValue().toString());
-                Log.d(TAG,mBase+" "+mPerKM+" "+mPerMin);
+                Log.d(TAG, mBase + " " + mPerKM + " " + mPerMin);
 
             }
 
@@ -609,20 +602,19 @@ public class OfferRideFragment extends Fragment {
     }
 
 
-    private void checkCars(){
+    private void checkCars() {
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("Cars");
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.hasChildren()){
+                if (dataSnapshot.hasChildren()) {
                     isCar = true;
                     populateVehicleList();
                     getRates();
                     mLayoutVia.setVisibility(View.GONE);
                     mLayout1.setVisibility(View.VISIBLE);
-                }
-                else{
-                    postHelpingMethod.snackbarMessage("No cars available to post a ride",rootView);
+                } else {
+                    postHelpingMethod.snackbarMessage("No cars available to post a ride", rootView);
                 }
 
             }
@@ -634,20 +626,19 @@ public class OfferRideFragment extends Fragment {
         });
     }
 
-    private void checkBikes(){
+    private void checkBikes() {
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("Bikes");
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.hasChildren()){
+                if (dataSnapshot.hasChildren()) {
                     isCar = false;
                     populateVehicleList();
                     getRates();
                     mLayoutVia.setVisibility(View.GONE);
                     mLayout1.setVisibility(View.VISIBLE);
-                }
-                else{
-                    postHelpingMethod.snackbarMessage("No bikes available to post a ride",rootView);
+                } else {
+                    postHelpingMethod.snackbarMessage("No bikes available to post a ride", rootView);
                 }
 
             }

@@ -3,6 +3,7 @@ package com.example.adeel.ridesharing;
 import android.app.Activity;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,8 +38,7 @@ public class AcceptRequestAdapter extends ArrayAdapter<Accept> {
     public View getView(int position, View convertView, ViewGroup parent) {
 
         LayoutInflater inflater = context.getLayoutInflater();
-        View listViewItem = inflater.inflate(R.layout.acceptedrequest_items, null, true);
-
+        final View listViewItem = inflater.inflate(R.layout.acceptedrequest_items, null, true);
 
 
         TextView name = listViewItem.findViewById(R.id.person_name);
@@ -48,7 +48,6 @@ public class AcceptRequestAdapter extends ArrayAdapter<Accept> {
         Button chat = listViewItem.findViewById(R.id.caht_button);
         Button call = listViewItem.findViewById(R.id.call_button);
         final CircleImageView imageView = listViewItem.findViewById(R.id.person_image);
-
         //TextView mComfortLevel = (TextView) listViewItem.findViewById(R.id.textView_comfortLevel);
         Accept accept = getItem(position);
         name.setText(accept.getmName());
@@ -81,7 +80,8 @@ public class AcceptRequestAdapter extends ArrayAdapter<Accept> {
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(context, "Network Error "+e.getMessage(), Toast.LENGTH_SHORT).show();
+                Snackbar sb = Snackbar.make(listViewItem, "Network Error "+e.getMessage(), Snackbar.LENGTH_LONG);
+                sb.show();
             }
         });
 

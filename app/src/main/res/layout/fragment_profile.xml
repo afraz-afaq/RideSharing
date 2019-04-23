@@ -33,7 +33,7 @@
             android:background="@drawable/fullcircle_shape"
             android:padding="2dp"
             app:civ_border_width="2dp"
-            android:src="@drawable/adeel"
+            android:src="@drawable/avatar"
             app:civ_border_color="@color/colorAccent"/>
 
     </RelativeLayout>

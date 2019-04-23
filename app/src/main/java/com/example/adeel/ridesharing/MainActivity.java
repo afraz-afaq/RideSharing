@@ -34,15 +34,12 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
-import com.github.arturogutierrez.Badges;
-import com.github.arturogutierrez.BadgesNotSupportedException;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -58,6 +55,7 @@ import com.mikhaellopez.circularimageview.CircularImageView;
 
 import java.text.DecimalFormat;
 
+
 public class MainActivity extends AppCompatActivity implements CarBottomSheet.GetDeleteStatus {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -66,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
     static Toolbar mtoolbar;
     static NavigationView mNavigationView;
     private View headerView;
+    private PostHelpingMethod postHelpingMethod;
     private PreferencesClass preferencesClass;
     private StorageReference mStorageRef;
     private FirebaseAuth mAuth;
@@ -101,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
 
         IntentFilter filter = new IntentFilter("android.intent.CLOSE_ACTIVITY");
         registerReceiver(mReceiver, filter);
-
+        postHelpingMethod = new PostHelpingMethod(MainActivity.this);
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(mAuth.getUid()).child("status");
         mUserDatabase.addValueEventListener(new ValueEventListener() {
             @Override
@@ -161,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
             }
         });
 
-        setHeaderImage();
+        setHeaderImage(headerView);
 
         profileChecker();
         final TextView request_count = (TextView) MenuItemCompat.getActionView(mNavigationView.getMenu().
@@ -311,6 +310,7 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
                 return false;
             }
         });
+
     }
 
     @Override
@@ -432,7 +432,7 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
 
     private void drawerSetup() {
         mDrawerlayout = (DrawerLayout) findViewById(R.id.drawerlayout);
-        mtoolbar = (Toolbar) findViewById(R.id.toolbar);
+        mtoolbar = (Toolbar) findViewById(R.id.toolbar_forgot);
         setSupportActionBar(mtoolbar);
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, mDrawerlayout, mtoolbar, R.string.home, R.string.home);
         mDrawerlayout.addDrawerListener(actionBarDrawerToggle);
@@ -445,12 +445,33 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
         if (mDrawerlayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerlayout.closeDrawer(GravityCompat.START);
         } else {
-
-            super.onBackPressed();
+            YesNoDialog();
         }
+
     }
 
-    private void setHeaderImage() {
+    private void YesNoDialog() {
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        finish();
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+
+                        break;
+                }
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setMessage("Do you want to exit App?").setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("No", dialogClickListener).show();
+    }
+
+    private void setHeaderImage(final View view) {
         String sImage = preferencesClass.getUserImage();
         if (sImage != null) {
             CircularImageView imageView = (CircularImageView) headerView.findViewById(R.id.imageHeader);
@@ -487,7 +508,7 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
-                    Toast.makeText(getBaseContext(), exception.toString(), Toast.LENGTH_LONG).show();
+                    postHelpingMethod.snackbarMessage(exception.toString(),view);
                 }
             });
 

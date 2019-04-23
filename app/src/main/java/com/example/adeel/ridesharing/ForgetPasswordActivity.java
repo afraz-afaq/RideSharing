@@ -4,10 +4,11 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -20,66 +21,68 @@ public class ForgetPasswordActivity extends AppCompatActivity {
     private Button mSendMail;
     private EditText mEmail;
     FirebaseAuth mAuth;
+    private Toolbar mtoolbar;
     private PostHelpingMethod postHelpingMethod;
     private Dialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
         postHelpingMethod = new PostHelpingMethod(this);
         dialog = postHelpingMethod.createDialog("Sending...");
         setContentView(R.layout.activity_forgetpassword);
-        mSendMail=findViewById(R.id.button_sendemail);
+        mSendMail = findViewById(R.id.button_sendemail);
         mEmail = findViewById(R.id.editText_email);
         mAuth = FirebaseAuth.getInstance();
         mSendMail.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                dialog.show();
-                Toast.makeText(getBaseContext(),"Clicked",Toast.LENGTH_SHORT).show();
-                mAuth.signInWithEmailAndPassword(mEmail.getText().toString(), "***********")
-                        .addOnCompleteListener(
-                                new OnCompleteListener<AuthResult>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<AuthResult> task) {
-                                        if (!task.isSuccessful()) {
-                                            try {
-                                                throw task.getException();
-                                            }
-                                            // if user enters wrong email.
-                                            catch (FirebaseAuthInvalidUserException invalidEmail) {
+            public void onClick(final View view) {
+                if (TextUtils.isEmpty(mEmail.getText().toString())) {
+                    postHelpingMethod.snackbarMessage("Please enter your email", view);
+                } else {
+                    dialog.show();
+                    mAuth.signInWithEmailAndPassword(mEmail.getText().toString(), "***********")
+                            .addOnCompleteListener(
+                                    new OnCompleteListener<AuthResult>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<AuthResult> task) {
+                                            if (!task.isSuccessful()) {
+                                                try {
+                                                    throw task.getException();
+                                                }
+                                                // if user enters wrong email.
+                                                catch (FirebaseAuthInvalidUserException invalidEmail) {
+                                                    postHelpingMethod.snackbarMessage("Email does not exist", view);
+                                                    dialog.cancel();
+                                                    return;
+                                                    // TODO: take your actions!
+                                                }
+                                                // if user enters wrong password.
+                                                catch (FirebaseAuthInvalidCredentialsException wrongPassword) {
 
-                                                Toast.makeText(getBaseContext(), "Email does not exist", Toast.LENGTH_LONG).show();
-                                                dialog.cancel();
-                                                return;
-                                                // TODO: take your actions!
-                                            }
-                                            // if user enters wrong password.
-                                            catch (FirebaseAuthInvalidCredentialsException wrongPassword) {
-
-                                                mSendMail();
+                                                    mSendMail(view);
 
 
-                                                // TODO: Take your action
-                                            } catch (Exception e) {
-                                                //Log.d(TAG, "onComplete: " + e.getMessage());
-                                                Toast.makeText(getBaseContext(),e.getMessage(), Toast.LENGTH_LONG).show();
+                                                    // TODO: Take your action
+                                                } catch (Exception e) {
+                                                    //Log.d(TAG, "onComplete: " + e.getMessage());
+                                                    postHelpingMethod.snackbarMessage(e.getMessage(), view);
+                                                }
                                             }
                                         }
                                     }
-                                }
-                        );
+                            );
 
-
+                }
             }
         });
 
     }
 
 
-
-
-    private void mSendMail() {
+    private void mSendMail(final View view) {
         FirebaseAuth auth = FirebaseAuth.getInstance();
 
         auth.sendPasswordResetEmail(mEmail.getText().toString())
@@ -87,12 +90,12 @@ public class ForgetPasswordActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
-                            Toast.makeText(getBaseContext(), "A reset password email has been sent", Toast.LENGTH_LONG).show();
+                            postHelpingMethod.snackbarMessage("A reset password email has been sent", view);
                             dialog.cancel();
                             mEmail.getText().clear();
                         } else {
                             dialog.cancel();
-                            Toast.makeText(getBaseContext(), "Error while sending reset email", Toast.LENGTH_LONG).show();
+                            postHelpingMethod.snackbarMessage("Error while sending reset email", view);
                         }
                     }
                 });

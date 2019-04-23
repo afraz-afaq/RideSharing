@@ -46,7 +46,7 @@
         <activity android:name=".LoginActivity" />
         <activity
             android:name=".ForgetPasswordActivity"
-            android:parentActivityName=".LoginActivity" />
+            android:parentActivityName=".LoginActivity"/>
         <activity android:name=".MainActivity" />
         <activity android:name=".ChatActivity" />
 

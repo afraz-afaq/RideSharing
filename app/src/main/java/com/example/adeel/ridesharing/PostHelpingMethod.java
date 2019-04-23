@@ -106,9 +106,9 @@ public class PostHelpingMethod {
     }
 
     public void snackbarMessage(String msg, View v) {
-        Snackbar sb = Snackbar.make(v, msg, Snackbar.LENGTH_SHORT);
+        Snackbar sb = Snackbar.make(v, msg, Snackbar.LENGTH_LONG);
         View sbView = sb.getView();
-        sbView.setBackgroundColor(ContextCompat.getColor(activity, R.color.error));
+        sbView.setBackgroundColor(ContextCompat.getColor(activity, R.color.colorAccent));
         sb.show();
     }
 

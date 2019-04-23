@@ -31,7 +31,8 @@ public class CarBottomSheet extends BottomSheetDialogFragment {
 
     private Button mDelete;
     private Button mCancel;
-
+    private PostHelpingMethod postHelpingMethod;
+    private View chooserView;
     private String deleteStatus;
     private String uId, vReg, from;
 
@@ -41,7 +42,7 @@ public class CarBottomSheet extends BottomSheetDialogFragment {
             Bundle bundle = getArguments();
             uId = bundle.getString("uId");
             from = bundle.getString("from");
-            if(from.equals("car"))
+            if (from.equals("car"))
                 vReg = bundle.getString("carReg");
             else
                 vReg = bundle.getString("bikeReg");
@@ -62,32 +63,35 @@ public class CarBottomSheet extends BottomSheetDialogFragment {
         return new BottomSheetDialogFragment();
     }
 
-    public interface GetDeleteStatus{
+    public interface GetDeleteStatus {
         public void onDeleteStatusPassed(String deleteStatus);
     }
 
     GetDeleteStatus getDeleteStatus;
+
     @Override
     public void onAttach(Activity context) {
         super.onAttach(context);
-        getDeleteStatus = (GetDeleteStatus)context;
+        getDeleteStatus = (GetDeleteStatus) context;
     }
 
 
-
     private void getDeleteStatus(String deleteStatus
-    ){ getDeleteStatus.onDeleteStatusPassed(deleteStatus);}
-
+    ) {
+        getDeleteStatus.onDeleteStatusPassed(deleteStatus);
+    }
 
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View chooserView = inflater.inflate(R.layout.bottom_sheet_car_delete,container,false);
+        chooserView = inflater.inflate(R.layout.bottom_sheet_car_delete, container, false);
         mDelete = chooserView.findViewById(R.id.carDelete);
         mDelete.setOnClickListener(deleteListener);
         mCancel = chooserView.findViewById(R.id.carCancel);
         mCancel.setOnClickListener(cancelListener);
+
+        postHelpingMethod = new PostHelpingMethod(getActivity());
 
         return chooserView;
     }
@@ -97,29 +101,27 @@ public class CarBottomSheet extends BottomSheetDialogFragment {
         super.onCreate(savedInstanceState);
     }
 
-    private void deleteCar(){
+    private void deleteCar() {
         DatabaseReference carRef;
-        if(from.equals("car")) {
+        if (from.equals("car")) {
             carRef = FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("Cars").child(vReg);
             deleteStatus = "car";
-        }
-        else {
+        } else {
             carRef = FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("Bikes").child(vReg);
             deleteStatus = "bike";
         }
         carRef.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                if(task.isSuccessful()){
-                    Toast.makeText(getActivity(), "Removed!!", Toast.LENGTH_SHORT).show();
+                if (task.isSuccessful()) {
+                    postHelpingMethod.snackbarMessage("Removed!", chooserView);
                     getDeleteStatus.onDeleteStatusPassed(deleteStatus);
                     CarBottomSheet.super.getDialog().cancel();
-                }
-                else{
+                } else {
                     deleteStatus = "false";
                     getDeleteStatus.onDeleteStatusPassed(deleteStatus);
-                    Toast.makeText(getActivity(), task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-            }
+                    postHelpingMethod.snackbarMessage(task.getException().getMessage(), chooserView);
+                }
             }
         });
     }
