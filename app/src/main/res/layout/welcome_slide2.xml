@@ -32,7 +32,7 @@
             android:layout_marginTop="20dp"
             android:paddingLeft="40dp"
             android:paddingRight="40dp"
-            android:text="Share your ride."
+            android:text="Just share your journey with others."
             android:textAlignment="center"
             android:textColor="@android:color/white"
             android:textSize="16dp" />

@@ -132,7 +132,7 @@ public class MyBikesFragment extends Fragment {
                 if (dataSnapshot.hasChildren()) {
                     for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                         //getting artist
-                        Cars cars = new Cars(postSnapshot.child("color").getValue().toString(), postSnapshot.child("name").getValue().toString(), postSnapshot.getKey());
+                        Cars cars = new Cars("-", postSnapshot.child("name").getValue().toString(), postSnapshot.getKey());
                         bikesArrayList.add(cars);
                         //Cars cars = postSnapshot.getValue(Cars.class);
                         //adding artist to the list
