@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Ride Sharing</string>
     <string name="signin">SIGN IN</string>
-    <string name="phone">Enter your phone number</string>
+    <string name="phone">Enter your password</string>
     <string name="password">Enter your password</string>
     <string name="forgot_password">Forget password</string>
     <string name="send">Send</string>

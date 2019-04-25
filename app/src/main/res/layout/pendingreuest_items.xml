@@ -79,8 +79,12 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:drawableLeft="@drawable/ic_action_accept"
-                android:text="Accept" />
+                android:background="@drawable/button_shapes"
+                android:drawableLeft="@drawable/ic_action_acceptn"
+                android:paddingLeft="16dp"
+                android:layout_marginRight="5dp"
+                android:text="Accept"
+                android:textColor="@android:color/white" />
 
             <Button
                 android:id="@+id/button_cancel"
@@ -88,8 +92,12 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
                 android:layout_weight="1"
-                android:drawableLeft="@drawable/ic_action_cancred"
-                android:text="Cancel" />
+                android:background="@drawable/button_shapes"
+                android:backgroundTint="@android:color/holo_red_dark"
+                android:drawableLeft="@drawable/ic_action_canceln"
+                android:paddingLeft="16dp"
+                android:text="Cancel"
+                android:textColor="@android:color/white" />
 
         </LinearLayout>
 

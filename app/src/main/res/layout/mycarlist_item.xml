@@ -5,15 +5,15 @@
     android:id="@+id/cardVew_name"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="16dp"
     app:cardBackgroundColor="@android:color/white"
-    app:cardElevation="5dp"
+    app:cardElevation="10dp"
     app:cardPreventCornerOverlap="false">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
+
         <View
             android:layout_width="8dp"
             android:layout_height="match_parent"
@@ -26,65 +26,65 @@
             android:padding="12dp">
 
             <TextView
-                android:layout_marginBottom="10dp"
-                android:textStyle="bold"
                 android:id="@+id/textView_carName"
-                android:textAppearance="?android:textAppearanceSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sazuki cultus"/>
+                android:layout_marginBottom="10dp"
+                android:text="Sazuki cultus"
+                android:textAppearance="?android:textAppearanceSmall"
+                android:textStyle="bold" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/regNo"
-                    android:textAppearance="?android:textAppearanceSmall"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:textStyle="bold"
-                    android:text="@string/reg_no"/>
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/textView_regNo"
-                    android:layout_marginLeft="8dp"
-                    android:textAppearance="?android:textAppearanceSmall"
-                    android:layout_width="wrap_content"
+                    <TextView
+                        android:id="@+id/regNo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/reg_no"
+                        android:textAppearance="?android:textAppearanceSmall"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/textView_regNo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+                        android:text="AW-145"
+                        android:textAppearance="?android:textAppearanceSmall" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="AW-145"/>
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
 
-            </LinearLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/color"
+                        android:textAppearance="?android:textAppearanceSmall"
+                        android:textStyle="bold" />
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/textView_color"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+                        android:text="White"
+                        android:textAppearance="?android:textAppearanceSmall" />
 
-                <TextView
-                    android:textAppearance="?android:textAppearanceSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textStyle="bold"
-                    android:text="@string/color"/>
-
-                <TextView
-                    android:id="@+id/textView_color"
-                    android:layout_marginLeft="8dp"
-                    android:textAppearance="?android:textAppearanceSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="White"/>
-
-            </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
 
         </LinearLayout>
@@ -93,101 +93,3 @@
 
 
 </android.support.v7.widget.CardView>
-
-
-
-
-
-
-
-<!--<?xml version="1.0" encoding="utf-8"?>&lt;!&ndash; This linear layout contains a single item displayed in the MainActivity &ndash;&gt;-->
-<!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
-    <!--xmlns:app="http://schemas.android.com/apk/res-auto"-->
-    <!--xmlns:tools="http://schemas.android.com/tools"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="wrap_content">-->
-
-    <!--<android.support.v7.widget.CardView-->
-        <!--android:id="@+id/cardVew_name"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="80dp"-->
-        <!--android:layout_margin="16dp"-->
-        <!--app:cardBackgroundColor="@android:color/white"-->
-        <!--app:cardElevation="5dp"-->
-        <!--app:cardPreventCornerOverlap="false">-->
-
-        <!--<View-->
-            <!--android:layout_width="8dp"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:background="@color/colorAccent" />-->
-
-        <!--<LinearLayout-->
-            <!--android:orientation="vertical"-->
-            <!--android:layout_marginLeft="7dp"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="match_parent">-->
-
-            <!--<TextView-->
-                <!--android:layout_marginTop="16dp"-->
-                <!--android:layout_marginLeft="16dp"-->
-                <!--android:layout_marginBottom="10dp"-->
-                <!--android:textStyle="bold"-->
-                <!--android:id="@+id/textView_carName"-->
-                <!--android:textAppearance="?android:textAppearanceSmall"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:text="Sazuki cultus"/>-->
-
-
-            <!--<RelativeLayout-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_marginTop="5dp"-->
-                <!--android:layout_height="wrap_content">-->
-
-                <!--<TextView-->
-                    <!--android:id="@+id/regNo"-->
-                    <!--android:layout_marginLeft="16dp"-->
-                    <!--android:textAppearance="?android:textAppearanceSmall"-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:text="@string/reg_no"/>-->
-
-                <!--<TextView-->
-                    <!--android:layout_marginLeft="21dp"-->
-                    <!--android:layout_toRightOf="@id/regNo"-->
-                    <!--android:id="@+id/textView_regNo"-->
-                    <!--android:textAppearance="?android:textAppearanceSmall"-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:text="AW-145"/>-->
-
-                <!--<TextView-->
-                    <!--android:id="@+id/textView_color"-->
-                    <!--android:layout_marginRight="43dp"-->
-                    <!--android:layout_alignParentRight="true"-->
-                    <!--android:textAppearance="?android:textAppearanceSmall"-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:text="White"/>-->
-
-                <!--<TextView-->
-                    <!--android:layout_toLeftOf="@id/textView_color"-->
-                    <!--android:textAppearance="?android:textAppearanceSmall"-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_marginRight="29dp"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:text="@string/color"/>-->
-
-
-
-
-            <!--</RelativeLayout>-->
-
-        <!--</LinearLayout>-->
-
-    <!--</android.support.v7.widget.CardView>-->
-
-
-<!--</LinearLayout>-->
-
-

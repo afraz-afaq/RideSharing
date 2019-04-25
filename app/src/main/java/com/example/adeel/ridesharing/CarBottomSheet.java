@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -29,8 +30,8 @@ import static com.example.adeel.ridesharing.R.styleable.CoordinatorLayout;
 
 public class CarBottomSheet extends BottomSheetDialogFragment {
 
-    private Button mDelete;
-    private Button mCancel;
+    private LinearLayout mDelete;
+    private LinearLayout mCancel;
     private PostHelpingMethod postHelpingMethod;
     private View chooserView;
     private String deleteStatus;
