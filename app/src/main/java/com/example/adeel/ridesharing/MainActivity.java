@@ -43,6 +43,7 @@ import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -316,19 +317,25 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
     @Override
     protected void onStart() {
         super.onStart();
-        FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+        FirebaseUser firebaseUser = mAuth.getCurrentUser();
+        if (firebaseUser == null && !firebaseUser.isEmailVerified()) {
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        } else {
+            FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                preferencesClass.setUserPostStatus(dataSnapshot.getValue().toString());
-            }
+                    preferencesClass.setUserPostStatus(dataSnapshot.getValue().toString());
+                }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
-
+                }
+            });
+        }
     }
 
     private void showRatingDialog() {
@@ -485,7 +492,7 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
                     CircularImageView imageView = (CircularImageView) headerView.findViewById(R.id.imageHeader);
                     PostHelpingMethod helpingMethod = new PostHelpingMethod(MainActivity.this);
                     String imageURL = uri.toString();
-                    GlideApp.with(getApplicationContext()).load(imageURL).apply(new RequestOptions()
+                    GlideApp.with(getApplicationContext()).load(imageURL).placeholder(R.drawable.avatar).apply(new RequestOptions()
                             .placeholder(R.color.colorPrimary)
                             .dontAnimate().skipMemoryCache(true))
                             .listener(new RequestListener<Drawable>() {
@@ -508,7 +515,7 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
-                    postHelpingMethod.snackbarMessage(exception.toString(),view);
+                    postHelpingMethod.snackbarMessage(exception.toString(), view);
                 }
             });
 

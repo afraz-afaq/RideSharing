@@ -42,7 +42,7 @@ import com.google.firebase.iid.InstanceIdResult;
 import java.util.HashMap;
 
 public class LoginActivity extends AppCompatActivity {
-    private  static String TAG = "LOGIN";
+    private static String TAG = "LOGIN";
 
     private Button mSignin, buttonNet;
     private EditText mEmail;
@@ -58,7 +58,7 @@ public class LoginActivity extends AppCompatActivity {
     private PreferencesClass preferencesClass;
     private PostHelpingMethod postHelpingMethod;
     DatabaseReference mDatabaseReference;
-    private ValueEventListener valueEventListener= new ValueEventListener() {
+    private ValueEventListener valueEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -66,10 +66,10 @@ public class LoginActivity extends AppCompatActivity {
             preferencesClass.setUserPassword(mPassword.getText().toString());
             preferencesClass.saveUser(dataSnapshot);
 
-                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                finish();
-                startActivity(intent);
-                progressDialog.cancel(); //Added
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            finish();
+            startActivity(intent);
+            progressDialog.cancel(); //Added
         }
 
         @Override
@@ -77,7 +77,6 @@ public class LoginActivity extends AppCompatActivity {
 
         }
     };
-
 
 
     private ProgressDialog progressDialog;
@@ -89,7 +88,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 //
         //if(!postHelpingMethod.checkConnection())
-            //createDialog();
+        //createDialog();
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -124,15 +123,17 @@ public class LoginActivity extends AppCompatActivity {
                                 }
                             });
                     if (preferencesClass.getUSER_NAME() == null) {
-                        progressDialog.show(); //Added
-                        savePreferences();
-                    }else {
+                        if(user.isEmailVerified()) {
+                            progressDialog.show(); //Added
+                            savePreferences();
+                        }
+                    } else {
 
                         progressDialog.show(); //Added
-                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                            finish();
-                            startActivity(intent);
-                            progressDialog.cancel(); //Added
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        finish();
+                        startActivity(intent);
+                        progressDialog.cancel(); //Added
                     }
 
                 }
@@ -163,7 +164,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 if (!(networkInfo != null && networkInfo.isConnected())) {
                     //check = true;
-                        createDialog();
+                    createDialog();
 
                 } else {
                     //check = false;
@@ -179,10 +180,21 @@ public class LoginActivity extends AppCompatActivity {
                     } else {
 
                         progressDialog.show();
-                        mAuth.signInWithEmailAndPassword(getEmail, getPassword).addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
+                        mAuth.signInWithEmailAndPassword(getEmail, getPassword).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (!task.isSuccessful()) {
+                                if (task.isSuccessful()) {
+                                    if (!mAuth.getCurrentUser().isEmailVerified()) {
+                                        progressDialog.cancel();
+                                        postHelpingMethod.snackbarMessage("Please verify your email", view);
+
+                                    } //else {
+//                                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+//                                        startActivity(intent);
+//                                        finish();
+//                                    }
+
+                                }else{
                                     try {
                                         throw task.getException();
                                     }
@@ -241,7 +253,7 @@ public class LoginActivity extends AppCompatActivity {
         //setupSignin();
     }
 
-    private void createDialog(){
+    private void createDialog() {
 
         final Dialog dialogNet = new Dialog(LoginActivity.this);
         dialogNet.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -280,7 +292,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -291,19 +302,17 @@ public class LoginActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-        Log.d(TAG,"In on Destroy");
+        Log.d(TAG, "In on Destroy");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d(TAG,"In on Stop");
+        Log.d(TAG, "In on Stop");
         mAuth.removeAuthStateListener(firebaseAuthListener);
-        if(check)
+        if (check)
             mDatabaseReference.removeEventListener(valueEventListener);
     }
-
-
 
 
 }

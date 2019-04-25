@@ -70,7 +70,6 @@ public class OfferedFragment extends Fragment {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
             if (dataSnapshot.hasChild("Accepted")) {
-                postHelpingMethod.snackbarMessage("Notify Sent to All",rootView);
                 getPostData = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postID).child("onway");
                 getPostData.setValue("true").addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -81,6 +80,8 @@ public class OfferedFragment extends Fragment {
                 });
 
                 start.setText("COMPLETED");
+            } else {
+                postHelpingMethod.snackbarMessage("You have no request(s)", rootView);
             }
             databaseReferencenostart.removeEventListener(noStartListener);
         }
