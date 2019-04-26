@@ -422,7 +422,7 @@ public class OfferRideFragment extends Fragment {
     private void getParsedData(LatLng origin, LatLng destination) {
         String originLatLng = origin.latitude + "," + origin.longitude;
         String destinationLatLng = destination.latitude + "," + destination.longitude;
-        String URL = "https://api.myjson.com/bins/k1nd0";//"https://maps.googleapis.com/maps/api/directions/json?origin="+originLatLng+"&destination="+destinationLatLng+"&key=AIzaSyAQjza9vSMtTjbNtdbDrbev6cp9_mbt8Fk";
+        String URL = "https://maps.googleapis.com/maps/api/directions/json?origin="+originLatLng+"&destination="+destinationLatLng+"&key=AIzaSyAQjza9vSMtTjbNtdbDrbev6cp9_mbt8Fk"; //"https://api.myjson.com/bins/k1nd0";
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, URL, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {

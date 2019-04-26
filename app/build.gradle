@@ -53,6 +53,7 @@ dependencies {
     compile 'com.android.support:support-v4:28.+'
     compile 'com.github.arturogutierrez:badges:1.0.5@aar'
     testCompile 'junit:junit:4.12'
+    compile 'com.github.jd-alexander:library:1.1.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'
 
 
