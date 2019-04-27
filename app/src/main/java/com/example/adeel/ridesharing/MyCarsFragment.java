@@ -63,9 +63,6 @@ public class MyCarsFragment extends Fragment {
         carsArrayList = new ArrayList<>();
 
 
-// set creator
-
-
         mCarList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {

@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.text.TextUtils;
 import android.util.Log;
@@ -41,17 +42,20 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.EventListener;
+import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
 
-public class BookedFragment extends Fragment {
+public class BookedFragment extends Fragment implements EasyPermissions.PermissionCallbacks {
 
     private String TAG = "BOOKED_FRAG";
     private Spinner mBookedOptions;
-    private int iBookedOptions=0;
+    private int iBookedOptions = 0;
     private TextView from, to, distance, time, seats, price, name, noPostMsg;
     private CircleImageView circleImageView;
-    private Button cancel,track,chat,call;
+    private Button cancel, track, chat, call;
     private ListView bookedListView;
     private CardView pendingPost;
     private View rootView;
@@ -62,9 +66,16 @@ public class BookedFragment extends Fragment {
     private ArrayList<HistoryPost> historyPosts;
     private HistoryAdapter historyPostArrayAdapter;
     private DatabaseReference databaseReferencePopulateList;
-    private DatabaseReference getPostData , databaseReferencePending, databaseReferenceActive, databaseReference, databaseReferenceNotification, databaseReferenceToken;
-    private ValueEventListener  getPostDataValueEventListener, getFindPendingToCancelValueEventListener;
+    private DatabaseReference getPostData, databaseReferencePending, databaseReferenceActive, databaseReference, databaseReferenceNotification, databaseReferenceToken;
+    private ValueEventListener getPostDataValueEventListener, getFindPendingToCancelValueEventListener;
     private ProgressDialog loadingDialog;
+
+
+    private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
+
+    private static final String COURSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
+
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
 
     ValueEventListener showPendingPost = new ValueEventListener() {
         @Override
@@ -82,14 +93,14 @@ public class BookedFragment extends Fragment {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     postID = snapshot.getKey();
                     driverId = snapshot.child("driver").getValue().toString();
-                    Log.v(TAG,"Driver: "+driverId);
+                    Log.v(TAG, "Driver: " + driverId);
 
                     getPostData = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(driverId).child(postID);
                     getPostData.keepSynced(true);
                     getPostDataValueEventListener = new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if(dataSnapshot.hasChildren()) {
+                            if (dataSnapshot.hasChildren()) {
                                 from.setText(dataSnapshot.child("Origin").child("name").getValue().toString());
                                 to.setText(dataSnapshot.child("Destination").child("name").getValue().toString());
                                 seats.setText(dataSnapshot.child("seats").getValue().toString());
@@ -99,6 +110,7 @@ public class BookedFragment extends Fragment {
                                 name.setText(dataSnapshot.child("name").getValue().toString());
                             }
                         }
+
                         @Override
                         public void onCancelled(@NonNull DatabaseError databaseError) {
                             loadingDialog.dismiss();
@@ -139,7 +151,7 @@ public class BookedFragment extends Fragment {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     postID = snapshot.getKey();
                     driverId = snapshot.child("driver").getValue().toString();
-                    Log.v(TAG,"Driver: "+driverId);
+                    Log.v(TAG, "Driver: " + driverId);
 
                     storageReference.child(driverId).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
@@ -164,7 +176,7 @@ public class BookedFragment extends Fragment {
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            postHelpingMethod.snackbarMessage("Network Error "+e.getMessage(),rootView);
+                            postHelpingMethod.snackbarMessage("Network Error " + e.getMessage(), rootView);
                         }
                     });
                     getPostData = FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(driverId).child(postID);
@@ -172,7 +184,7 @@ public class BookedFragment extends Fragment {
                     getPostDataValueEventListener = new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if(dataSnapshot.hasChildren()) {
+                            if (dataSnapshot.hasChildren()) {
                                 from.setText(dataSnapshot.child("Origin").child("name").getValue().toString());
                                 to.setText(dataSnapshot.child("Destination").child("name").getValue().toString());
                                 seats.setText(dataSnapshot.child("seats").getValue().toString());
@@ -185,6 +197,7 @@ public class BookedFragment extends Fragment {
                                 contact = dataSnapshot.child("contact").getValue().toString();
                             }
                         }
+
                         @Override
                         public void onCancelled(@NonNull DatabaseError databaseError) {
                             loadingDialog.dismiss();
@@ -211,7 +224,6 @@ public class BookedFragment extends Fragment {
     };
 
 
-
     public BookedFragment() {
     }
 
@@ -234,14 +246,14 @@ public class BookedFragment extends Fragment {
         noPostMsg = rootView.findViewById(R.id.noPostMsg);
         bookedListView = rootView.findViewById(R.id.listView_booked);
         pendingPost = rootView.findViewById(R.id.pendingPost);
-        mBookedOptions=rootView.findViewById(R.id.spinner_bookedoptions);
+        mBookedOptions = rootView.findViewById(R.id.spinner_bookedoptions);
         postHelpingMethod = new PostHelpingMethod(getActivity());
         mAuth = FirebaseAuth.getInstance();
         storageReference = FirebaseStorage.getInstance().getReference();
         historyPosts = new ArrayList<HistoryPost>();
         historyPostArrayAdapter = new HistoryAdapter(getActivity(), historyPosts);
         bookedListView.setAdapter(historyPostArrayAdapter);
-        loadingDialog = postHelpingMethod.createProgressDialog("Loading...","Please Wait.");
+        loadingDialog = postHelpingMethod.createProgressDialog("Loading...", "Please Wait.");
         spinnerBookedOptions();
 
         cancel.setOnClickListener(new View.OnClickListener() {
@@ -257,6 +269,7 @@ public class BookedFragment extends Fragment {
                         FirebaseDatabase.getInstance().getReference().child("Requests").child(postID).child("Pending").child(mAuth.getUid()).removeValue();
                         FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").setValue("true");
                     }
+
                     @Override
                     public void onCancelled(@NonNull DatabaseError databaseError) {
 
@@ -270,9 +283,9 @@ public class BookedFragment extends Fragment {
         chat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getActivity(),ChatActivity.class);
-                intent.putExtra("driverId",driverId);
-                intent.putExtra("name",driverName);
+                Intent intent = new Intent(getActivity(), ChatActivity.class);
+                intent.putExtra("driverId", driverId);
+                intent.putExtra("name", driverName);
                 startActivity(intent);
             }
         });
@@ -281,7 +294,7 @@ public class BookedFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_CALL);
-                String phone = "tel:"+contact;
+                String phone = "tel:" + contact;
                 intent.setData(Uri.parse(phone));
                 if (ActivityCompat.checkSelfPermission(getActivity(),
                         Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
@@ -293,18 +306,56 @@ public class BookedFragment extends Fragment {
         track.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getActivity(),MapsActivity.class);
-                intent.putExtra("driverId",driverId);
-                intent.putExtra("driver","false");
-                startActivity(intent);
+                getLocationPermission();
             }
         });
         return rootView;
     }
 
-    private void spinnerBookedOptions(){
+    @AfterPermissionGranted(LOCATION_PERMISSION_REQUEST_CODE)
+    private void getLocationPermission() {
 
-        ArrayAdapter arrayAdapter = ArrayAdapter.createFromResource(getActivity(),R.array.bookings_options,android.R.layout.simple_spinner_item);
+        Log.d(TAG, "getLocationPermission: getting location permissions");
+
+        String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
+
+        if(EasyPermissions.hasPermissions(getActivity(),permissions)){
+                Intent intent = new Intent(getActivity(), MapsActivity.class);
+                intent.putExtra("driverId", driverId);
+                intent.putExtra("driver", "false");
+                startActivity(intent);
+        }
+        else{
+            EasyPermissions.requestPermissions(getActivity(),"Location Permissions are Required!",LOCATION_PERMISSION_REQUEST_CODE,permissions);
+        }
+//
+//
+//        if (ContextCompat.checkSelfPermission(getActivity(), FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//
+//            if (ContextCompat.checkSelfPermission(getActivity(), COURSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//
+//                Intent intent = new Intent(getActivity(), MapsActivity.class);
+//                intent.putExtra("driverId", driverId);
+//                intent.putExtra("driver", "false");
+//                startActivity(intent);
+//
+//            } else {
+//
+//                ActivityCompat.requestPermissions(getActivity(), permissions, LOCATION_PERMISSION_REQUEST_CODE);
+//
+//            }
+//
+//        } else {
+//
+//            ActivityCompat.requestPermissions(getActivity(), permissions, LOCATION_PERMISSION_REQUEST_CODE);
+//
+//        }
+
+    }
+
+    private void spinnerBookedOptions() {
+
+        ArrayAdapter arrayAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.bookings_options, android.R.layout.simple_spinner_item);
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_list_item_1);
         mBookedOptions.setAdapter(arrayAdapter);
 
@@ -312,22 +363,19 @@ public class BookedFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 String selection = (String) adapterView.getItemAtPosition(i);
-                if (!TextUtils.isEmpty(selection)){
-                    if (selection.equals(getString(R.string.past_bookings))){
-                            iBookedOptions = R.string.past_bookings;
-                            showActive();
-                    }
-                    else if (selection.equals(getString(R.string.today_bookings))){
-                        iBookedOptions=R.string.today_bookings;
+                if (!TextUtils.isEmpty(selection)) {
+                    if (selection.equals(getString(R.string.past_bookings))) {
+                        iBookedOptions = R.string.past_bookings;
+                        showActive();
+                    } else if (selection.equals(getString(R.string.today_bookings))) {
+                        iBookedOptions = R.string.today_bookings;
                         showPending();
-                    }
-                    else if (selection.equals(getString(R.string.canceled_bookings))){
-                        iBookedOptions=R.string.canceled_bookings;
+                    } else if (selection.equals(getString(R.string.canceled_bookings))) {
+                        iBookedOptions = R.string.canceled_bookings;
                         databaseReferencePopulateList = FirebaseDatabase.getInstance().getReference().child("Find").child(mAuth.getUid()).child("Canceled");
                         populateList(databaseReferencePopulateList);
-                    }
-                    else {
-                        iBookedOptions=R.string.complete_bookings;
+                    } else {
+                        iBookedOptions = R.string.complete_bookings;
                         databaseReferencePopulateList = FirebaseDatabase.getInstance().getReference().child("Find").child(mAuth.getUid()).child("Completed");
                         populateList(databaseReferencePopulateList);
                     }
@@ -336,7 +384,7 @@ public class BookedFragment extends Fragment {
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-                iBookedOptions=R.string.show_all;
+                iBookedOptions = R.string.show_all;
 
             }
         });
@@ -356,8 +404,7 @@ public class BookedFragment extends Fragment {
     }
 
 
-
-    ValueEventListener populateValueEventListener =  new ValueEventListener() {
+    ValueEventListener populateValueEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -368,23 +415,23 @@ public class BookedFragment extends Fragment {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     postID = snapshot.getKey();
                     driverId = snapshot.child("driver").getValue().toString();
-                    Log.v(TAG,"Driver: "+driverId);
+                    Log.v(TAG, "Driver: " + driverId);
 
                     getPostData = FirebaseDatabase.getInstance().getReference().child("Posts").child("Completed").child(driverId).child(postID);
                     getPostDataValueEventListener = new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            if(snapshot.hasChildren()) {
-                                HistoryPost historyPost = new HistoryPost(snapshot.child("Origin").child("name").getValue().toString(), snapshot.child("Destination").child("name").getValue().toString(),  "Rs. "+snapshot.child("fare").getValue().toString(), snapshot.child("isCar").getValue().toString().equals("true") ? "Car" : "Bike", snapshot.child("vehicle").getValue().toString(), snapshot.child("departTime").getValue().toString(),snapshot.child("name").getValue().toString(),snapshot.child("regno").getValue().toString());
+                            if (snapshot.hasChildren()) {
+                                HistoryPost historyPost = new HistoryPost(snapshot.child("Origin").child("name").getValue().toString(), snapshot.child("Destination").child("name").getValue().toString(), "Rs. " + snapshot.child("fare").getValue().toString(), snapshot.child("isCar").getValue().toString().equals("true") ? "Car" : "Bike", snapshot.child("vehicle").getValue().toString(), snapshot.child("departTime").getValue().toString(), snapshot.child("name").getValue().toString(), snapshot.child("regno").getValue().toString());
                                 historyPosts.add(historyPost);
                                 historyPostArrayAdapter.notifyDataSetChanged();
-                            }
-                            else{
+                            } else {
                                 getPostData.removeEventListener(getPostDataValueEventListener);
                                 getPostData = FirebaseDatabase.getInstance().getReference().child("Posts").child("Canceled").child(driverId).child(postID);
                                 getPostData.addValueEventListener(getPostDataValueEventListener);
                             }
                         }
+
                         @Override
                         public void onCancelled(@NonNull DatabaseError databaseError) {
 
@@ -398,7 +445,7 @@ public class BookedFragment extends Fragment {
                 pendingPost.setVisibility(View.GONE);
             }
 
-loadingDialog.dismiss();
+            loadingDialog.dismiss();
         }
 
         @Override
@@ -417,18 +464,40 @@ loadingDialog.dismiss();
     @Override
     public void onDetach() {
         super.onDetach();
-        if (databaseReferencePending != null){
+        if (databaseReferencePending != null) {
             databaseReferencePending.removeEventListener(showPendingPost);
         }
-        if (databaseReferenceActive != null){
+        if (databaseReferenceActive != null) {
             databaseReferenceActive.removeEventListener(showActivePost);
         }
-        if (getPostData != null){
+        if (getPostData != null) {
             getPostData.removeEventListener(getPostDataValueEventListener);
         }
-        if (databaseReferencePopulateList != null){
+        if (databaseReferencePopulateList != null) {
             databaseReferencePopulateList.removeEventListener(populateValueEventListener);
         }
 
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        EasyPermissions.onRequestPermissionsResult(requestCode,permissions,grantResults,getActivity());
+    }
+
+    @Override
+    public void onPermissionsGranted(int i, @NonNull List<String> list) {
+        Intent intent = new Intent(getActivity(), MapsActivity.class);
+        intent.putExtra("driverId", driverId);
+        intent.putExtra("driver", "false");
+        startActivity(intent);
+    }
+
+    @Override
+    public void onPermissionsDenied(int i, @NonNull List<String> list) {
+        if(EasyPermissions.somePermissionPermanentlyDenied(getActivity(),list)){
+            postHelpingMethod.snackbarMessage("Location Permissions are Reuired!",rootView);
+        }
     }
 }

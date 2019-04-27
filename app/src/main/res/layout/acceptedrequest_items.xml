@@ -71,7 +71,7 @@
             android:layout_weight="1"
             android:background="@drawable/button_shapes"
             android:drawableLeft="@drawable/ic_action_trackn"
-            android:paddingLeft="16dp"
+            android:paddingLeft="10dp"
             android:text="Track"
             android:textColor="@android:color/white" />
 

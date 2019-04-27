@@ -252,31 +252,36 @@
                     android:id="@+id/trackRide"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginRight="5dp"
                     android:layout_weight="1"
-                    android:textColor="@android:color/white"
                     android:background="@drawable/button_shapes"
                     android:drawableLeft="@drawable/ic_action_trackn"
-                    android:text="Track" />
+                    android:paddingLeft="10dp"
+                    android:text="Track"
+                    android:textColor="@android:color/white" />
 
                 <Button
                     android:id="@+id/chatRide"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginRight="5dp"
                     android:layout_weight="1"
-                    android:textColor="@android:color/white"
                     android:background="@drawable/button_shapes"
                     android:drawableLeft="@drawable/ic_action_chatn"
-                    android:text="Chat" />
+                    android:paddingLeft="16dp"
+                    android:text="Chat"
+                    android:textColor="@android:color/white" />
 
                 <Button
                     android:id="@+id/phoneRide"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textColor="@android:color/white"
                     android:background="@drawable/button_shapes"
                     android:drawableLeft="@drawable/ic_action_calln"
-                    android:text="call" />
+                    android:paddingLeft="16dp"
+                    android:text="Call"
+                    android:textColor="@android:color/white"  />
 
                 <Button
                     android:id="@+id/cancelRide"

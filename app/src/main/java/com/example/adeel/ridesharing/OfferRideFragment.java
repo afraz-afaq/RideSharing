@@ -440,7 +440,7 @@ public class OfferRideFragment extends Fragment {
 
                     mDisitance = Double.parseDouble(df.format(distance / 1000));
                     mDuration = round(duration / 60);
-                    mFare = postHelpingMethod.getFare(mDisitance, mDuration, mPerKM, mPerMin, mBase);
+                    mFare = ((int) postHelpingMethod.getFare(mDisitance, mDuration, mPerKM, mPerMin, mBase));
                     //Toast.makeText(getActivity(),mDisitance+"  "+mDuration+"  "+mFare,Toast.LENGTH_LONG).show();
                     publishPost(rootView);
                 } catch (JSONException e) {
