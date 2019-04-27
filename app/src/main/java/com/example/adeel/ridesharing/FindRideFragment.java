@@ -80,6 +80,7 @@ public class FindRideFragment extends Fragment {
     private PostHelpingMethod postHelpingMethod;
     private PreferencesClass preferencesClass;
     private ValueEventListener notify;
+    int i;
     private TextView noPostMsg;
     private boolean both = true, car = false, bike = false;
     ImageView searchIcon, filterIcon;
@@ -588,7 +589,10 @@ public class FindRideFragment extends Fragment {
                                 }
                                 i++;
                             }
-
+                            if (findRideItems.isEmpty()) {
+                                progressDialog.dismiss();
+                                noPostMsg.setVisibility(View.VISIBLE);
+                            }
                             databaseReference.removeEventListener(findRideListener);
                         }
 
@@ -668,7 +672,7 @@ public class FindRideFragment extends Fragment {
                         } else {
 
                             latLngUser = new LatLng(address1.getLatitude(), address1.getLongitude());
-                            int i = 1;
+                             i = 1;
                             for (final DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                 final String uId = snapshot.getKey();
                                 for (final DataSnapshot snapshotposts : snapshot.getChildren()) {
@@ -831,6 +835,7 @@ public class FindRideFragment extends Fragment {
 
                                                     });
                                                 }
+
                                             }
 
                                             @Override
@@ -852,7 +857,10 @@ public class FindRideFragment extends Fragment {
                                 }
                                 i++;
                             }
-
+                            if (findRideItems.isEmpty()) {
+                                progressDialog.dismiss();
+                                noPostMsg.setVisibility(View.VISIBLE);
+                            }
                             databaseReference.removeEventListener(findRideListener);
                         }
 

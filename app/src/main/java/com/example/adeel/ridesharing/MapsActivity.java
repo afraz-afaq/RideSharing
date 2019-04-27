@@ -23,6 +23,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.directions.route.AbstractRouting;
+import com.directions.route.Route;
+import com.directions.route.RouteException;
+import com.directions.route.Routing;
+import com.directions.route.RoutingListener;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -37,6 +42,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -46,9 +53,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, RoutingListener {
 
     private GoogleMap mMap;
     private Button buttonFind;
@@ -72,7 +80,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     DatabaseReference databaseReferenceTrack;
     ValueEventListener trackValueEventListener;
     AlertDialog trackDialog;
-
+    private List<Polyline> polylines;
+    private static final int[] COLORS = new int[]{R.color.colorPrimaryDark,R.color.colorPrimary,R.color.primary_dark_material_light};
 
     LocationCallback mLocationCallback = new LocationCallback() {
         @Override
@@ -101,14 +110,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
                 moveCamera(latLng, "Me");
                 currentUser = latLng;
-                if (active) {
-                    try {
-                        String distance = String.valueOf(postHelpingMethod.distanceBetween(otherUser, currentUser));
-                        buttonFind.setText("User Online (" + postHelpingMethod.decimalPlacer(Double.valueOf(distance), 2) + " Meters Away)");
-                    } catch (Exception e) {
-                        buttonFind.setText("User Online");
-                    }
-                }
+                if(otherUser!=null)
+                    getRouteToMarker();
+//                if (active) {
+//                    try {
+//                        String distance = String.valueOf(postHelpingMethod.distanceBetween(otherUser, currentUser));
+//                        buttonFind.setText("User Online (" + postHelpingMethod.decimalPlacer(Double.valueOf(distance), 2) + " Meters Away)");
+//                    } catch (Exception e) {
+//                        buttonFind.setText("User Online");
+//                    }
+//                }
             }
         }
     };
@@ -124,12 +135,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             mOtherLocationMarker.remove();
                         moveCamera(latLng, otherName);
                         otherUser = latLng;
-                        try {
-                            String distance = String.valueOf(postHelpingMethod.distanceBetween(latLng, currentUser));
-                            buttonFind.setText("User Online (" + postHelpingMethod.decimalPlacer(Double.valueOf(distance), 2) + " Meters Away)");
-                        } catch (Exception e) {
-                            buttonFind.setText("User Online");
-                        }
+                        if(currentUser!=null)
+                            getRouteToMarker();
+//                        try {
+//                            String distance = String.valueOf(postHelpingMethod.distanceBetween(latLng, currentUser));
+//                            buttonFind.setText("User Online (" + postHelpingMethod.decimalPlacer(Double.valueOf(distance), 2) + " Meters Away)");
+//                        } catch (Exception e) {
+//                            buttonFind.setText("User Online");
+//                        }
                     }
 //                    } else {
 //                        if(!firstTimeLatLng)
@@ -154,7 +167,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-
+        polylines = new ArrayList<>();
         final String receiver_id = getIntent().getStringExtra("driverId");
         buttonFind = findViewById(R.id.findBtn);
         preferencesClass = new PreferencesClass(this);
@@ -199,50 +212,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         else
             otherName = "Driver";
         mAuth = FirebaseAuth.getInstance();
-        trackRef = FirebaseDatabase.getInstance().getReference().child("Track").child(mAuth.getUid());
-//        trackOtherRef = FirebaseDatabase.getInstance().getReference().child("Track").child(receiver_id);
-//        trackOtherRef.addValueEventListener(otherTrackValueEventListener);
-        mLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-        buttonFind.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (active) {
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(otherUser, mMap.getCameraPosition().zoom));
-                }
-            }
-        });
-        trackOtherRef = FirebaseDatabase.getInstance().getReference().child("Track").child(getIntent().getStringExtra("driverId"));
-        databaseReferenceTrack = FirebaseDatabase.getInstance().getReference().child("Track").child(getIntent().getStringExtra("driverId")).child("active");
-        trackValueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                if(dataSnapshot.getValue().equals("true")){
-                    trackDialog.dismiss();
-                    trackOtherRef.addValueEventListener(otherTrackValueEventListener);
-                    active = true;
-                }else {
-                    trackOtherRef.removeEventListener(otherTrackValueEventListener);
-                    trackDialog.show();
-                    buttonFind.setText("User Offline");
-                    active = false;
-                }}
-                else {
-                    trackDialog.show();
-                    active = false;
-                }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        };
-        databaseReferenceTrack.addValueEventListener(trackValueEventListener);
     }
 
 
@@ -276,6 +246,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void initPoint() {
         LatLng latLng = new LatLng(24.8607, 67.0011);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18f));
+        if(currentUser != null)
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentUser, 18f));
     }
 
     private void moveCamera(LatLng latLng, String title) {
@@ -343,20 +315,134 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         drawable.draw(canvas);
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
-
+    Routing routing;
     @Override
     protected void onStart() {
         super.onStart();
+        trackRef = FirebaseDatabase.getInstance().getReference().child("Track").child(mAuth.getUid());
+//        trackOtherRef = FirebaseDatabase.getInstance().getReference().child("Track").child(receiver_id);
+//        trackOtherRef.addValueEventListener(otherTrackValueEventListener);
+        mLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+        buttonFind.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (active) {
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(otherUser, mMap.getCameraPosition().zoom));
+                }
+            }
+        });
+        trackOtherRef = FirebaseDatabase.getInstance().getReference().child("Track").child(getIntent().getStringExtra("driverId"));
+        databaseReferenceTrack = FirebaseDatabase.getInstance().getReference().child("Track").child(getIntent().getStringExtra("driverId")).child("active");
+        trackValueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    if(dataSnapshot.getValue().equals("true")){
+                        trackDialog.dismiss();
+                        trackOtherRef.addValueEventListener(otherTrackValueEventListener);
+                        active = true;
+                    }else {
+                        trackOtherRef.removeEventListener(otherTrackValueEventListener);
+                        trackDialog.show();
+                        buttonFind.setText("User Offline");
+                        active = false;
+                    }}
+                else {
+                    trackDialog.show();
+                    active = false;
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        };
+        databaseReferenceTrack.addValueEventListener(trackValueEventListener);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        if(routing != null)
+            routing.cancel(true);
         databaseReferenceTrack.removeEventListener(trackValueEventListener);
         trackOtherRef.removeEventListener(otherTrackValueEventListener);
-        mLocationProviderClient.removeLocationUpdates(mLocationCallback);
+        //mLocationProviderClient.removeLocationUpdates(mLocationCallback);
         FirebaseDatabase.getInstance().getReference().child("Track").child(mAuth.getUid()).child("active").setValue("false");
     }
 
 
+    @Override
+    public void onRoutingFailure(RouteException e) {
+        if(e != null) {
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }else {
+            Toast.makeText(this, "Something went wrong, Try again", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onRoutingStart() {
+
+    }
+
+    @Override
+    public void onRoutingSuccess(ArrayList<Route> route, int shortestRouteIndex) {
+        if(polylines.size()>0) {
+            for (Polyline poly : polylines) {
+                poly.remove();
+            }
+        }
+
+        polylines = new ArrayList<>();
+        //add route(s) to the map.
+        for (int i = 0; i <route.size(); i++) {
+
+            //In case of more than 5 alternative routes
+            int colorIndex = i % COLORS.length;
+
+            PolylineOptions polyOptions = new PolylineOptions();
+            polyOptions.color(getResources().getColor(COLORS[colorIndex]));
+            polyOptions.width(10 + i * 3);
+            polyOptions.addAll(route.get(i).getPoints());
+            Polyline polyline = mMap.addPolyline(polyOptions);
+            polylines.add(polyline);
+
+//            Toast.makeText(getApplicationContext(),"Route "+ (i+1) +": distance - "+ route.get(i).getDistanceValue()+": duration - "+ route.get(i).getDurationValue(),Toast.LENGTH_SHORT).show();
+            if (active) {
+                try {
+                    buttonFind.setText("User Online (" +route.get(i).getDistanceValue() + " Meters Away)");
+                } catch (Exception e) {
+                    buttonFind.setText("User Online");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onRoutingCancelled() {
+
+    }
+
+    private void getRouteToMarker(){
+        routing = new Routing.Builder()
+                .key("AIzaSyAQjza9vSMtTjbNtdbDrbev6cp9_mbt8Fk")
+                .travelMode(AbstractRouting.TravelMode.DRIVING)
+                .withListener(this)
+                .alternativeRoutes(false)
+                .waypoints(currentUser, otherUser)
+                .build();
+        routing.execute();
+    }
+    private void erasePolyLines(){
+        for(Polyline line : polylines){
+            line.remove();
+        }
+        polylines.clear();
+    }
 }
