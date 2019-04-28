@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:layout_margin="16dp"
     app:cardBackgroundColor="@android:color/white"
-    app:cardElevation="5dp"
+    app:cardElevation="3dp"
     app:cardPreventCornerOverlap="false">
 
     <LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
