@@ -11,6 +11,8 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.text.TextUtils;
@@ -48,7 +50,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
-public class BookedFragment extends Fragment implements EasyPermissions.PermissionCallbacks {
+public class BookedFragment extends Fragment {
 
     private String TAG = "BOOKED_FRAG";
     private Spinner mBookedOptions;
@@ -72,9 +74,7 @@ public class BookedFragment extends Fragment implements EasyPermissions.Permissi
 
 
     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
-
     private static final String COURSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
-
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
 
     ValueEventListener showPendingPost = new ValueEventListener() {
@@ -147,7 +147,6 @@ public class BookedFragment extends Fragment implements EasyPermissions.Permissi
                 track.setVisibility(View.VISIBLE);
                 chat.setVisibility(View.VISIBLE);
                 call.setVisibility(View.VISIBLE);
-
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     postID = snapshot.getKey();
                     driverId = snapshot.child("driver").getValue().toString();
@@ -312,45 +311,21 @@ public class BookedFragment extends Fragment implements EasyPermissions.Permissi
         return rootView;
     }
 
-    @AfterPermissionGranted(LOCATION_PERMISSION_REQUEST_CODE)
-    private void getLocationPermission() {
-
+    private void getLocationPermission(){
         Log.d(TAG, "getLocationPermission: getting location permissions");
+        String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION};
 
-        String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
+        if(ContextCompat.checkSelfPermission(getContext(), FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(getContext(), COURSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
 
-        if(EasyPermissions.hasPermissions(getActivity(),permissions)){
                 Intent intent = new Intent(getActivity(), MapsActivity.class);
                 intent.putExtra("driverId", driverId);
                 intent.putExtra("driver", "false");
                 startActivity(intent);
+        }else{
+            requestPermissions(permissions, LOCATION_PERMISSION_REQUEST_CODE);
         }
-        else{
-            EasyPermissions.requestPermissions(getActivity(),"Location Permissions are Required!",LOCATION_PERMISSION_REQUEST_CODE,permissions);
-        }
-//
-//
-//        if (ContextCompat.checkSelfPermission(getActivity(), FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//
-//            if (ContextCompat.checkSelfPermission(getActivity(), COURSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//
-//                Intent intent = new Intent(getActivity(), MapsActivity.class);
-//                intent.putExtra("driverId", driverId);
-//                intent.putExtra("driver", "false");
-//                startActivity(intent);
-//
-//            } else {
-//
-//                ActivityCompat.requestPermissions(getActivity(), permissions, LOCATION_PERMISSION_REQUEST_CODE);
-//
-//            }
-//
-//        } else {
-//
-//            ActivityCompat.requestPermissions(getActivity(), permissions, LOCATION_PERMISSION_REQUEST_CODE);
-//
-//        }
-
     }
 
     private void spinnerBookedOptions() {
@@ -477,27 +452,43 @@ public class BookedFragment extends Fragment implements EasyPermissions.Permissi
             databaseReferencePopulateList.removeEventListener(populateValueEventListener);
         }
 
+
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        EasyPermissions.onRequestPermissionsResult(requestCode,permissions,grantResults,getActivity());
-    }
-
-    @Override
-    public void onPermissionsGranted(int i, @NonNull List<String> list) {
-        Intent intent = new Intent(getActivity(), MapsActivity.class);
-        intent.putExtra("driverId", driverId);
-        intent.putExtra("driver", "false");
-        startActivity(intent);
-    }
-
-    @Override
-    public void onPermissionsDenied(int i, @NonNull List<String> list) {
-        if(EasyPermissions.somePermissionPermanentlyDenied(getActivity(),list)){
-            postHelpingMethod.snackbarMessage("Location Permissions are Reuired!",rootView);
+        Log.d(TAG, "onRequestPermissionsResult: called.");
+        switch(requestCode){
+            case LOCATION_PERMISSION_REQUEST_CODE:{
+                if(grantResults.length > 0){
+                    for(int i = 0; i < grantResults.length; i++){
+                        if(grantResults[i] != PackageManager.PERMISSION_GRANTED){
+                            Log.d(TAG, "onRequestPermissionsResult: permission failed");
+                            return;
+                        }
+                    }
+                    Intent intent = new Intent(getActivity(), MapsActivity.class);
+                    intent.putExtra("driverId", driverId);
+                    intent.putExtra("driver", "false");
+                    startActivity(intent);
+                }
+            }
         }
     }
+
+//    @Override
+//    public void onPermissionsGranted(int i, @NonNull List<String> list) {
+//        Intent intent = new Intent(getActivity(), MapsActivity.class);
+//        intent.putExtra("driverId", driverId);
+//        intent.putExtra("driver", "false");
+//        startActivity(intent);
+//    }
+//
+//    @Override
+//    public void onPermissionsDenied(int i, @NonNull List<String> list) {
+//        if(EasyPermissions.somePermissionPermanentlyDenied(getActivity(),list)){
+//            postHelpingMethod.snackbarMessage("Location Permissions are Reuired!",rootView);
+//        }
+//    }
 }
