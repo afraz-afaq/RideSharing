@@ -53,6 +53,9 @@ import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static com.example.adeel.ridesharing.MainActivity.mNavigationView;
+import static com.example.adeel.ridesharing.MainActivity.mtoolbar;
+
 public class FindRideFragment extends Fragment {
 
     public static String TAG = "FIND RIDE";
@@ -211,6 +214,8 @@ public class FindRideFragment extends Fragment {
                                                                                         FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getUid()).child("poststatus").setValue("false");
                                                                                         notifyDriver.removeEventListener(notify);
                                                                                         getFragmentManager().beginTransaction().replace(R.id.fragment_container, new MyBookingFragment()).commit();
+                                                                                        mNavigationView.setCheckedItem(R.id.nav_home);
+                                                                                        mtoolbar.setTitle("My Bookings");
                                                                                     }
 
                                                                                     @Override

@@ -201,10 +201,10 @@ public class ProfileFragment extends Fragment {
     private void runtimeAnim() {
 
         fromTop = AnimationUtils.loadAnimation(getActivity(), R.anim.fall_down);
-        fromTop.setDuration(700);
+        fromTop.setDuration(1000);
         mLayout1.setAnimation(fromTop);
         fromBottom = AnimationUtils.loadAnimation(getActivity(), R.anim.from_bottom);
-        fromBottom.setDuration(700);
+        fromBottom.setDuration(1000);
         mLayout2.setAnimation(fromBottom);
 
     }

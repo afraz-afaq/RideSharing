@@ -9,8 +9,10 @@
     folding-cell:cameraHeight="30"
     android:elevation="5dp">
 
+
     <!-- CONTENT (UNFOLDED) LAYOUT (MUST BE AT LEAST 2x times BIGGER than content layout bellow)-->
     <LinearLayout
+        android:elevation="5dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -380,8 +382,22 @@
         </LinearLayout>
 
     </LinearLayout>
+
+
 <!--main Layout-->
     <!-- TITLE (FOLDED) LAYOUT (MUST BE AT LEAST 2x times SMALLER than content layout above) -->
+
+    <android.support.v7.widget.CardView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/cardVew_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="3dp"
+        app:cardPreventCornerOverlap="false"
+        app:cardUseCompatPadding="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -534,5 +550,7 @@
         </RelativeLayout>
 
     </LinearLayout>
+
+    </android.support.v7.widget.CardView>
 
 </com.ramotion.foldingcell.FoldingCell>

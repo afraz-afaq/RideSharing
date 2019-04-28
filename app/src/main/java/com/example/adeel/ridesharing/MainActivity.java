@@ -211,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
                         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                                 new HomeFragment()).commit();
                         mNavigationView.setCheckedItem(R.id.nav_home);
-                        mtoolbar.setTitle(R.string.home);
+                        mtoolbar.setTitle("Ride Sharing");
                         break;
                     case R.id.nav_profile:
                         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,

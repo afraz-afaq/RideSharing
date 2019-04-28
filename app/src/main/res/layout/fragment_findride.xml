@@ -220,7 +220,8 @@
             android:layout_height="match_parent"
             android:clipChildren="false"
             android:clipToPadding="false"
-            android:divider="@android:color/transparent"
+            android:divider="@null"
+            android:elevation="5dp"
             android:dividerHeight="10dp"
             android:padding="16dp"
             android:scrollbars="none"/>

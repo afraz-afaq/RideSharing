@@ -46,6 +46,7 @@
         android:visibility="gone"
         app:cardBackgroundColor="@color/white"
         app:cardCornerRadius="10dp"
+        app:cardElevation="3dp"
         app:cardPreventCornerOverlap="false"
         app:cardUseCompatPadding="true">
 
@@ -103,6 +104,7 @@
                             android:id="@+id/dimage"
                             android:layout_width="64dp"
                             android:layout_height="64dp"
+                            android:elevation="3dp"
                             android:src="@drawable/avatar" />
 
                         <TextView
@@ -281,13 +283,14 @@
                     android:drawableLeft="@drawable/ic_action_calln"
                     android:paddingLeft="16dp"
                     android:text="Call"
-                    android:textColor="@android:color/white"  />
+                    android:textColor="@android:color/white" />
 
                 <Button
                     android:id="@+id/cancelRide"
-                    android:layout_width="0dp"
+                    android:layout_width="200dp"
+                    android:background="@drawable/button_shapes"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:textColor="@android:color/white"
                     android:text="Cancel" />
 
             </LinearLayout>
@@ -302,6 +305,7 @@
         android:layout_height="match_parent"
         android:layout_marginLeft="16dp"
         android:layout_marginTop="16dp"
+        android:divider="@null"
         android:layout_marginRight="16dp"
         android:visibility="gone" />
 

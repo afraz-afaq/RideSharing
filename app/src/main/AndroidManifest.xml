@@ -48,7 +48,8 @@
             android:name=".ForgetPasswordActivity"
             android:parentActivityName=".LoginActivity"/>
         <activity android:name=".MainActivity" />
-        <activity android:name=".ChatActivity" />
+        <activity android:name=".ChatActivity"
+            android:screenOrientation="portrait"/>
 
         <service android:name=".MyFirebaseMessagingService">
             <intent-filter>
@@ -57,7 +58,8 @@
         </service>
         <service android:name=".BadgeCount" />
 
-        <activity android:name=".WelcomeActivity"></activity>
+        <activity android:name=".WelcomeActivity"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>
