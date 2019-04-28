@@ -2,43 +2,43 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:gravity="center"
     android:layout_height="match_parent"
+    android:gravity="center"
     android:orientation="vertical">
 
     <LinearLayout
+        android:id="@+id/layout_offerVehicle"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:id="@+id/layout_offerVehicle"
         android:orientation="vertical">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:text="Via"
-            android:textStyle="bold"
             android:textAppearance="?android:textAppearanceMedium"
-            android:layout_marginBottom="8dp"/>
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/button_viaCar"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="30dp"
-            android:textColor="@color/white"
             android:background="@drawable/button_shapes"
             android:elevation="10dp"
-            android:text="Car" />
+            android:text="Car"
+            android:textColor="@color/white" />
 
         <Button
             android:id="@+id/button_viaBike"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
             android:background="@drawable/button_shapes"
             android:elevation="10dp"
-            android:text="Bike" />
+            android:text="Bike"
+            android:textColor="@color/white" />
 
     </LinearLayout>
 
@@ -51,10 +51,10 @@
         <android.support.v7.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
             android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
             android:layout_marginTop="5dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="10dp"
             app:cardBackgroundColor="@color/white"
             app:cardCornerRadius="10dp"
             app:cardElevation="3dp"
@@ -100,7 +100,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:paddingBottom="5dp"
+                    android:paddingTop="5dp">
 
                     <ImageView
                         android:layout_width="wrap_content"
@@ -115,12 +117,12 @@
                         android:id="@+id/pickup"
                         android:layout_width="match_parent"
                         android:layout_height="40dp"
-                        android:layout_marginEnd="10dp"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginRight="10dp"
                         android:layout_marginStart="5dp"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginEnd="10dp"
+                        android:layout_marginRight="10dp"
                         android:background="@drawable/edittext_shape"
-                        android:elevation="5dp"
+                        android:elevation="3dp"
                         android:hint="@string/your_location"
                         android:paddingLeft="16dp"
                         android:textSize="15sp" />
@@ -131,8 +133,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="5dp"
                     android:layout_marginStart="5dp"
+                    android:layout_marginLeft="5dp"
                     android:layout_marginTop="5dp"
                     android:rotation="90"
                     android:text="- - >"
@@ -143,7 +145,9 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:paddingBottom="5dp"
+                    android:paddingTop="5dp">
 
                     <ImageView
                         android:layout_width="wrap_content"
@@ -157,12 +161,12 @@
                         android:id="@+id/depart"
                         android:layout_width="match_parent"
                         android:layout_height="40dp"
-                        android:layout_marginEnd="10dp"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginRight="10dp"
                         android:layout_marginStart="5dp"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginEnd="10dp"
+                        android:layout_marginRight="10dp"
                         android:background="@drawable/edittext_shape"
-                        android:elevation="5dp"
+                        android:elevation="3dp"
                         android:hint="@string/your_location"
                         android:paddingLeft="16dp"
                         android:textSize="15sp" />
@@ -196,8 +200,8 @@
                     android:layout_width="200dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_marginBottom="16dp"
                     android:layout_marginTop="16dp"
+                    android:layout_marginBottom="16dp"
                     android:alpha="0.80"
                     android:background="@drawable/button_shapes"
                     android:elevation="10dp"
@@ -243,7 +247,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight=".5"
                         android:text="Select Car"
-                        android:textStyle="bold"/>
+                        android:textStyle="bold" />
 
                     <Spinner
                         android:id="@+id/spinner_selectCar"
@@ -257,16 +261,16 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
                     android:orientation="horizontal"
-                    android:padding="8dp"
-                    android:layout_marginTop="16dp">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight=".5"
                         android:text="@string/number_ofSeats"
-                        android:textStyle="bold"/>
+                        android:textStyle="bold" />
 
                     <Spinner
                         android:id="@+id/spinner_seat"
@@ -280,23 +284,23 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="8dp"
                     android:layout_marginTop="8dp"
+                    android:padding="8dp"
                     android:text="@string/further_detail"
                     android:textStyle="bold" />
 
                 <EditText
                     android:id="@+id/message"
-                    android:layout_margin="8dp"
-                    android:padding="6dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
                     android:background="@color/editTextBG"
                     android:gravity="top"
                     android:hint="@string/enterfurther_detail"
                     android:inputType="text|textMultiLine"
                     android:maxHeight="150dp"
-                    android:minHeight="50dp" />
+                    android:minHeight="50dp"
+                    android:padding="6dp" />
 
                 <Button
                     android:id="@+id/button_publish"

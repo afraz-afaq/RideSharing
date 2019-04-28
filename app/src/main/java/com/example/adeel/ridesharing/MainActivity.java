@@ -78,12 +78,20 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
         public void onReceive(Context context, Intent intent) {
             if (intent.hasExtra("request")) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new RequestFragment()).commit();
+                mNavigationView.setCheckedItem(R.id.nav_request);
+                mtoolbar.setTitle("Requests");
             } else if (intent.hasExtra("accepted")) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new BookedFragment()).commit();
+                mNavigationView.setCheckedItem(R.id.nav_request);
+                mtoolbar.setTitle("Requests");
             } else if (intent.hasExtra("canceled")) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new FindRideFragment()).commit();
+                mNavigationView.setCheckedItem(R.id.nav_request);
+                mtoolbar.setTitle("Find Ride");
             } else if (intent.hasExtra("requestc")) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new FindRideFragment()).commit();
+                mNavigationView.setCheckedItem(R.id.nav_request);
+                mtoolbar.setTitle("Find Ride");
             }
         }
 
@@ -212,6 +220,15 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
                                 new HomeFragment()).commit();
                         mNavigationView.setCheckedItem(R.id.nav_home);
                         mtoolbar.setTitle("Ride Sharing");
+                        break;
+                    case R.id.nav_share:
+                        Intent intent = new Intent();
+                        intent.setAction(Intent.ACTION_SEND);
+                        intent.setType("text/plain");
+                        intent.putExtra(Intent.EXTRA_SUBJECT,"BU Ride Sharing");
+                        intent.putExtra(Intent.EXTRA_TEXT,"BU Ride Sharing \n Explore a whole new world of carpooling. Find or offer rides now" +
+                                "and save money while contributing to pollution free environment. Join Us Now!! https://play.google.com/store/apps");
+                        startActivity(Intent.createChooser(intent,"Share with"));
                         break;
                     case R.id.nav_profile:
                         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
@@ -543,7 +560,6 @@ public class MainActivity extends AppCompatActivity implements CarBottomSheet.Ge
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                 myVehicles).commit();
     }
-
 
 
 }

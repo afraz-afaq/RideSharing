@@ -45,8 +45,7 @@
             android:label="@string/title_activity_maps"></activity>
         <activity android:name=".LoginActivity" />
         <activity
-            android:name=".ForgetPasswordActivity"
-            android:parentActivityName=".LoginActivity"/>
+            android:name=".ForgetPasswordActivity"/>
         <activity android:name=".MainActivity" />
         <activity android:name=".ChatActivity"
             android:screenOrientation="portrait"/>

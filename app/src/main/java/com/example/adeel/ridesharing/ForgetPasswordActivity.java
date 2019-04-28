@@ -6,9 +6,11 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -49,27 +51,8 @@ public class ForgetPasswordActivity extends AppCompatActivity {
                                         @Override
                                         public void onComplete(@NonNull Task<AuthResult> task) {
                                             if (!task.isSuccessful()) {
-                                                try {
-                                                    throw task.getException();
-                                                }
-                                                // if user enters wrong email.
-                                                catch (FirebaseAuthInvalidUserException invalidEmail) {
-                                                    postHelpingMethod.snackbarMessage("Email does not exist", view);
-                                                    dialog.cancel();
-                                                    return;
-                                                    // TODO: take your actions!
-                                                }
-                                                // if user enters wrong password.
-                                                catch (FirebaseAuthInvalidCredentialsException wrongPassword) {
-
-                                                    mSendMail(view);
-
-
-                                                    // TODO: Take your action
-                                                } catch (Exception e) {
-                                                    //Log.d(TAG, "onComplete: " + e.getMessage());
-                                                    postHelpingMethod.snackbarMessage(e.getMessage(), view);
-                                                }
+                                                dialog.dismiss();
+                                                postHelpingMethod.snackbarMessage(task.getException().getMessage(),view);
                                             }
                                         }
                                     }
@@ -80,7 +63,6 @@ public class ForgetPasswordActivity extends AppCompatActivity {
         });
 
     }
-
 
     private void mSendMail(final View view) {
         FirebaseAuth auth = FirebaseAuth.getInstance();

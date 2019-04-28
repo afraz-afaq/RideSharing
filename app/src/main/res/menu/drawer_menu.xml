@@ -23,15 +23,15 @@
     <item
         android:id="@+id/nav_offferRide"
         android:checkable="true"
-        android:icon="@drawable/ic_action_home"
+        android:icon="@drawable/ic_action_findride"
         android:title="@string/offer_ride" />
 
     <item
         android:id="@+id/nav_request"
-        app:actionViewClass="android.widget.TextView"
         android:checkable="true"
         android:icon="@drawable/ic_action_request"
-        android:title="Requests" />
+        android:title="Requests"
+        app:actionViewClass="android.widget.TextView" />
 
     <item
         android:id="@+id/nav_myBookings"
@@ -45,9 +45,16 @@
         android:icon="@drawable/ic_action_findride"
         android:title="@string/my_vehicles" />
 
-    <item
-        android:id="@+id/nav_logout"
-        android:icon="@drawable/ic_action_logout"
-        android:title="@string/logout" />
+    <group android:id="@+id/grp">
 
+        <item
+            android:id="@+id/nav_share"
+            android:icon="@drawable/ic_action_share"
+            android:title="Share" />
+
+        <item
+            android:id="@+id/nav_logout"
+            android:icon="@drawable/ic_action_logout"
+            android:title="@string/logout" />
+    </group>
 </menu>
