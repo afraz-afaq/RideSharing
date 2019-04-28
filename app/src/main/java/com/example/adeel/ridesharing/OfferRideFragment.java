@@ -80,7 +80,8 @@ public class OfferRideFragment extends Fragment {
     int count = 1;
     private ArrayAdapter mSeatsAdapter, mCarAdapter, mTimeAdapter;
     private ArrayList mCarsList;
-    private double mDisitance, mDuration, mFare, mPerKM, mPerMin, mBase;
+    private double mDisitance, mDuration, mPerKM, mPerMin, mBase;
+    private int mFare;
     private boolean isCar;
     private PreferencesClass preferencesClass;
     private PostHelpingMethod postHelpingMethod;
@@ -139,6 +140,7 @@ public class OfferRideFragment extends Fragment {
         mButtonCar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mSeatsSpinnner.setEnabled(true);
                 checkCars();
             }
         });

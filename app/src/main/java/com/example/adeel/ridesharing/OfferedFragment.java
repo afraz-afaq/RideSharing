@@ -107,7 +107,7 @@ public class OfferedFragment extends Fragment {
                     seats.setText(snapshot.child("seats").getValue().toString());
                     distance.setText(snapshot.child("distance").getValue().toString() + "KM");
                     time.setText(snapshot.child("departTime").getValue().toString().split("\\s+")[1]);
-                    price.setText(snapshot.child("fare").getValue().toString() + "Rs");
+                    price.setText( "Rs. "+snapshot.child("fare").getValue().toString());
                     if (snapshot.child("onway").getValue().toString().equals("false")) {
                         start.setText("START");
                     } else {

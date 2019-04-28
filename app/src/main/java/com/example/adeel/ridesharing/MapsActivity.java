@@ -2,6 +2,7 @@ package com.example.adeel.ridesharing;
 
 import android.Manifest;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -12,7 +13,10 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Looper;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -160,6 +164,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
         polylines = new ArrayList<>();
         final String receiver_id = getIntent().getStringExtra("driverId");
         buttonFind = findViewById(R.id.findBtn);
@@ -217,6 +222,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mLocationRequest.setInterval(1500); // two minute interval
         mLocationRequest.setFastestInterval(1500);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         mLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
         mMap.setMyLocationEnabled(true);
 
@@ -304,50 +319,68 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onStart() {
         super.onStart();
-        trackRef = FirebaseDatabase.getInstance().getReference().child("Track").child(mAuth.getUid());
+        final LocationManager manager = (LocationManager) getSystemService(this.LOCATION_SERVICE);
+        if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            android.app.AlertDialog.Builder alertDialogBuilder = new android.app.AlertDialog.Builder(this);
+            alertDialogBuilder.setPositiveButton("enable",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent viewIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            startActivity(viewIntent);
+                        }
+                    });
+            alertDialogBuilder.setMessage("Please enable your GPS.");
+            android.app.AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+
+        }
+        else {
+            trackRef = FirebaseDatabase.getInstance().getReference().child("Track").child(mAuth.getUid());
 //        trackOtherRef = FirebaseDatabase.getInstance().getReference().child("Track").child(receiver_id);
 //        trackOtherRef.addValueEventListener(otherTrackValueEventListener);
-        mLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-        buttonFind.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (active) {
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(otherUser, mMap.getCameraPosition().zoom));
+            mLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.map);
+            mapFragment.getMapAsync(this);
+            buttonFind.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (active) {
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(otherUser, mMap.getCameraPosition().zoom));
+                    }
                 }
-            }
-        });
-        trackOtherRef = FirebaseDatabase.getInstance().getReference().child("Track").child(getIntent().getStringExtra("driverId"));
-        databaseReferenceTrack = FirebaseDatabase.getInstance().getReference().child("Track").child(getIntent().getStringExtra("driverId")).child("active");
-        trackValueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    if (dataSnapshot.getValue().equals("true")) {
-                        trackDialog.dismiss();
-                        trackOtherRef.addValueEventListener(otherTrackValueEventListener);
-                        active = true;
+            });
+            trackOtherRef = FirebaseDatabase.getInstance().getReference().child("Track").child(getIntent().getStringExtra("driverId"));
+            databaseReferenceTrack = FirebaseDatabase.getInstance().getReference().child("Track").child(getIntent().getStringExtra("driverId")).child("active");
+            trackValueEventListener = new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        if (dataSnapshot.getValue().equals("true")) {
+                            trackDialog.dismiss();
+                            trackOtherRef.addValueEventListener(otherTrackValueEventListener);
+                            active = true;
+                        } else {
+                            trackOtherRef.removeEventListener(otherTrackValueEventListener);
+                            trackDialog.show();
+                            buttonFind.setText("User Offline");
+                            active = false;
+                        }
                     } else {
-                        trackOtherRef.removeEventListener(otherTrackValueEventListener);
                         trackDialog.show();
-                        buttonFind.setText("User Offline");
                         active = false;
                     }
-                } else {
-                    trackDialog.show();
-                    active = false;
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        };
-        databaseReferenceTrack.addValueEventListener(trackValueEventListener);
+                }
+            };
+            databaseReferenceTrack.addValueEventListener(trackValueEventListener);
+        }
     }
 
     @Override
@@ -355,8 +388,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onStop();
         if (routing != null)
             routing.cancel(true);
-        databaseReferenceTrack.removeEventListener(trackValueEventListener);
-        trackOtherRef.removeEventListener(otherTrackValueEventListener);
+        if (databaseReferenceTrack != null) {
+            databaseReferenceTrack.removeEventListener(trackValueEventListener);
+            trackOtherRef.removeEventListener(otherTrackValueEventListener);
+        }
         //mLocationProviderClient.removeLocationUpdates(mLocationCallback);
         FirebaseDatabase.getInstance().getReference().child("Track").child(mAuth.getUid()).child("active").setValue("false");
     }
