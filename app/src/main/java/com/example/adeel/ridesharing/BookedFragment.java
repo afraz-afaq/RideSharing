@@ -464,7 +464,7 @@ public class BookedFragment extends Fragment {
                 if(grantResults.length > 0){
                     for(int i = 0; i < grantResults.length; i++){
                         if(grantResults[i] != PackageManager.PERMISSION_GRANTED){
-                            Log.d(TAG, "onRequestPermissionsResult: permission failed");
+                            postHelpingMethod.snackbarMessage("Location Premissions are Required!",rootView);
                             return;
                         }
                     }
