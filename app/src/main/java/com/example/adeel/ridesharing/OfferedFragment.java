@@ -152,6 +152,11 @@ public class OfferedFragment extends Fragment {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
             if (dataSnapshot.hasChildren()) {
+
+                FirebaseDatabase.getInstance().getReference().child("Messages").child(mAuth.getUid()).removeValue();
+
+
+
                 Log.v(TAG, "Post Data: " + dataSnapshot.toString());
                 FirebaseDatabase.getInstance().getReference().child("Posts").child("Completed").child(mAuth.getUid()).child(dataSnapshot.getKey()).setValue(dataSnapshot.getValue());
                 final DatabaseReference databaseReferenceRate = FirebaseDatabase.getInstance().getReference().child("Requests").child(postID).child("Accepted");
@@ -163,6 +168,7 @@ public class OfferedFragment extends Fragment {
                                     .setValue(mAuth.getUid());
                             FirebaseDatabase.getInstance().getReference().child("Users").child(snapshot.getKey()).child("poststatus")
                                     .setValue("true");
+                            FirebaseDatabase.getInstance().getReference().child("Messages").child(snapshot.getKey()).removeValue();
                         }
                         databaseReferenceRate.removeEventListener(checkRating);
                     }

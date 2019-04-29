@@ -45,19 +45,36 @@ public class ForgetPasswordActivity extends AppCompatActivity {
                     postHelpingMethod.snackbarMessage("Please enter your email", view);
                 } else {
                     dialog.show();
-                    mAuth.signInWithEmailAndPassword(mEmail.getText().toString(), "***********")
-                            .addOnCompleteListener(
-                                    new OnCompleteListener<AuthResult>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<AuthResult> task) {
-                                            if (!task.isSuccessful()) {
-                                                dialog.dismiss();
-                                                postHelpingMethod.snackbarMessage(task.getException().getMessage(),view);
-                                            }
-                                        }
-                                    }
-                            );
+//                    mAuth.signInWithEmailAndPassword(mEmail.getText().toString(), "***********")
+//                            .addOnCompleteListener(
+//                                    new OnCompleteListener<AuthResult>() {
+//                                        @Override
+//                                        public void onComplete(@NonNull Task<AuthResult> task) {
+//                                            if (task.isSuccessful()) {
+//                                                mSendMail(view);
+//
+//                                            }else{
+//                                                dialog.dismiss();
+//                                                postHelpingMethod.snackbarMessage(task.getException().getMessage(),view);
+//                                            }
+//                                        }
+//                                    }
+//                            );
+                    mAuth.sendPasswordResetEmail(mEmail.getText().toString())
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        mEmail.getText().clear();
+                                        dialog.cancel();
+                                        postHelpingMethod.snackbarMessage("A reset password email has been sent", view);
 
+                                    } else {
+                                        dialog.cancel();
+                                        postHelpingMethod.snackbarMessage(task.getException().getMessage(), view);
+                                    }
+                                }
+                            });
                 }
             }
         });
@@ -67,19 +84,6 @@ public class ForgetPasswordActivity extends AppCompatActivity {
     private void mSendMail(final View view) {
         FirebaseAuth auth = FirebaseAuth.getInstance();
 
-        auth.sendPasswordResetEmail(mEmail.getText().toString())
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            postHelpingMethod.snackbarMessage("A reset password email has been sent", view);
-                            dialog.cancel();
-                            mEmail.getText().clear();
-                        } else {
-                            dialog.cancel();
-                            postHelpingMethod.snackbarMessage("Error while sending reset email", view);
-                        }
-                    }
-                });
+
     }
 }

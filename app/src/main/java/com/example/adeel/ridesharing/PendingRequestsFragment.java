@@ -131,7 +131,8 @@ public class PendingRequestsFragment extends Fragment {
                                         int plusSeats = Integer.parseInt(snapshot.child("seats").getValue().toString());
                                         int totalSeats = Integer.parseInt(dataSnapshot.child("seats").getValue().toString());
                                         int seatsCount = Integer.parseInt(dataSnapshot.child("seatcount").getValue().toString());
-                                        seatsCount += plusSeats;
+
+                                    seatsCount += plusSeats;
                                         if (seatsCount <= totalSeats) {
                                             FirebaseDatabase.getInstance().getReference().child("Posts").child("Active").child(mAuth.getUid()).child(postId).child("seatcount").setValue(seatsCount);
 

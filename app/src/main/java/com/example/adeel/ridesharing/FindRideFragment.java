@@ -172,7 +172,7 @@ public class FindRideFragment extends Fragment {
                                         e.printStackTrace();
                                     }
 
-                                    if (postHelpingMethod.withInRange(latLng, latLngUser) && iSeats <= Integer.parseInt(snapShotToString(snapshotposts, "seats")) && !(datePost.compareTo(curDate) < 0) && snapShotToString(snapshotposts, "onway").equals("false")) {
+                                    if (postHelpingMethod.withInRange(latLng, latLngUser) && iSeats <= Integer.parseInt(snapShotToString(snapshotposts, "seats")) && !(datePost.compareTo(curDate) < 0) && snapShotToString(snapshotposts, "onway").equals("false") && (!snapshotposts.child("seatcount").getValue().toString().equals(snapshotposts.child("seats").getValue().toString()))) {
 
 
                                         driverRatingDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Ratings").child("Users").child(uId).child("rating");
