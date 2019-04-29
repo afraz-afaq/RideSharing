@@ -1,11 +1,14 @@
 package com.example.adeel.ridesharing;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
@@ -75,7 +78,9 @@ public class BookedFragment extends Fragment {
 
     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
     private static final String COURSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
+    private static final String PHONE_CALL = Manifest.permission.CALL_PHONE;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
+    private static final int CALL_PERMISSION_REQUEST_CODE = 5678;
 
     ValueEventListener showPendingPost = new ValueEventListener() {
         @Override
@@ -106,7 +111,7 @@ public class BookedFragment extends Fragment {
                                 seats.setText(dataSnapshot.child("seats").getValue().toString());
                                 distance.setText(dataSnapshot.child("distance").getValue().toString() + "KM");
                                 time.setText(dataSnapshot.child("departTime").getValue().toString().split("\\s+")[1]);
-                                price.setText(dataSnapshot.child("fare").getValue().toString() + "Rs");
+                                price.setText("Rs. " + dataSnapshot.child("fare").getValue().toString());
                                 name.setText(dataSnapshot.child("name").getValue().toString());
                             }
                         }
@@ -189,7 +194,7 @@ public class BookedFragment extends Fragment {
                                 seats.setText(dataSnapshot.child("seats").getValue().toString());
                                 distance.setText(dataSnapshot.child("distance").getValue().toString() + "KM");
                                 time.setText(dataSnapshot.child("departTime").getValue().toString().split("\\s+")[1]);
-                                price.setText(dataSnapshot.child("fare").getValue().toString() + "Rs");
+                                price.setText("Rs. " + dataSnapshot.child("fare").getValue().toString());
                                 name.setText(dataSnapshot.child("name").getValue().toString());
                                 getPostData.removeEventListener(getPostDataValueEventListener);
                                 driverName = dataSnapshot.child("name").getValue().toString();
@@ -292,13 +297,7 @@ public class BookedFragment extends Fragment {
         call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_CALL);
-                String phone = "tel:" + contact;
-                intent.setData(Uri.parse(phone));
-                if (ActivityCompat.checkSelfPermission(getActivity(),
-                        Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
-                    startActivity(intent);
-                }
+                getCallPermission();
             }
         });
 
@@ -311,20 +310,83 @@ public class BookedFragment extends Fragment {
         return rootView;
     }
 
-    private void getLocationPermission(){
-        Log.d(TAG, "getLocationPermission: getting location permissions");
+    private void getLocationPermission() {
         String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION};
 
-        if(ContextCompat.checkSelfPermission(getContext(), FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(getContext(), COURSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+        if (ContextCompat.checkSelfPermission(getContext(), FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(getContext(), COURSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-                Intent intent = new Intent(getActivity(), MapsActivity.class);
-                intent.putExtra("driverId", driverId);
-                intent.putExtra("driver", "false");
-                startActivity(intent);
-        }else{
-            requestPermissions(permissions, LOCATION_PERMISSION_REQUEST_CODE);
+            Intent intent = new Intent(getActivity(), MapsActivity.class);
+            intent.putExtra("driverId", driverId);
+            intent.putExtra("driver", "false");
+            startActivity(intent);
+
+        } else {
+            // Permission is not granted
+            // Should we show an explanation?
+            if (!shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+                alertDialogBuilder.setPositiveButton("Allow",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent intent = new Intent();
+                                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                Uri uri = Uri.fromParts("package", getActivity().getPackageName(), null);
+                                intent.setData(uri);
+                                startActivity(intent);
+                            }
+                        });
+                alertDialogBuilder.setMessage("Location permissions are neccessary for this feature.");
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
+
+                return;
+            } else {
+
+                requestPermissions(permissions, LOCATION_PERMISSION_REQUEST_CODE);
+            }
+
+        }
+    }
+
+
+    private void getCallPermission() {
+        String[] permissions = {Manifest.permission.CALL_PHONE};
+        if (ContextCompat.checkSelfPermission(getContext(), PHONE_CALL) == PackageManager.PERMISSION_GRANTED) {
+
+            Intent intent = new Intent(Intent.ACTION_CALL);
+            String phone = "tel:" + contact;
+            intent.setData(Uri.parse(phone));
+            startActivity(intent);
+
+        } else {
+            // Permission is not granted
+            // Should we show an explanation?
+            if (!shouldShowRequestPermissionRationale(Manifest.permission.CALL_PHONE)) {
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+                alertDialogBuilder.setPositiveButton("Allow",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent intent = new Intent();
+                                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                Uri uri = Uri.fromParts("package", getActivity().getPackageName(), null);
+                                intent.setData(uri);
+                                startActivity(intent);
+                            }
+                        });
+                alertDialogBuilder.setMessage("Phone calling permission is neccessary for this feature.");
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
+
+                return;
+            } else {
+
+                requestPermissions(permissions, CALL_PERMISSION_REQUEST_CODE);
+            }
+
         }
     }
 
@@ -459,12 +521,12 @@ public class BookedFragment extends Fragment {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         Log.d(TAG, "onRequestPermissionsResult: called.");
-        switch(requestCode){
-            case LOCATION_PERMISSION_REQUEST_CODE:{
-                if(grantResults.length > 0){
-                    for(int i = 0; i < grantResults.length; i++){
-                        if(grantResults[i] != PackageManager.PERMISSION_GRANTED){
-                            Log.d(TAG, "onRequestPermissionsResult: permission failed");
+        switch (requestCode) {
+            case LOCATION_PERMISSION_REQUEST_CODE: {
+                if (grantResults.length > 0) {
+                    for (int i = 0; i < grantResults.length; i++) {
+                        if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                            postHelpingMethod.snackbarMessage("Location Premissions are Required!", rootView);
                             return;
                         }
                     }
@@ -472,23 +534,22 @@ public class BookedFragment extends Fragment {
                     intent.putExtra("driverId", driverId);
                     intent.putExtra("driver", "false");
                     startActivity(intent);
+                    break;
                 }
+            }
+            case CALL_PERMISSION_REQUEST_CODE: {
+                if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    postHelpingMethod.snackbarMessage("Calling Permission is Required!", rootView);
+                    return;
+                }
+                Intent intent = new Intent(Intent.ACTION_CALL);
+                String phone = "tel:" + contact;
+                intent.setData(Uri.parse(phone));
+                startActivity(intent);
+                break;
             }
         }
     }
 
-//    @Override
-//    public void onPermissionsGranted(int i, @NonNull List<String> list) {
-//        Intent intent = new Intent(getActivity(), MapsActivity.class);
-//        intent.putExtra("driverId", driverId);
-//        intent.putExtra("driver", "false");
-//        startActivity(intent);
-//    }
-//
-//    @Override
-//    public void onPermissionsDenied(int i, @NonNull List<String> list) {
-//        if(EasyPermissions.somePermissionPermanentlyDenied(getActivity(),list)){
-//            postHelpingMethod.snackbarMessage("Location Permissions are Reuired!",rootView);
-//        }
-//    }
+
 }
